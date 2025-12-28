@@ -1,30 +1,85 @@
--- Настройки
+--[[ 
+    RGB ULTIMATE V2.3.1 FIXED (Noclip Fix + RGB ESP Menu + Dragging Fix)
+]]
+
 local lplr = game.Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
--- ЗАГРУЗКА ФОНОВЫХ СКРИПТОВ
+---------------------------------------------------------
+-- 1. СЕКЦИЯ INTRO (ЗАСТАВКА - 5 СЕКУНД)
+---------------------------------------------------------
+local introGui = Instance.new("ScreenGui")
+introGui.Name = "IntroSystem"
+introGui.Parent = CoreGui
+introGui.DisplayOrder = 999
+
+local background = Instance.new("Frame")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+background.BorderSizePixel = 0
+background.Parent = introGui
+
+local helloLabel = Instance.new("TextLabel")
+helloLabel.Size = UDim2.new(1, 0, 1, 0)
+helloLabel.BackgroundTransparency = 1
+helloLabel.Text = "HELLO"
+helloLabel.TextColor3 = Color3.new(1, 1, 1)
+helloLabel.Font = Enum.Font.SourceSansBold
+helloLabel.TextSize = 100
+helloLabel.TextTransparency = 1
+helloLabel.Parent = background
+
+local introRGBActive = true
 task.spawn(function()
-    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Anzzckc/Pack-Animation-01/refs/heads/main/PackAdidasAnimation%20.lua"))() end)
-    pcall(function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-7yd7-I-Emote-Script-48024"))() end)
-    pcall(function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end)
+    local hue = 0
+    while introRGBActive do
+        hue = hue + 0.01
+        if hue > 1 then hue = 0 end
+        helloLabel.TextColor3 = Color3.fromHSV(hue, 0.7, 1)
+        task.wait()
+    end
 end)
 
--- Создание UI
+task.spawn(function()
+    local tInfo = TweenInfo.new(1.0, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+    task.wait(1.5)
+    TweenService:Create(helloLabel, tInfo, {TextTransparency = 0}):Play()
+    task.wait(1.5)
+    TweenService:Create(helloLabel, tInfo, {TextTransparency = 1}):Play()
+    local bgFade = TweenService:Create(background, tInfo, {BackgroundTransparency = 1})
+    bgFade:Play()
+    bgFade.Completed:Connect(function()
+        introRGBActive = false
+        introGui:Destroy()
+    end)
+end)
+
+---------------------------------------------------------
+-- 2. ЗАГРУЗКА ВНЕШНИХ СКРИПТОВ
+---------------------------------------------------------
+task.spawn(pcall, function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Anzzckc/Pack-Animation-01/refs/heads/main/PackAdidasAnimation%20.lua"))() end)
+task.spawn(pcall, function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-7yd7-I-Emote-Script-48024"))() end)
+task.spawn(pcall, function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end)
+
+---------------------------------------------------------
+-- 3. ОСНОВНОЙ UI
+---------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "RGB_ULTIMATE_V20_FIXED"
+ScreenGui.Name = "RGB_ULTIMATE_V20"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- ГЛАВНАЯ ПАНЕЛЬ
 local MainFrame = Instance.new("Frame")
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BackgroundTransparency = 0.2
 MainFrame.Position = UDim2.new(0.5, -305, 0.05, 0)
 MainFrame.Size = UDim2.new(0, 610, 0, 50)
 MainFrame.Active = true
+MainFrame.Draggable = false -- Мы используем свою логику перетаскивания ниже
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
@@ -39,43 +94,36 @@ UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 Instance.new("UIPadding", MainFrame).PaddingLeft = UDim.new(0, 10)
 
--- ПОДМЕНЮ ESP
+-- ESP Подменю
 local EspSettingsFrame = Instance.new("Frame")
 EspSettingsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 EspSettingsFrame.BackgroundTransparency = 0.1
 EspSettingsFrame.Position = UDim2.new(0, 60, 1.2, 0) 
 EspSettingsFrame.Size = UDim2.new(0, 130, 0, 130)
 EspSettingsFrame.Visible = false
-EspSettingsFrame.ZIndex = 5
 EspSettingsFrame.Parent = MainFrame
 Instance.new("UICorner", EspSettingsFrame).CornerRadius = UDim.new(0, 8)
+
+local UIStrokeEsp = Instance.new("UIStroke", EspSettingsFrame)
+UIStrokeEsp.Thickness = 2
+UIStrokeEsp.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local UIListLayoutEsp = Instance.new("UIListLayout", EspSettingsFrame)
 UIListLayoutEsp.Padding = UDim.new(0, 5)
 UIListLayoutEsp.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIListLayoutEsp.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- ПЕРЕМЕННЫЕ
-local menuVisible = true
-local espEnabled = false
-local espNames = true
-local espDistance = true
-local aimbotEnabled = false
-local noclipEnabled = false
-local xrayEnabled = false
+-- Переменные
+local menuVisible, espEnabled, espNames, espDistance = true, false, true, true
+local aimbotEnabled, noclipEnabled, xrayEnabled = false, false, false
 local currentRGBColor = Color3.new(1,1,1)
-local visualData = {}
-local xrayStorage = {}
+local visualData, xrayStorage = {}, {}
 
--- КРУГ АИМБОТА (FOV)
 local fovCircle = Drawing.new("Circle")
 fovCircle.Thickness = 2
 fovCircle.Radius = 150
-fovCircle.Filled = false
-fovCircle.Transparency = 1
 fovCircle.Visible = false
 
--- ФУНКЦИЯ КНОПОК
 local function createButton(text, parent, sizeX)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, sizeX or 100, 0, 35)
@@ -84,13 +132,12 @@ local function createButton(text, parent, sizeX)
     btn.Text = text
     btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 14
-    btn.ZIndex = 10
     btn.Parent = parent
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     return btn
 end
 
--- КНОПКИ
+-- Кнопка H (теперь она в UIListLayout вместе со всеми)
 local ToggleMenuBtn = createButton("H", MainFrame, 40)
 local UIStrokeH = Instance.new("UIStroke", ToggleMenuBtn)
 UIStrokeH.Thickness = 2
@@ -105,39 +152,71 @@ local espToggleBtn = createButton("ESP: ВЫКЛ", EspSettingsFrame, 115)
 local espNamesBtn = createButton("НИКИ: ВКЛ", EspSettingsFrame, 115)
 local espDistBtn = createButton("ДИСТ: ВКЛ", EspSettingsFrame, 115)
 
--- ПЕРЕТАСКИВАНИЕ
+---------------------------------------------------------
+-- 4. ЛОГИКА (ПЕРЕТАСКИВАНИЕ И RGB)
+---------------------------------------------------------
+
+-- ИСПРАВЛЕННОЕ ПЕРЕТАСКИВАНИЕ ДЛЯ ВСЕГО МЕНЮ
 local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
-        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
     end
 end)
 
--- RGB ЦИКЛ
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- RGB
 task.spawn(function()
     while true do
         for i = 0, 1, 0.005 do
             currentRGBColor = Color3.fromHSV(i, 0.8, 1)
             UIStrokeH.Color = currentRGBColor
             UIStrokeFrame.Color = currentRGBColor
+            UIStrokeEsp.Color = currentRGBColor
             fovCircle.Color = currentRGBColor
             task.wait()
         end
     end
 end)
 
--- ЛОГИКА ПЕРЕКЛЮЧЕНИЙ
+---------------------------------------------------------
+-- 5. ФУНКЦИОНАЛ КНОПОК
+---------------------------------------------------------
+
 ToggleMenuBtn.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
-    espMainBtn.Visible, aimBtn.Visible, noclipBtn.Visible, xrayBtn.Visible, brightBtn.Visible = menuVisible, menuVisible, menuVisible, menuVisible, menuVisible
+    espMainBtn.Visible = menuVisible
+    aimBtn.Visible = menuVisible
+    noclipBtn.Visible = menuVisible
+    xrayBtn.Visible = menuVisible
+    brightBtn.Visible = menuVisible
     EspSettingsFrame.Visible = false
+    -- Сворачиваем панель до кнопки H
     MainFrame.Size = menuVisible and UDim2.new(0, 610, 0, 50) or UDim2.new(0, 60, 0, 50)
 end)
 
@@ -145,12 +224,7 @@ espMainBtn.MouseButton1Click:Connect(function() EspSettingsFrame.Visible = not E
 espToggleBtn.MouseButton1Click:Connect(function() espEnabled = not espEnabled; espToggleBtn.Text = espEnabled and "ESP: ВКЛ" or "ESP: ВЫКЛ" end)
 espNamesBtn.MouseButton1Click:Connect(function() espNames = not espNames; espNamesBtn.Text = espNames and "НИКИ: ВКЛ" or "НИКИ: ВЫКЛ" end)
 espDistBtn.MouseButton1Click:Connect(function() espDistance = not espDistance; espDistBtn.Text = espDistance and "ДИСТ: ВКЛ" or "ДИСТ: ВЫКЛ" end)
-
-aimBtn.MouseButton1Click:Connect(function() 
-    aimbotEnabled = not aimbotEnabled
-    aimBtn.Text = aimbotEnabled and "AIM: ВКЛ" or "AIM: ВЫКЛ"
-    fovCircle.Visible = aimbotEnabled
-end)
+aimBtn.MouseButton1Click:Connect(function() aimbotEnabled = not aimbotEnabled; aimBtn.Text = aimbotEnabled and "AIM: ВКЛ" or "AIM: ВЫКЛ"; fovCircle.Visible = aimbotEnabled end)
 
 xrayBtn.MouseButton1Click:Connect(function()
     xrayEnabled = not xrayEnabled
@@ -171,7 +245,9 @@ noclipBtn.MouseButton1Click:Connect(function()
     noclipEnabled = not noclipEnabled
     noclipBtn.Text = noclipEnabled and "NOCLIP: ВКЛ" or "NOCLIP: ВЫКЛ"
     if not noclipEnabled and lplr.Character then
-        for _, p in pairs(lplr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end
+        for _, p in pairs(lplr.Character:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = true end
+        end
     end
 end)
 
@@ -190,7 +266,7 @@ brightBtn.MouseButton1Click:Connect(function()
     brightBtn.Text = not fb and "СВЕТ: ВКЛ" or "СВЕТ: ВЫКЛ" 
 end)
 
--- ESP & AIM ЛОГИКА
+-- Рендер ESP и AIM
 RunService.RenderStepped:Connect(function()
     fovCircle.Position = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
     
@@ -198,7 +274,8 @@ RunService.RenderStepped:Connect(function()
         if player == lplr then continue end
         if not visualData[player] then visualData[player] = { Line = Drawing.new("Line"), Box = Drawing.new("Square"), Text = Drawing.new("Text") } end
         local v, char = visualData[player], player.Character
-        if espEnabled and char and char:FindFirstChild("HumanoidRootPart") and char.Humanoid.Health > 0 then
+        
+        if espEnabled and char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
             local pos, onScreen = camera:WorldToViewportPoint(char.HumanoidRootPart.Position)
             if onScreen then
                 local dist = math.floor((char.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude)
@@ -213,7 +290,7 @@ RunService.RenderStepped:Connect(function()
     if aimbotEnabled then
         local target = nil; local shortestDist = fovCircle.Radius
         for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= lplr and v.Character and v.Character:FindFirstChild("Head") and v.Character.Humanoid.Health > 0 then
+            if v ~= lplr and v.Character and v.Character:FindFirstChild("Head") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
                 local pos, os = camera:WorldToViewportPoint(v.Character.Head.Position)
                 if os then
                     local mag = (Vector2.new(pos.X, pos.Y) - fovCircle.Position).Magnitude
