@@ -1,0 +1,226 @@
+-- Настройки
+local lplr = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- ЗАГРУЗКА ФОНОВЫХ СКРИПТОВ
+task.spawn(function()
+    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Anzzckc/Pack-Animation-01/refs/heads/main/PackAdidasAnimation%20.lua"))() end)
+    pcall(function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-7yd7-I-Emote-Script-48024"))() end)
+    pcall(function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end)
+end)
+
+-- Создание UI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "RGB_ULTIMATE_V20_FIXED"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+-- ГЛАВНАЯ ПАНЕЛЬ
+local MainFrame = Instance.new("Frame")
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BackgroundTransparency = 0.2
+MainFrame.Position = UDim2.new(0.5, -305, 0.05, 0)
+MainFrame.Size = UDim2.new(0, 610, 0, 50)
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local UIStrokeFrame = Instance.new("UIStroke", MainFrame)
+UIStrokeFrame.Thickness = 2
+UIStrokeFrame.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local UIListLayout = Instance.new("UIListLayout", MainFrame)
+UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+Instance.new("UIPadding", MainFrame).PaddingLeft = UDim.new(0, 10)
+
+-- ПОДМЕНЮ ESP
+local EspSettingsFrame = Instance.new("Frame")
+EspSettingsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+EspSettingsFrame.BackgroundTransparency = 0.1
+EspSettingsFrame.Position = UDim2.new(0, 60, 1.2, 0) 
+EspSettingsFrame.Size = UDim2.new(0, 130, 0, 130)
+EspSettingsFrame.Visible = false
+EspSettingsFrame.ZIndex = 5
+EspSettingsFrame.Parent = MainFrame
+Instance.new("UICorner", EspSettingsFrame).CornerRadius = UDim.new(0, 8)
+
+local UIListLayoutEsp = Instance.new("UIListLayout", EspSettingsFrame)
+UIListLayoutEsp.Padding = UDim.new(0, 5)
+UIListLayoutEsp.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayoutEsp.VerticalAlignment = Enum.VerticalAlignment.Center
+
+-- ПЕРЕМЕННЫЕ
+local menuVisible = true
+local espEnabled = false
+local espNames = true
+local espDistance = true
+local aimbotEnabled = false
+local noclipEnabled = false
+local xrayEnabled = false
+local currentRGBColor = Color3.new(1,1,1)
+local visualData = {}
+local xrayStorage = {}
+
+-- КРУГ АИМБОТА (FOV)
+local fovCircle = Drawing.new("Circle")
+fovCircle.Thickness = 2
+fovCircle.Radius = 150
+fovCircle.Filled = false
+fovCircle.Transparency = 1
+fovCircle.Visible = false
+
+-- ФУНКЦИЯ КНОПОК
+local function createButton(text, parent, sizeX)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, sizeX or 100, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Text = text
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 14
+    btn.ZIndex = 10
+    btn.Parent = parent
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    return btn
+end
+
+-- КНОПКИ
+local ToggleMenuBtn = createButton("H", MainFrame, 40)
+local UIStrokeH = Instance.new("UIStroke", ToggleMenuBtn)
+UIStrokeH.Thickness = 2
+
+local espMainBtn = createButton("ESP МЕНЮ", MainFrame)
+local aimBtn = createButton("AIM: ВЫКЛ", MainFrame)
+local noclipBtn = createButton("NOCLIP: ВЫКЛ", MainFrame)
+local xrayBtn = createButton("X-RAY: ВЫКЛ", MainFrame)
+local brightBtn = createButton("СВЕТ: ВЫКЛ", MainFrame)
+
+local espToggleBtn = createButton("ESP: ВЫКЛ", EspSettingsFrame, 115)
+local espNamesBtn = createButton("НИКИ: ВКЛ", EspSettingsFrame, 115)
+local espDistBtn = createButton("ДИСТ: ВКЛ", EspSettingsFrame, 115)
+
+-- ПЕРЕТАСКИВАНИЕ
+local dragging, dragInput, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- RGB ЦИКЛ
+task.spawn(function()
+    while true do
+        for i = 0, 1, 0.005 do
+            currentRGBColor = Color3.fromHSV(i, 0.8, 1)
+            UIStrokeH.Color = currentRGBColor
+            UIStrokeFrame.Color = currentRGBColor
+            fovCircle.Color = currentRGBColor
+            task.wait()
+        end
+    end
+end)
+
+-- ЛОГИКА ПЕРЕКЛЮЧЕНИЙ
+ToggleMenuBtn.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    espMainBtn.Visible, aimBtn.Visible, noclipBtn.Visible, xrayBtn.Visible, brightBtn.Visible = menuVisible, menuVisible, menuVisible, menuVisible, menuVisible
+    EspSettingsFrame.Visible = false
+    MainFrame.Size = menuVisible and UDim2.new(0, 610, 0, 50) or UDim2.new(0, 60, 0, 50)
+end)
+
+espMainBtn.MouseButton1Click:Connect(function() EspSettingsFrame.Visible = not EspSettingsFrame.Visible end)
+espToggleBtn.MouseButton1Click:Connect(function() espEnabled = not espEnabled; espToggleBtn.Text = espEnabled and "ESP: ВКЛ" or "ESP: ВЫКЛ" end)
+espNamesBtn.MouseButton1Click:Connect(function() espNames = not espNames; espNamesBtn.Text = espNames and "НИКИ: ВКЛ" or "НИКИ: ВЫКЛ" end)
+espDistBtn.MouseButton1Click:Connect(function() espDistance = not espDistance; espDistBtn.Text = espDistance and "ДИСТ: ВКЛ" or "ДИСТ: ВЫКЛ" end)
+
+aimBtn.MouseButton1Click:Connect(function() 
+    aimbotEnabled = not aimbotEnabled
+    aimBtn.Text = aimbotEnabled and "AIM: ВКЛ" or "AIM: ВЫКЛ"
+    fovCircle.Visible = aimbotEnabled
+end)
+
+xrayBtn.MouseButton1Click:Connect(function()
+    xrayEnabled = not xrayEnabled
+    xrayBtn.Text = xrayEnabled and "X-RAY: ВКЛ" or "X-RAY: ВЫКЛ"
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and not obj:IsDescendantOf(lplr.Character) then
+            if xrayEnabled then
+                if not xrayStorage[obj] then xrayStorage[obj] = obj.Transparency end
+                obj.Transparency = 0.6
+            else
+                if xrayStorage[obj] then obj.Transparency = xrayStorage[obj]; xrayStorage[obj] = nil end
+            end
+        end
+    end
+end)
+
+noclipBtn.MouseButton1Click:Connect(function()
+    noclipEnabled = not noclipEnabled
+    noclipBtn.Text = noclipEnabled and "NOCLIP: ВКЛ" or "NOCLIP: ВЫКЛ"
+    if not noclipEnabled and lplr.Character then
+        for _, p in pairs(lplr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    if noclipEnabled and lplr.Character then
+        for _, p in pairs(lplr.Character:GetDescendants()) do
+            if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then p.CanCollide = false end
+        end
+    end
+end)
+
+brightBtn.MouseButton1Click:Connect(function() 
+    local fb = game.Lighting.Brightness == 4
+    game.Lighting.Brightness = fb and 2 or 4
+    game.Lighting.GlobalShadows = fb
+    brightBtn.Text = not fb and "СВЕТ: ВКЛ" or "СВЕТ: ВЫКЛ" 
+end)
+
+-- ESP & AIM ЛОГИКА
+RunService.RenderStepped:Connect(function()
+    fovCircle.Position = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player == lplr then continue end
+        if not visualData[player] then visualData[player] = { Line = Drawing.new("Line"), Box = Drawing.new("Square"), Text = Drawing.new("Text") } end
+        local v, char = visualData[player], player.Character
+        if espEnabled and char and char:FindFirstChild("HumanoidRootPart") and char.Humanoid.Health > 0 then
+            local pos, onScreen = camera:WorldToViewportPoint(char.HumanoidRootPart.Position)
+            if onScreen then
+                local dist = math.floor((char.HumanoidRootPart.Position - lplr.Character.HumanoidRootPart.Position).Magnitude)
+                v.Line.Visible, v.Line.From, v.Line.To, v.Line.Color = true, Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y), Vector2.new(pos.X, pos.Y), currentRGBColor
+                v.Box.Visible, v.Box.Size, v.Box.Position, v.Box.Color = true, Vector2.new(2000/pos.Z, 3000/pos.Z), Vector2.new(pos.X - (2000/pos.Z)/2, pos.Y - (3000/pos.Z)/2), currentRGBColor
+                v.Text.Visible, v.Text.Text, v.Text.Position = true, (espNames and player.Name or "") .. (espDistance and " ["..dist.."m]" or ""), Vector2.new(pos.X, pos.Y - (3000/pos.Z)/2 - 15)
+                v.Text.Color, v.Text.Outline, v.Text.Center, v.Text.Size = Color3.new(1,1,1), true, true, 14
+            else v.Line.Visible, v.Box.Visible, v.Text.Visible = false, false, false end
+        else v.Line.Visible, v.Box.Visible, v.Text.Visible = false, false, false end
+    end
+
+    if aimbotEnabled then
+        local target = nil; local shortestDist = fovCircle.Radius
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= lplr and v.Character and v.Character:FindFirstChild("Head") and v.Character.Humanoid.Health > 0 then
+                local pos, os = camera:WorldToViewportPoint(v.Character.Head.Position)
+                if os then
+                    local mag = (Vector2.new(pos.X, pos.Y) - fovCircle.Position).Magnitude
+                    if mag < shortestDist then shortestDist = mag; target = v end
+                end
+            end
+        end
+        if target then camera.CFrame = camera.CFrame:Lerp(CFrame.new(camera.CFrame.Position, target.Character.Head.Position), 0.15) end
+    end
+end)
