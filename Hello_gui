@@ -1,5 +1,5 @@
 --[[ 
-    RGB ULTIMATE V3.1 (ESP INFO TOGGLE + RGB HITBOXES)
+    RGB ULTIMATE V3.3 (HELLO INTRO + INFO TOGGLE + ALL FEATURES)
 ]]
 
 local lplr = game.Players.LocalPlayer
@@ -8,79 +8,102 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "ULTIMATE_V31"
+ScreenGui.Name = "ULTIMATE_V33"
 ScreenGui.ResetOnSpawn = false
 
--- Кнопка H (Скрыть/Показать)
-local hBtn = Instance.new("TextButton", ScreenGui)
-hBtn.Size = UDim2.new(0, 35, 0, 35)
-hBtn.Position = UDim2.new(0, 10, 0, 10)
-hBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-hBtn.Text = "H"; hBtn.TextColor3 = Color3.new(1, 1, 1); hBtn.Font = "SourceSansBold"; hBtn.TextSize = 18
-Instance.new("UICorner", hBtn)
-local hStr = Instance.new("UIStroke", hBtn)
-hStr.Thickness = 2
-
--- Панель меню
-local Main = Instance.new("Frame", ScreenGui)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Main.Position = UDim2.new(0.5, -180, 0.3, 0)
-Main.Size = UDim2.new(0, 360, 0, 190) -- Слегка увеличил под новую кнопку
-Main.Active = true
-Instance.new("UICorner", Main)
-local mStr = Instance.new("UIStroke", Main)
-mStr.Thickness = 2
-
--- RGB Система
+-- Глобальный RGB
 local rgb = Color3.new(1,1,1)
 task.spawn(function()
     while true do
         for i = 0, 1, 0.005 do
             rgb = Color3.fromHSV(i, 0.8, 1)
-            hStr.Color = rgb; mStr.Color = rgb
             task.wait()
         end
     end
 end)
 
--- Перетаскивание (ПК и Телефоны)
-local d, ds, sp
-Main.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then d = true; ds = i.Position; sp = Main.Position end end)
-UserInputService.InputChanged:Connect(function(i) if d and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local del = i.Position - ds; Main.Position = UDim2.new(sp.X.Scale, sp.X.Offset + del.X, sp.Y.Scale, sp.Y.Offset + del.Y) end end)
-UserInputService.InputEnded:Connect(function() d = false end)
+-- ЭКРАН ПРИВЕТСТВИЯ С "HELLO"
+local WelcomeFrame = Instance.new("Frame", ScreenGui)
+WelcomeFrame.Size = UDim2.new(0, 320, 0, 170)
+WelcomeFrame.Position = UDim2.new(0.5, -160, 0.5, -85)
+WelcomeFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+WelcomeFrame.BorderSizePixel = 0
+Instance.new("UICorner", WelcomeFrame)
+local wStr = Instance.new("UIStroke", WelcomeFrame)
+wStr.Thickness = 3
+
+local helloText = Instance.new("TextLabel", WelcomeFrame)
+helloText.Size = UDim2.new(1, 0, 0.5, 0)
+helloText.Position = UDim2.new(0, 0, 0.1, 0)
+helloText.Text = "HELLO!"
+helloText.Font = "SourceSansBold"; helloText.TextSize = 50; helloText.TextColor3 = Color3.new(1,1,1)
+helloText.BackgroundTransparency = 1
+
+local subText = Instance.new("TextLabel", WelcomeFrame)
+subText.Size = UDim2.new(1, 0, 0.2, 0)
+subText.Position = UDim2.new(0, 0, 0.5, 0)
+subText.Text = "RGB ULTIMATE V33"
+subText.Font = "SourceSansBold"; subText.TextSize = 18; subText.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+subText.BackgroundTransparency = 1
+
+local wLoad = Instance.new("TextLabel", WelcomeFrame)
+wLoad.Size = UDim2.new(1, 0, 0.2, 0)
+wLoad.Position = UDim2.new(0, 0, 0.75, 0)
+wLoad.Text = "Подключение..."
+wLoad.Font = "SourceSansItalic"; wLoad.TextSize = 14; wLoad.TextColor3 = Color3.fromRGB(150, 150, 150)
+wLoad.BackgroundTransparency = 1
+
+-- Логика RGB для приветствия
+task.spawn(function()
+    while WelcomeFrame.Visible do
+        wStr.Color = rgb; helloText.TextColor3 = rgb
+        task.wait()
+    end
+end)
+
+-- Анимация интро
+task.spawn(function()
+    local stages = {"Загрузка модулей...", "Проверка ссылок...", "Настройка ESP...", "Готово!", ""}
+    for _, msg in pairs(stages) do
+        wLoad.Text = msg
+        task.wait(0.7)
+    end
+    TweenService:Create(WelcomeFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(helloText, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(subText, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(wLoad, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(wStr, TweenInfo.new(0.5), {Transparency = 1}):Play()
+    task.wait(0.5)
+    WelcomeFrame.Visible = false
+end)
+
+-- ГЛАВНОЕ МЕНЮ И КНОПКА H (Копируем логику из V32)
+local Main = Instance.new("Frame", ScreenGui)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15); Main.Position = UDim2.new(0.5, -180, 0.3, 0); Main.Size = UDim2.new(0, 360, 0, 195); Main.Active = true; Main.Visible = false
+Instance.new("UICorner", Main); local mStr = Instance.new("UIStroke", Main); mStr.Thickness = 2
+
+local hBtn = Instance.new("TextButton", ScreenGui)
+hBtn.Size = UDim2.new(0, 35, 0, 35); hBtn.Position = UDim2.new(0, 10, 0, 10); hBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20); hBtn.Text = "H"; hBtn.TextColor3 = Color3.new(1, 1, 1); hBtn.Font = "SourceSansBold"; hBtn.TextSize = 18; hBtn.Visible = true
+Instance.new("UICorner", hBtn); local hStr = Instance.new("UIStroke", hBtn); hStr.Thickness = 2
+
+task.spawn(function() while true do hStr.Color = rgb; mStr.Color = rgb; task.wait() end end)
+
+-- [Здесь идет весь остальной код из V32: кнопки, функции, ESP, Аим, Хитбоксы...]
+-- (Весь функционал сохранен полностью)
 
 local Grid = Instance.new("UIGridLayout", Main)
-Grid.CellSize = UDim2.new(0, 85, 0, 30); Grid.CellPadding = UDim2.new(0, 3, 0, 5)
-Grid.HorizontalAlignment = "Center"; Grid.VerticalAlignment = "Center"
+Grid.CellSize = UDim2.new(0, 85, 0, 30); Grid.CellPadding = UDim2.new(0, 3, 0, 5); Grid.HorizontalAlignment = "Center"; Grid.VerticalAlignment = "Center"
 
 local function btn(t, color)
-    local b = Instance.new("TextButton", Main)
-    b.BackgroundColor3 = color or Color3.fromRGB(30, 30, 30)
-    b.TextColor3 = Color3.new(1,1,1)
-    b.Text = t; b.Font = "SourceSansBold"; b.TextSize = 10
-    Instance.new("UICorner", b); return b
+    local b = Instance.new("TextButton", Main); b.BackgroundColor3 = color or Color3.fromRGB(30, 30, 30); b.TextColor3 = Color3.new(1,1,1); b.Text = t; b.Font = "SourceSansBold"; b.TextSize = 10; Instance.new("UICorner", b); return b
 end
 
--- Переменные
 local ws, jp, aim, hit, esp, espInfo, trac, noclip, light = 16, 50, false, false, false, false, false, false, false
+local sBtn = btn("- SPD: 16 +"); local jBtn = btn("- JMP: 50 +"); local aBtn = btn("AIM: OFF"); local hiBtn = btn("HIT: OFF"); local eBtn = btn("ESP: OFF"); local eiBtn = btn("INFO: OFF"); local tBtn = btn("LINE: OFF"); local nBtn = btn("NOCLIP: OFF"); local lBtn = btn("LIGHT: OFF"); local iBtn = btn("INVIZ"); local adiBtn = btn("ADIDAS", Color3.fromRGB(0, 85, 255)); local emoBtn = btn("EMOTE", Color3.fromRGB(255, 0, 127))
 
--- Кнопки
-local sBtn = btn("- SPD: 16 +")
-local jBtn = btn("- JMP: 50 +")
-local aBtn = btn("AIM: OFF")
-local hiBtn = btn("HIT: OFF")
-local eBtn = btn("ESP: OFF")
-local eiBtn = btn("INFO: OFF") -- НОВАЯ КНОПКА
-local tBtn = btn("LINE: OFF")
-local nBtn = btn("NOCLIP: OFF")
-local lBtn = btn("LIGHT: OFF")
-local iBtn = btn("INVIZ")
-local adiBtn = btn("ADIDAS", Color3.fromRGB(0, 85, 255))
-local emoBtn = btn("EMOTE", Color3.fromRGB(255, 0, 127))
-
--- Логика переключателей
 hBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
 aBtn.MouseButton1Click:Connect(function() aim = not aim; aBtn.Text = aim and "AIM: ON" or "AIM: OFF" end)
 eBtn.MouseButton1Click:Connect(function() esp = not esp; eBtn.Text = esp and "ESP: ON" or "ESP: OFF" end)
@@ -88,26 +111,18 @@ eiBtn.MouseButton1Click:Connect(function() espInfo = not espInfo; eiBtn.Text = e
 tBtn.MouseButton1Click:Connect(function() trac = not trac; tBtn.Text = trac and "LINE: ON" or "LINE: OFF" end)
 nBtn.MouseButton1Click:Connect(function() noclip = not noclip; nBtn.Text = noclip and "NOCLIP: ON" or "NOCLIP: OFF" end)
 lBtn.MouseButton1Click:Connect(function() light = not light; lBtn.Text = light and "LIGHT: ON" or "LIGHT: OFF" end)
-
-hiBtn.MouseButton1Click:Connect(function() 
-    hit = not hit
-    hiBtn.Text = hit and "HIT: ON" or "HIT: OFF"
-    if not hit then
-        for _, p in pairs(game.Players:GetPlayers()) do
-            if p ~= lplr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                p.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
-                p.Character.HumanoidRootPart.Transparency = 1
-            end
-        end
-    end
-end)
-
--- Загрузчики скриптов
+hiBtn.MouseButton1Click:Connect(function() hit = not hit; hiBtn.Text = hit and "HIT: ON" or "HIT: OFF"; if not hit then for _,p in pairs(game.Players:GetPlayers()) do if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then p.Character.HumanoidRootPart.Size = Vector3.new(2,2,1); p.Character.HumanoidRootPart.Transparency = 1 end end end end)
 iBtn.MouseButton1Click:Connect(function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end)
 adiBtn.MouseButton1Click:Connect(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Anzzckc/Pack-Animation-01/refs/heads/main/PackAdidasAnimation%20.lua"))() end)
 emoBtn.MouseButton1Click:Connect(function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-7yd7-I-Emote-Script-48024"))() end)
 
--- Изменение Скорости/Прыжка
+-- Перетаскивание
+local d, ds, sp
+Main.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then d = true; ds = i.Position; sp = Main.Position end end)
+UserInputService.InputChanged:Connect(function(i) if d and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local del = i.Position - ds; Main.Position = UDim2.new(sp.X.Scale, sp.X.Offset + del.X, sp.Y.Scale, sp.Y.Offset + del.Y) end end)
+UserInputService.InputEnded:Connect(function() d = false end)
+
+-- Функции SPD/JMP
 local function valCh(button, val, label, min)
     local mX = UserInputService:GetMouseLocation().X
     local nV = (mX < button.AbsolutePosition.X + (button.AbsoluteSize.X / 2)) and math.max(min, val - 10) or val + 10
@@ -117,86 +132,52 @@ end
 sBtn.MouseButton1Click:Connect(function() ws = valCh(sBtn, ws, "SPD", 16) end)
 jBtn.MouseButton1Click:Connect(function() jp = valCh(jBtn, jp, "JMP", 0) end)
 
--- NOCLIP и Хитбоксы
-RunService.Stepped:Connect(function()
-    if lplr.Character then
-        for _, v in pairs(lplr.Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = not noclip end
-        end
-    end
-end)
+-- NOCLIP
+RunService.Stepped:Connect(function() if lplr.Character then for _,v in pairs(lplr.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = not noclip end end end end)
 
+-- ХИТБОКСЫ И СВЕТ
 task.spawn(function()
     while task.wait(0.1) do
         if light then Lighting.Brightness = 2; Lighting.ClockTime = 14; Lighting.GlobalShadows = false end
-        if hit then
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if p ~= lplr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local hrp = p.Character.HumanoidRootPart
-                    hrp.Size = Vector3.new(15,15,15)
-                    hrp.Transparency = 0.6
-                    hrp.Color = rgb
-                    hrp.CanCollide = false
-                end
-            end
-        end
+        if hit then for _,p in pairs(game.Players:GetPlayers()) do if p ~= lplr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then local hrp = p.Character.HumanoidRootPart; hrp.Size = Vector3.new(15,15,15); hrp.Transparency = 0.6; hrp.Color = rgb; hrp.CanCollide = false end end end
     end
 end)
 
--- Улучшенный ESP
+-- ESP С ИНФОЙ
 local function createESP(p)
-    local box = Drawing.new("Square")
-    box.Thickness = 1; box.Filled = false; box.Visible = false
-    local info = Drawing.new("Text")
-    info.Size = 14; info.Center = true; info.Outline = true; info.Visible = false
-    local line = Drawing.new("Line")
-    line.Thickness = 1; line.Visible = false
-
+    local box = Drawing.new("Square"); box.Thickness = 1; box.Filled = false; box.Visible = false
+    local info = Drawing.new("Text"); info.Size = 14; info.Center = true; info.Outline = true; info.Visible = false
+    local line = Drawing.new("Line"); line.Thickness = 1; line.Visible = false
     RunService.RenderStepped:Connect(function()
         if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p ~= lplr and p.Character.Humanoid.Health > 0 then
             local rPos, on = camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
             if on then
                 if esp then
-                    local hPos = camera:WorldToViewportPoint(p.Character.Head.Position)
-                    local lPos = camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0))
-                    box.Size = Vector2.new(2000 / rPos.Z, hPos.Y - lPos.Y)
-                    box.Position = Vector2.new(rPos.X - box.Size.X / 2, rPos.Y - box.Size.Y / 2)
-                    box.Color = rgb; box.Visible = true
+                    local hPos = camera:WorldToViewportPoint(p.Character.Head.Position); local lPos = camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position - Vector3.new(0,3,0))
+                    box.Size = Vector2.new(2000/rPos.Z, hPos.Y-lPos.Y); box.Position = Vector2.new(rPos.X-box.Size.X/2, rPos.Y-box.Size.Y/2); box.Color = rgb; box.Visible = true
                 else box.Visible = false end
-
-                if espInfo then -- Проверка кнопки INFO
-                    local dist = math.floor((lplr.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude)
-                    info.Text = p.Name .. " [" .. dist .. "m]"
-                    info.Position = Vector2.new(rPos.X, rPos.Y - (box.Size.Y / 2) - 15)
-                    info.Color = Color3.new(1,1,1); info.Visible = true
+                if espInfo then
+                    info.Text = p.Name.." ["..math.floor((lplr.Character.HumanoidRootPart.Position-p.Character.HumanoidRootPart.Position).Magnitude).."m]"; info.Position = Vector2.new(rPos.X, rPos.Y-(box.Size.Y/2)-15); info.Color = Color3.new(1,1,1); info.Visible = true
                 else info.Visible = false end
-
-                if trac then
-                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-                    line.To = Vector2.new(rPos.X, rPos.Y); line.Color = rgb; line.Visible = true
-                else line.Visible = false end
+                if trac then line.From = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2); line.To = Vector2.new(rPos.X, rPos.Y); line.Color = rgb; line.Visible = true else line.Visible = false end
             else box.Visible = false; info.Visible = false; line.Visible = false end
         else box.Visible = false; info.Visible = false; line.Visible = false end
     end)
 end
-for _, p in pairs(game.Players:GetPlayers()) do createESP(p) end
+for _,p in pairs(game.Players:GetPlayers()) do createESP(p) end
 game.Players.PlayerAdded:Connect(createESP)
 
--- AIM и SPEED
+-- АИМ И СКОРОСТЬ (Final)
 RunService.RenderStepped:Connect(function()
     if aim then
         local t, d = nil, 250
-        for _, v in pairs(game.Players:GetPlayers()) do
+        for _,v in pairs(game.Players:GetPlayers()) do
             if v ~= lplr and v.Character and v.Character:FindFirstChild("Head") and v.Character.Humanoid.Health > 0 then
                 local p, on = camera:WorldToViewportPoint(v.Character.Head.Position)
-                if on and (Vector2.new(p.X, p.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude < d then
-                    d = (Vector2.new(p.X, p.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude; t = v
-                end
+                if on and (Vector2.new(p.X,p.Y)-Vector2.new(camera.ViewportSize.X/2,camera.ViewportSize.Y/2)).Magnitude < d then d = (Vector2.new(p.X,p.Y)-Vector2.new(camera.ViewportSize.X/2,camera.ViewportSize.Y/2)).Magnitude; t = v end
             end
         end
         if t then camera.CFrame = CFrame.new(camera.CFrame.Position, t.Character.Head.Position) end
     end
-    if lplr.Character and lplr.Character:FindFirstChild("Humanoid") then
-        lplr.Character.Humanoid.WalkSpeed = ws; lplr.Character.Humanoid.JumpPower = jp
-    end
+    if lplr.Character and lplr.Character:FindFirstChild("Humanoid") then lplr.Character.Humanoid.WalkSpeed = ws; lplr.Character.Humanoid.JumpPower = jp end
 end)
