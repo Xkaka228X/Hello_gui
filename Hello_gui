@@ -1,5 +1,5 @@
 --[[ 
-    RGB ULTIMATE V2.3.1 FIXED (Noclip Fix + RGB ESP Menu + Dragging Fix)
+    RGB ULTIMATE V2.3.2 FIXED (Full Screen Intro + Noclip Fix + Dragging Fix)
 ]]
 
 local lplr = game.Players.LocalPlayer
@@ -10,26 +10,30 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 ---------------------------------------------------------
--- 1. СЕКЦИЯ INTRO (ЗАСТАВКА - 5 СЕКУНД)
+-- 1. СЕКЦИЯ INTRO (УЛУЧШЕННЫЙ ОГРОМНЫЙ ФОН)
 ---------------------------------------------------------
 local introGui = Instance.new("ScreenGui")
 introGui.Name = "IntroSystem"
 introGui.Parent = CoreGui
 introGui.DisplayOrder = 999
+introGui.IgnoreGuiInset = true -- Игнорировать полоску сверху от Роблокса
 
 local background = Instance.new("Frame")
-background.Size = UDim2.new(1, 0, 1, 0)
+-- Сделали размер 300% от экрана (3, 0, 3, 0) и центрировали (-1, 0, -1, 0)
+background.Size = UDim2.new(3, 0, 3, 0)
+background.Position = UDim2.new(-1, 0, -1, 0)
 background.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 background.BorderSizePixel = 0
 background.Parent = introGui
 
 local helloLabel = Instance.new("TextLabel")
 helloLabel.Size = UDim2.new(1, 0, 1, 0)
+helloLabel.Position = UDim2.new(0, 0, 0, 0) -- Текст в центре огромного фрейма
 helloLabel.BackgroundTransparency = 1
 helloLabel.Text = "HELLO"
 helloLabel.TextColor3 = Color3.new(1, 1, 1)
 helloLabel.Font = Enum.Font.SourceSansBold
-helloLabel.TextSize = 100
+helloLabel.TextSize = 120 -- Чуть увеличил размер текста
 helloLabel.TextTransparency = 1
 helloLabel.Parent = background
 
@@ -66,7 +70,7 @@ task.spawn(pcall, function() loadstring(game:HttpGet("https://rawscripts.net/raw
 task.spawn(pcall, function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end)
 
 ---------------------------------------------------------
--- 3. ОСНОВНОЙ UI
+-- 3. ОСНОВНОЙ UI (МЕНЮ)
 ---------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "RGB_ULTIMATE_V20"
@@ -79,7 +83,6 @@ MainFrame.BackgroundTransparency = 0.2
 MainFrame.Position = UDim2.new(0.5, -305, 0.05, 0)
 MainFrame.Size = UDim2.new(0, 610, 0, 50)
 MainFrame.Active = true
-MainFrame.Draggable = false -- Мы используем свою логику перетаскивания ниже
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
@@ -113,10 +116,22 @@ UIListLayoutEsp.Padding = UDim.new(0, 5)
 UIListLayoutEsp.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIListLayoutEsp.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- Переменные
+-- Логика перетаскивания и RGB
+local currentRGBColor = Color3.new(1,1,1)
+task.spawn(function()
+    while true do
+        for i = 0, 1, 0.005 do
+            currentRGBColor = Color3.fromHSV(i, 0.8, 1)
+            UIStrokeFrame.Color = currentRGBColor
+            UIStrokeEsp.Color = currentRGBColor
+            task.wait()
+        end
+    end
+end)
+
+-- Переменные функционала
 local menuVisible, espEnabled, espNames, espDistance = true, false, true, true
 local aimbotEnabled, noclipEnabled, xrayEnabled = false, false, false
-local currentRGBColor = Color3.new(1,1,1)
 local visualData, xrayStorage = {}, {}
 
 local fovCircle = Drawing.new("Circle")
@@ -137,10 +152,11 @@ local function createButton(text, parent, sizeX)
     return btn
 end
 
--- Кнопка H (теперь она в UIListLayout вместе со всеми)
+-- Кнопки
 local ToggleMenuBtn = createButton("H", MainFrame, 40)
 local UIStrokeH = Instance.new("UIStroke", ToggleMenuBtn)
 UIStrokeH.Thickness = 2
+task.spawn(function() while true do UIStrokeH.Color = currentRGBColor task.wait() end end)
 
 local espMainBtn = createButton("ESP МЕНЮ", MainFrame)
 local aimBtn = createButton("AIM: ВЫКЛ", MainFrame)
@@ -153,70 +169,30 @@ local espNamesBtn = createButton("НИКИ: ВКЛ", EspSettingsFrame, 115)
 local espDistBtn = createButton("ДИСТ: ВКЛ", EspSettingsFrame, 115)
 
 ---------------------------------------------------------
--- 4. ЛОГИКА (ПЕРЕТАСКИВАНИЕ И RGB)
+-- 4. ПЕРЕТАСКИВАНИЕ (ИСПРАВЛЕНО)
 ---------------------------------------------------------
-
--- ИСПРАВЛЕННОЕ ПЕРЕТАСКИВАНИЕ ДЛЯ ВСЕГО МЕНЮ
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
+local dragging, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
+        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
     end
 end)
-
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
--- RGB
-task.spawn(function()
-    while true do
-        for i = 0, 1, 0.005 do
-            currentRGBColor = Color3.fromHSV(i, 0.8, 1)
-            UIStrokeH.Color = currentRGBColor
-            UIStrokeFrame.Color = currentRGBColor
-            UIStrokeEsp.Color = currentRGBColor
-            fovCircle.Color = currentRGBColor
-            task.wait()
-        end
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
 ---------------------------------------------------------
--- 5. ФУНКЦИОНАЛ КНОПОК
+-- 5. ФУНКЦИОНАЛ
 ---------------------------------------------------------
 
 ToggleMenuBtn.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
-    espMainBtn.Visible = menuVisible
-    aimBtn.Visible = menuVisible
-    noclipBtn.Visible = menuVisible
-    xrayBtn.Visible = menuVisible
-    brightBtn.Visible = menuVisible
+    espMainBtn.Visible, aimBtn.Visible, noclipBtn.Visible, xrayBtn.Visible, brightBtn.Visible = menuVisible, menuVisible, menuVisible, menuVisible, menuVisible
     EspSettingsFrame.Visible = false
-    -- Сворачиваем панель до кнопки H
     MainFrame.Size = menuVisible and UDim2.new(0, 610, 0, 50) or UDim2.new(0, 60, 0, 50)
 end)
 
@@ -269,6 +245,7 @@ end)
 -- Рендер ESP и AIM
 RunService.RenderStepped:Connect(function()
     fovCircle.Position = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    fovCircle.Color = currentRGBColor
     
     for _, player in pairs(game.Players:GetPlayers()) do
         if player == lplr then continue end
@@ -301,3 +278,4 @@ RunService.RenderStepped:Connect(function()
         if target then camera.CFrame = camera.CFrame:Lerp(CFrame.new(camera.CFrame.Position, target.Character.Head.Position), 0.15) end
     end
 end)
+
