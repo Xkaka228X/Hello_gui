@@ -4,21 +4,27 @@ local LocalPlayer = Players.LocalPlayer
 local FILE_NAME = "📌 friends 👥.txt"
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FriendSystem_Final_Fixed"
+ScreenGui.Name = "FriendSystem_Final_Fix_V9"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.DisplayOrder = 999 -- Поверх всего
 ScreenGui.Parent = game:GetService("CoreGui")
 
--- Функция Drag (Работает ТОЛЬКО за указанную часть)
+local clickSystemEnabled = true
+local currentLanguage = "RU"
+local selectedPlayer = nil
+
+local lang = {
+    RU = { title = "👥 МЕНЕДЖЕР", clickOn = "Клики: ВКЛ", clickOff = "Клики: ВЫКЛ", save = "📌 Сохранить", close = "❌ Закрыть", delete = "Удалить", player = "Игрок", langBtn = "Язык: RU" },
+    EN = { title = "👥 MANAGER", clickOn = "Click: ON", clickOff = "Click: OFF", save = "📌 Save", close = "❌ Close", delete = "Delete", player = "Player", langBtn = "Lang: EN" }
+}
+
+-- Функция Drag
 local function makeDraggable(frame, dragPart)
     local dragging, dragInput, dragStart, startPos
     dragPart.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
+            dragging = true; dragStart = input.Position; startPos = frame.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
@@ -29,178 +35,133 @@ local function makeDraggable(frame, dragPart)
     end)
 end
 
--- 1. КНОПКА ОТКРЫТИЯ
+-- КНОПКА ОТКРЫТИЯ
 local OpenListBtn = Instance.new("TextButton")
-OpenListBtn.Size = UDim2.new(0, 50, 0, 50)
-OpenListBtn.Position = UDim2.new(0, 20, 0.5, -25)
-OpenListBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-OpenListBtn.Text = "👥"
-OpenListBtn.TextColor3 = Color3.new(1,1,1)
-OpenListBtn.TextSize = 25
-OpenListBtn.Parent = ScreenGui
+OpenListBtn.Size = UDim2.new(0, 50, 0, 50); OpenListBtn.Position = UDim2.new(0, 20, 0.5, -25); OpenListBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+OpenListBtn.Text = "👥"; OpenListBtn.TextColor3 = Color3.new(1,1,1); OpenListBtn.TextSize = 25; OpenListBtn.Parent = ScreenGui
 Instance.new("UICorner", OpenListBtn).CornerRadius = UDim.new(1, 0)
 makeDraggable(OpenListBtn, OpenListBtn)
 
--- 2. ОКНО СПИСКА
+-- ОКНО СПИСКА
 local FriendsListFrame = Instance.new("Frame")
-FriendsListFrame.Size = UDim2.new(0, 320, 0, 400)
-FriendsListFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
-FriendsListFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-FriendsListFrame.Visible = false
-FriendsListFrame.Parent = ScreenGui
+FriendsListFrame.Size = UDim2.new(0, 330, 0, 150); FriendsListFrame.Position = UDim2.new(0.5, -165, 0.5, -100)
+FriendsListFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15); FriendsListFrame.Visible = false; FriendsListFrame.Parent = ScreenGui
 Instance.new("UICorner", FriendsListFrame)
 
 local ListHeader = Instance.new("TextLabel")
-ListHeader.Size = UDim2.new(1, 0, 0, 45)
-ListHeader.Text = "👥 ДРУЗЬЯ (Тащи за это)"
-ListHeader.TextColor3 = Color3.new(1,1,1)
-ListHeader.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-ListHeader.Parent = FriendsListFrame
-Instance.new("UICorner", ListHeader)
-makeDraggable(FriendsListFrame, ListHeader)
+ListHeader.Size = UDim2.new(1, 0, 0, 40); ListHeader.BackgroundColor3 = Color3.fromRGB(40, 40, 40); ListHeader.TextColor3 = Color3.new(1,1,1); ListHeader.Font = Enum.Font.GothamBold; ListHeader.Parent = FriendsListFrame
+Instance.new("UICorner", ListHeader); makeDraggable(FriendsListFrame, ListHeader)
+
+local ToggleClickBtn = Instance.new("TextButton")
+ToggleClickBtn.Size = UDim2.new(0, 150, 0, 30); ToggleClickBtn.Position = UDim2.new(0, 10, 0, 50); ToggleClickBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+ToggleClickBtn.TextColor3 = Color3.new(1,1,1); ToggleClickBtn.Font = Enum.Font.GothamMedium; ToggleClickBtn.Parent = FriendsListFrame; Instance.new("UICorner", ToggleClickBtn)
+
+local LangBtn = Instance.new("TextButton")
+LangBtn.Size = UDim2.new(0, 150, 0, 30); LangBtn.Position = UDim2.new(1, -160, 0, 50); LangBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+LangBtn.TextColor3 = Color3.new(1,1,1); LangBtn.Font = Enum.Font.GothamMedium; LangBtn.Parent = FriendsListFrame; Instance.new("UICorner", LangBtn)
 
 local Scroll = Instance.new("ScrollingFrame")
-Scroll.Size = UDim2.new(1, -20, 1, -65)
-Scroll.Position = UDim2.new(0, 10, 0, 55)
-Scroll.BackgroundTransparency = 1
-Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.ScrollBarThickness = 2
-Scroll.Parent = FriendsListFrame
-Instance.new("UIListLayout", Scroll).Padding = UDim.new(0, 6)
+Scroll.Size = UDim2.new(1, -20, 1, -100); Scroll.Position = UDim2.new(0, 10, 0, 90); Scroll.BackgroundTransparency = 1
+Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y; Scroll.ScrollBarThickness = 2; Scroll.Parent = FriendsListFrame
+local ListLayout = Instance.new("UIListLayout", Scroll); ListLayout.Padding = UDim.new(0, 6)
 
--- 3. МИНИ-МЕНЮ (ТО САМОЕ)
+-- МАСШТАБИРОВАНИЕ
+local function resizeMenu()
+    local contentHeight = ListLayout.AbsoluteContentSize.Y
+    local newHeight = math.clamp(contentHeight + 110, 150, 450)
+    FriendsListFrame.Size = UDim2.new(0, 330, 0, newHeight)
+end
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(resizeMenu)
+
+-- МИНИ-МЕНЮ (ПЕРЕРАБОТАНО)
 local InteractionMenu = Instance.new("Frame")
-InteractionMenu.Size = UDim2.new(0, 180, 0, 130)
-InteractionMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-InteractionMenu.Visible = false
-InteractionMenu.ZIndex = 100
-InteractionMenu.Parent = ScreenGui
+InteractionMenu.Size = UDim2.new(0, 180, 0, 130); InteractionMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 35); InteractionMenu.Visible = false
+InteractionMenu.ZIndex = 100; InteractionMenu.Parent = ScreenGui
 Instance.new("UICorner", InteractionMenu)
 
--- Зона перетаскивания мини-меню (только верхняя полоска)
+-- Заголовок для перетаскивания
 local DragBar = Instance.new("Frame")
-DragBar.Size = UDim2.new(1, 0, 0, 35)
-DragBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-DragBar.Parent = InteractionMenu
+DragBar.Size = UDim2.new(1, 0, 0, 35); DragBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50); DragBar.ZIndex = 101; DragBar.Parent = InteractionMenu
 Instance.new("UICorner", DragBar)
 
 local PlayerTitle = Instance.new("TextLabel")
-PlayerTitle.Size = UDim2.new(1, 0, 1, 0)
-PlayerTitle.Text = "Игрок"
-PlayerTitle.TextColor3 = Color3.new(1,1,1)
-PlayerTitle.BackgroundTransparency = 1
-PlayerTitle.Font = Enum.Font.GothamBold
-PlayerTitle.Parent = DragBar
-makeDraggable(InteractionMenu, DragBar) -- ТАСКАТЬ МОЖНО ТОЛЬКО ЗА ВЕРХ
+PlayerTitle.Size = UDim2.new(1, 0, 1, 0); PlayerTitle.TextColor3 = Color3.new(1,1,1); PlayerTitle.BackgroundTransparency = 1; PlayerTitle.ZIndex = 102; PlayerTitle.Parent = DragBar
+makeDraggable(InteractionMenu, DragBar)
 
--- Кнопки (Они ВНЕ DragBar, поэтому будут работать)
+-- Контейнер для кнопок (чтобы Drag не мешал)
+local BtnContainer = Instance.new("Frame")
+BtnContainer.Size = UDim2.new(1, 0, 1, -35); BtnContainer.Position = UDim2.new(0, 0, 0, 35); BtnContainer.BackgroundTransparency = 1; BtnContainer.ZIndex = 105; BtnContainer.Parent = InteractionMenu
+
 local SaveBtn = Instance.new("TextButton")
-SaveBtn.Size = UDim2.new(0, 160, 0, 35)
-SaveBtn.Position = UDim2.new(0, 10, 0, 45)
-SaveBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-SaveBtn.Text = "📌 Сохранить"
-SaveBtn.TextColor3 = Color3.new(1,1,1)
-SaveBtn.Font = Enum.Font.Gotham
-SaveBtn.Parent = InteractionMenu
-Instance.new("UICorner", SaveBtn)
+SaveBtn.Size = UDim2.new(0, 160, 0, 35); SaveBtn.Position = UDim2.new(0, 10, 0, 10); SaveBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+SaveBtn.TextColor3 = Color3.new(1,1,1); SaveBtn.ZIndex = 110; SaveBtn.Parent = BtnContainer; Instance.new("UICorner", SaveBtn)
 
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 160, 0, 35)
-CloseBtn.Position = UDim2.new(0, 10, 0, 85)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
-CloseBtn.Text = "❌ Закрыть"
-CloseBtn.TextColor3 = Color3.new(1,1,1)
-CloseBtn.Font = Enum.Font.Gotham
-CloseBtn.Parent = InteractionMenu
-Instance.new("UICorner", CloseBtn)
+CloseBtn.Size = UDim2.new(0, 160, 0, 35); CloseBtn.Position = UDim2.new(0, 10, 0, 50); CloseBtn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+CloseBtn.TextColor3 = Color3.new(1,1,1); CloseBtn.ZIndex = 110; CloseBtn.Parent = BtnContainer; Instance.new("UICorner", CloseBtn)
 
--- ЛОГИКА
+local function refreshLang()
+    local t = lang[currentLanguage]
+    ListHeader.Text = t.title; ToggleClickBtn.Text = clickSystemEnabled and t.clickOn or t.clickOff
+    ToggleClickBtn.BackgroundColor3 = clickSystemEnabled and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
+    LangBtn.Text = t.langBtn; SaveBtn.Text = t.save; CloseBtn.Text = t.close
+    if not InteractionMenu.Visible then PlayerTitle.Text = t.player end
+end
+
 local function updateList()
     for _, v in pairs(Scroll:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
+    local t = lang[currentLanguage]
     
-    -- Друзья из Roblox
     pcall(function()
         local friends = Players:GetFriendsAsync(LocalPlayer.UserId)
-        while true do
-            for _, item in ipairs(friends:GetCurrentPage()) do
-                local Entry = Instance.new("Frame")
-                Entry.Size = UDim2.new(1, 0, 0, 50)
-                Entry.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-                Entry.Parent = Scroll
-                Instance.new("UICorner", Entry)
-
-                local Img = Instance.new("ImageLabel")
-                Img.Size = UDim2.new(0, 40, 0, 40)
-                Img.Position = UDim2.new(0, 5, 0.5, -20)
-                Img.Image = "rbxthumb://type=AvatarHeadShot&id="..item.Id.."&w=150&h=150"
-                Img.Parent = Entry
-                Instance.new("UICorner", Img).CornerRadius = UDim.new(1,0)
-
-                local Dot = Instance.new("Frame")
-                Dot.Size = UDim2.new(0, 10, 0, 10)
-                Dot.Position = UDim2.new(0, 35, 0, 35)
-                Dot.BackgroundColor3 = Players:FindFirstChild(item.Username) and Color3.new(0, 1, 0) or Color3.new(0.6, 0.6, 0.6)
-                Dot.Parent = Entry
-                Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
-
-                local Txt = Instance.new("TextLabel")
-                Txt.Size = UDim2.new(1, -60, 1, 0); Txt.Position = UDim2.new(0, 55, 0, 0)
-                Txt.Text = "⭐ " .. item.Username; Txt.TextColor3 = Color3.new(1, 0.8, 0); Txt.BackgroundTransparency = 1; Txt.TextXAlignment = 0; Txt.Parent = Entry
-            end
-            if friends.IsFinished then break end
-            friends:AdvanceToNextPageAsync()
+        for _, item in ipairs(friends:GetCurrentPage()) do
+            local Entry = Instance.new("Frame")
+            Entry.Size = UDim2.new(1, 0, 0, 50); Entry.BackgroundColor3 = Color3.fromRGB(45, 45, 45); Entry.Parent = Scroll; Instance.new("UICorner", Entry)
+            local Img = Instance.new("ImageLabel")
+            Img.Size = UDim2.new(0, 40, 0, 40); Img.Position = UDim2.new(0, 5, 0.5, -20); Img.Image = "rbxthumb://type=AvatarHeadShot&id="..item.Id.."&w=150&h=150"; Img.Parent = Entry; Instance.new("UICorner", Img).CornerRadius = UDim.new(1,0)
+            local Dot = Instance.new("Frame")
+            Dot.Size = UDim2.new(0, 10, 0, 10); Dot.Position = UDim2.new(0, 35, 0, 35); Dot.BackgroundColor3 = Players:FindFirstChild(item.Username) and Color3.new(0, 1, 0) or Color3.new(0.6, 0.6, 0.6); Dot.Parent = Entry; Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
+            local Txt = Instance.new("TextLabel")
+            Txt.Size = UDim2.new(1, -60, 1, 0); Txt.Position = UDim2.new(0, 55, 0, 0); Txt.Text = "⭐ " .. item.Username; Txt.TextColor3 = Color3.new(1, 0.8, 0); Txt.BackgroundTransparency = 1; Txt.TextXAlignment = 0; Txt.Parent = Entry
         end
     end)
 
-    -- Сохраненные вручную
     if isfile(FILE_NAME) then
         for line in readfile(FILE_NAME):gmatch("[^\r\n]+") do
             local name, id = line:match("([^:]+):(%d+)")
             if name then
                 local Entry = Instance.new("Frame")
-                Entry.Size = UDim2.new(1, 0, 0, 50)
-                Entry.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-                Entry.Parent = Scroll
-                Instance.new("UICorner", Entry)
-
+                Entry.Size = UDim2.new(1, 0, 0, 50); Entry.BackgroundColor3 = Color3.fromRGB(55, 55, 55); Entry.Parent = Scroll; Instance.new("UICorner", Entry)
                 local Img = Instance.new("ImageLabel")
-                Img.Size = UDim2.new(0, 40, 0, 40); Img.Position = UDim2.new(0, 5, 0.5, -20)
-                Img.Image = "rbxthumb://type=AvatarHeadShot&id="..(id or 0).."&w=150&h=150"; Img.Parent = Entry
-                Instance.new("UICorner", Img).CornerRadius = UDim.new(1,0)
-
+                Img.Size = UDim2.new(0, 40, 0, 40); Img.Position = UDim2.new(0, 5, 0.5, -20); Img.Image = "rbxthumb://type=AvatarHeadShot&id="..(id or 0).."&w=150&h=150"; Img.Parent = Entry; Instance.new("UICorner", Img).CornerRadius = UDim.new(1,0)
                 local Dot = Instance.new("Frame")
-                Dot.Size = UDim2.new(0, 10, 0, 10); Dot.Position = UDim2.new(0, 35, 0, 35)
-                Dot.BackgroundColor3 = Players:FindFirstChild(name) and Color3.new(0, 1, 0) or Color3.new(0.6, 0.6, 0.6)
-                Dot.Parent = Entry; Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
-
+                Dot.Size = UDim2.new(0, 10, 0, 10); Dot.Position = UDim2.new(0, 35, 0, 35); Dot.BackgroundColor3 = Players:FindFirstChild(name) and Color3.new(0, 1, 0) or Color3.new(0.6, 0.6, 0.6); Dot.Parent = Entry; Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
                 local Txt = Instance.new("TextLabel")
-                Txt.Size = UDim2.new(1, -100, 1, 0); Txt.Position = UDim2.new(0, 55, 0, 0)
-                Txt.Text = name; Txt.TextColor3 = Color3.new(1,1,1); Txt.BackgroundTransparency = 1; Txt.TextXAlignment = 0; Txt.Parent = Entry
-                
+                Txt.Size = UDim2.new(1, -135, 1, 0); Txt.Position = UDim2.new(0, 55, 0, 0); Txt.Text = name; Txt.TextColor3 = Color3.new(1,1,1); Txt.BackgroundTransparency = 1; Txt.TextXAlignment = 0; Txt.Parent = Entry
                 local Del = Instance.new("TextButton")
-                Del.Size = UDim2.new(0, 30, 0, 30); Del.Position = UDim2.new(1, -35, 0.5, -15); Del.Text = "❌"; Del.BackgroundColor3 = Color3.new(0.7, 0, 0); Del.TextColor3 = Color3.new(1,1,1); Del.Parent = Entry
-                Instance.new("UICorner", Del)
+                Del.Size = UDim2.new(0, 80, 0, 30); Del.Position = UDim2.new(1, -85, 0.5, -15); Del.BackgroundColor3 = Color3.fromRGB(150, 0, 0); Del.Text = t.delete; Del.TextColor3 = Color3.new(1,1,1); Del.Parent = Entry; Instance.new("UICorner", Del)
                 Del.MouseButton1Click:Connect(function()
-                    Entry:Destroy()
-                    -- Логика удаления из файла...
+                    local lines = {}
+                    for l in readfile(FILE_NAME):gmatch("[^\r\n]+") do if l ~= line then table.insert(lines, l) end end
+                    writefile(FILE_NAME, table.concat(lines, "\n")); Entry:Destroy(); task.wait(0.1); resizeMenu()
                 end)
             end
         end
     end
 end
 
-local selectedPlayer = nil
+LangBtn.MouseButton1Click:Connect(function() currentLanguage = (currentLanguage == "RU") and "EN" or "RU"; refreshLang(); if FriendsListFrame.Visible then updateList() end end)
+ToggleClickBtn.MouseButton1Click:Connect(function() clickSystemEnabled = not clickSystemEnabled; refreshLang() end)
+
 UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then return end
+    if processed or not clickSystemEnabled then return end
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         local target = LocalPlayer:GetMouse().Target
         if target and target.Parent:FindFirstChild("Humanoid") then
             local p = Players:GetPlayerFromCharacter(target.Parent)
             if p and p ~= LocalPlayer then
-                selectedPlayer = p
-                PlayerTitle.Text = p.Name
-                InteractionMenu.Position = UDim2.new(0, input.Position.X, 0, input.Position.Y - 50)
-                InteractionMenu.Visible = true
+                selectedPlayer = p; PlayerTitle.Text = p.Name
+                InteractionMenu.Position = UDim2.new(0, input.Position.X, 0, input.Position.Y - 50); InteractionMenu.Visible = true
             end
         end
     end
@@ -210,12 +171,11 @@ SaveBtn.MouseButton1Click:Connect(function()
     if selectedPlayer then
         local data = selectedPlayer.Name .. ":" .. selectedPlayer.UserId
         local current = isfile(FILE_NAME) and readfile(FILE_NAME) or ""
-        if not current:find(selectedPlayer.Name) then
-            writefile(FILE_NAME, (current == "" and data or current .. "\n" .. data))
-        end
-        InteractionMenu.Visible = false
+        if not current:find(selectedPlayer.Name) then writefile(FILE_NAME, (current == "" and data or current .. "\n" .. data)) end
+        InteractionMenu.Visible = false; updateList()
     end
 end)
 
 CloseBtn.MouseButton1Click:Connect(function() InteractionMenu.Visible = false end)
 OpenListBtn.MouseButton1Click:Connect(function() FriendsListFrame.Visible = not FriendsListFrame.Visible if FriendsListFrame.Visible then updateList() end end)
+refreshLang()
