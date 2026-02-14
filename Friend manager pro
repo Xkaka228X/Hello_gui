@@ -178,7 +178,7 @@ local function updateList()
                 Txt.Text = name; Txt.TextColor3 = Color3.new(1,1,1); Txt.BackgroundTransparency = 1; Txt.TextXAlignment = 0; Txt.Parent = Entry
                 
                 local Del = Instance.new("TextButton")
-                Del.Size = UDim2.new(0, 30, 0, 30); Del.Position = UDim2.new(1, -35, 0.5, -15); Del.Text = "✕"; Del.BackgroundColor3 = Color3.new(0.7, 0, 0); Del.TextColor3 = Color3.new(1,1,1); Del.Parent = Entry
+                Del.Size = UDim2.new(0, 30, 0, 30); Del.Position = UDim2.new(1, -35, 0.5, -15); Del.Text = "❌"; Del.BackgroundColor3 = Color3.new(0.7, 0, 0); Del.TextColor3 = Color3.new(1,1,1); Del.Parent = Entry
                 Instance.new("UICorner", Del)
                 Del.MouseButton1Click:Connect(function()
                     Entry:Destroy()
