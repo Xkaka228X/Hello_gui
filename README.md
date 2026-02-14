@@ -190,11 +190,11 @@ local function CreateCard(s, parent, isSaved)
     act.Size = UDim2.new(0.15, 0, 0.7, 0)
     act.Position = UDim2.new(0.82, 0, 0.15, 0)
     act.BackgroundColor3 = isSaved and Theme.Danger or Theme.Secondary
-    act.Text = isSaved and "X" or "★"
+    act.Text = isSaved and "X" or "⭐"
     Instance.new("UICorner", act)
 
     act.MouseButton1Click:Connect(function()
-        if isSaved then SavedData[s.id] = nil f:Destroy() else SavedData[s.id] = s act.Text = "✔" end
+        if isSaved then SavedData[s.id] = nil f:Destroy() else SavedData[s.id] = s act.Text = "✅" end
         SaveToFile()
     end)
 end
