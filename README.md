@@ -5,7 +5,7 @@ local Players = game:GetService("Players")
 
 local PlaceId = game.PlaceId
 local JobId = game.JobId
-local FileName = "SavedServers_" .. PlaceId .. ".json"
+local FileName = "SavedServers_V6_" .. PlaceId .. ".json"
 
 -- === НАСТРОЙКИ И ТЕМЫ ===
 local Lang = "RU"
@@ -19,8 +19,8 @@ local Theme = {
 }
 
 local Phrases = {
-    RU = {Main = "🌐 СЕРВЕРЫ", Min = "МАЛО", Max = "МНОГО", Rand = "РАНДОМ", Refresh = "ОБНОВИТЬ", TabPub = "ОБЩИЕ", TabSave = "ИЗБРАННОЕ", Confirm = "ЗАЙТИ?", Yes = "ДА", No = "НЕТ"},
-    EN = {Main = "🌐 SERVERS", Min = "MIN", Max = "MAX", Rand = "RAND", Refresh = "REFRESH", TabPub = "PUBLIC", TabSave = "SAVED", Confirm = "JOIN?", Yes = "YES", No = "NO"}
+    RU = {Main = "🌐 СЕРВЕРЫ", Min = "МАЛО", Max = "МНОГО", Rand = "РАНДОМ", Refresh = "ОБНОВИТЬ", TabPub = "ОБЩИЕ", TabSave = "ИЗБРАННОЕ", Confirm = "ЗАЙТИ?", Yes = "ДА", No = "НЕТ", SaveCur = "💾 СОХРАНИТЬ ЭТОТ СЕРВЕР"},
+    EN = {Main = "🌐 SERVERS", Min = "MIN", Max = "MAX", Rand = "RAND", Refresh = "REFRESH", TabPub = "PUBLIC", TabSave = "SAVED", Confirm = "JOIN?", Yes = "YES", No = "NO", SaveCur = "💾 SAVE CURRENT SERVER"}
 }
 
 -- === СИСТЕМА СОХРАНЕНИЯ ===
@@ -36,8 +36,6 @@ LoadSaved()
 
 -- === ИНТЕРФЕЙС ===
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-ScreenGui.Name = "Gemini_Ultimate_Hub"
-
 local MainButton = Instance.new("TextButton", ScreenGui)
 MainButton.Size = UDim2.new(0, 130, 0, 45)
 MainButton.Position = UDim2.new(0.5, -65, 0.05, 0)
@@ -73,13 +71,18 @@ SavBtn.Position = UDim2.new(0.5, 0, 0, 0)
 SavBtn.Text = Phrases[Lang].TabSave
 SavBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 
--- ПАНЕЛЬ УПРАВЛЕНИЯ (Refresh, Lang, Sort, Rand)
-local Controls = Instance.new("Frame", Holder)
-Controls.Size = UDim2.new(1, 0, 0, 90)
-Controls.Position = UDim2.new(0, 0, 0, 40)
-Controls.BackgroundTransparency = 1
+-- ФРЕЙМЫ КОНТЕНТА
+local PubContent = Instance.new("Frame", Holder)
+PubContent.Size = UDim2.new(1, 0, 1, -40)
+PubContent.Position = UDim2.new(0, 0, 0, 40)
+PubContent.BackgroundTransparency = 1
 
-local RefreshBtn = Instance.new("TextButton", Controls)
+local SavContent = PubContent:Clone()
+SavContent.Parent = Holder
+SavContent.Visible = false
+
+-- ПАНЕЛЬ УПРАВЛЕНИЯ (Public)
+local RefreshBtn = Instance.new("TextButton", PubContent)
 RefreshBtn.Size = UDim2.new(0.7, -10, 0, 30)
 RefreshBtn.Position = UDim2.new(0, 10, 0, 5)
 RefreshBtn.BackgroundColor3 = Theme.Accent
@@ -89,40 +92,52 @@ RefreshBtn.TextColor3 = Theme.Text
 Instance.new("UICorner", RefreshBtn)
 
 local LangBtn = RefreshBtn:Clone()
-LangBtn.Parent = Controls
+LangBtn.Parent = PubContent
 LangBtn.Size = UDim2.new(0.3, -10, 0, 30)
 LangBtn.Position = UDim2.new(0.7, 5, 0, 5)
 LangBtn.BackgroundColor3 = Theme.Secondary
 LangBtn.Text = Lang
 
 local MinBtn = RefreshBtn:Clone()
-MinBtn.Parent = Controls
-MinBtn.Size = UDim2.new(0.31, 0, 0, 35)
+MinBtn.Parent = PubContent
+MinBtn.Size = UDim2.new(0.31, 0, 0, 30)
 MinBtn.Position = UDim2.new(0, 10, 0, 40)
 MinBtn.Text = Phrases[Lang].Min
 MinBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
 local MaxBtn = MinBtn:Clone()
-MaxBtn.Parent = Controls
+MaxBtn.Parent = PubContent
 MaxBtn.Position = UDim2.new(0.345, 10, 0, 40)
 MaxBtn.Text = Phrases[Lang].Max
 
 local RandBtn = MinBtn:Clone()
-RandBtn.Parent = Controls
+RandBtn.Parent = PubContent
 RandBtn.Position = UDim2.new(0.69, 10, 0, 40)
 RandBtn.Text = Phrases[Lang].Rand
 RandBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 120)
 
+-- ПАНЕЛЬ УПРАВЛЕНИЯ (Saved)
+local SaveCurrentBtn = Instance.new("TextButton", SavContent)
+SaveCurrentBtn.Size = UDim2.new(1, -20, 0, 35)
+SaveCurrentBtn.Position = UDim2.new(0, 10, 0, 5)
+SaveCurrentBtn.BackgroundColor3 = Theme.Success
+SaveCurrentBtn.Text = Phrases[Lang].SaveCur
+SaveCurrentBtn.TextColor3 = Theme.Main
+SaveCurrentBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", SaveCurrentBtn)
+
 -- СПИСКИ
-local PubScroll = Instance.new("ScrollingFrame", Holder)
-PubScroll.Size = UDim2.new(1, -10, 1, -140)
-PubScroll.Position = UDim2.new(0, 5, 0, 130)
+local PubScroll = Instance.new("ScrollingFrame", PubContent)
+PubScroll.Size = UDim2.new(1, -10, 1, -85)
+PubScroll.Position = UDim2.new(0, 5, 0, 80)
 PubScroll.BackgroundTransparency = 1
 Instance.new("UIListLayout", PubScroll).Padding = UDim.new(0, 5)
 
-local SavScroll = PubScroll:Clone()
-SavScroll.Parent = Holder
-SavScroll.Visible = false
+local SavScroll = Instance.new("ScrollingFrame", SavContent)
+SavScroll.Size = UDim2.new(1, -10, 1, -55)
+SavScroll.Position = UDim2.new(0, 5, 0, 50)
+SavScroll.BackgroundTransparency = 1
+Instance.new("UIListLayout", SavScroll).Padding = UDim.new(0, 5)
 
 -- ПОДТВЕРЖДЕНИЕ
 local ConfFrame = Instance.new("Frame", Holder)
@@ -173,7 +188,7 @@ local function CreateCard(s, parent, isSaved)
     local txt = Instance.new("TextLabel", f)
     txt.Size = UDim2.new(0.6, 0, 1, 0)
     txt.Position = UDim2.new(0, 10, 0, 0)
-    txt.Text = "👤 " .. s.playing .. "/" .. s.maxPlayers .. " | " .. (s.ping or "?") .. "ms"
+    txt.Text = "👤 " .. (s.playing or "?") .. "/" .. (s.maxPlayers or "?") .. " | " .. (s.ping or "?") .. "ms"
     txt.TextColor3 = Theme.Text
     txt.BackgroundTransparency = 1
     txt.TextXAlignment = Enum.TextXAlignment.Left
@@ -194,18 +209,26 @@ local function CreateCard(s, parent, isSaved)
     Instance.new("UICorner", act)
 
     act.MouseButton1Click:Connect(function()
-        if isSaved then SavedData[s.id] = nil f:Destroy() else SavedData[s.id] = s act.Text = "✅" end
+        if isSaved then SavedData[s.id] = nil f:Destroy() else SavedData[s.id] = s act.Text = "✔" end
         SaveToFile()
     end)
 end
 
-local function Render(mode)
+local function RenderPub(mode)
     PubScroll:ClearAllChildren()
     Instance.new("UIListLayout", PubScroll).Padding = UDim.new(0, 5)
     if mode == "Min" then table.sort(allServers, function(a,b) return a.playing < b.playing end)
     elseif mode == "Max" then table.sort(allServers, function(a,b) return a.playing > b.playing end) end
     for _, s in pairs(allServers) do CreateCard(s, PubScroll, false) end
     PubScroll.CanvasSize = UDim2.new(0,0,0,#allServers * 50)
+end
+
+local function RenderSaved()
+    SavScroll:ClearAllChildren()
+    Instance.new("UIListLayout", SavScroll).Padding = UDim.new(0, 5)
+    local count = 0
+    for id, s in pairs(SavedData) do count = count + 1 CreateCard(s, SavScroll, true) end
+    SavScroll.CanvasSize = UDim2.new(0,0,0,count * 50)
 end
 
 local function Fetch()
@@ -216,28 +239,29 @@ local function Fetch()
     if success then for _, s in pairs(result) do if s.id ~= JobId then table.insert(allServers, s) end end end
 end
 
-local function RenderSaved()
-    SavScroll:ClearAllChildren()
-    Instance.new("UIListLayout", SavScroll).Padding = UDim.new(0, 5)
-    local count = 0
-    for _, s in pairs(SavedData) do count = count + 1 CreateCard(s, SavScroll, true) end
-    SavScroll.CanvasSize = UDim2.new(0,0,0,count * 50)
-end
-
 -- КНОПКИ
-RefreshBtn.MouseButton1Click:Connect(function() Fetch() Render("Min") end)
-MinBtn.MouseButton1Click:Connect(function() Render("Min") end)
-MaxBtn.MouseButton1Click:Connect(function() Render("Max") end)
+SaveCurrentBtn.MouseButton1Click:Connect(function()
+    SavedData[JobId] = {id = JobId, playing = #Players:GetPlayers(), maxPlayers = game.Players.MaxPlayers, ping = "Current"}
+    SaveToFile()
+    RenderSaved()
+    SaveCurrentBtn.Text = "✅ СОХРАНЕНО!"
+    task.wait(2)
+    SaveCurrentBtn.Text = Phrases[Lang].SaveCur
+end)
+
+RefreshBtn.MouseButton1Click:Connect(function() Fetch() RenderPub("Min") end)
+MinBtn.MouseButton1Click:Connect(function() RenderPub("Min") end)
+MaxBtn.MouseButton1Click:Connect(function() RenderPub("Max") end)
 RandBtn.MouseButton1Click:Connect(function() 
     if #allServers > 0 then currentTarget = allServers[math.random(1, #allServers)].id ConfFrame.Visible = true end
 end)
 
 PubBtn.MouseButton1Click:Connect(function() 
-    PubScroll.Visible = true SavScroll.Visible = false Controls.Visible = true
+    PubContent.Visible = true SavContent.Visible = false
     PubBtn.BackgroundColor3 = Theme.Secondary SavBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
 end)
 SavBtn.MouseButton1Click:Connect(function() 
-    PubScroll.Visible = false SavScroll.Visible = true Controls.Visible = false RenderSaved()
+    PubContent.Visible = false SavContent.Visible = true RenderSaved()
     SavBtn.BackgroundColor3 = Theme.Secondary PubBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
 end)
 
@@ -253,14 +277,15 @@ LangBtn.MouseButton1Click:Connect(function()
     PopTxt.Text = Phrases[Lang].Confirm
     Yes.Text = Phrases[Lang].Yes
     No.Text = Phrases[Lang].No
+    SaveCurrentBtn.Text = Phrases[Lang].SaveCur
     LangBtn.Text = Lang
 end)
 
 Yes.MouseButton1Click:Connect(function() TeleportService:TeleportToPlaceInstance(PlaceId, currentTarget, Players.LocalPlayer) end)
 No.MouseButton1Click:Connect(function() ConfFrame.Visible = false end)
-MainButton.MouseButton1Click:Connect(function() Holder.Visible = not Holder.Visible if Holder.Visible then Fetch() Render("Min") end end)
+MainButton.MouseButton1Click:Connect(function() Holder.Visible = not Holder.Visible if Holder.Visible then Fetch() RenderPub("Min") end end)
 
--- ПЛАВНЫЙ DRAG
+-- DRAG
 local d, s, sp
 MainButton.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then d=true s=i.Position sp=MainButton.Position end end)
 UserInputService.InputChanged:Connect(function(i) if d and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
