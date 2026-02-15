@@ -1,58 +1,66 @@
+local HttpService = game:GetService("HttpService")
+local SaveFileName = "HELL_WORLD_CUSTOM.json"
+
 local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local TabContainer = Instance.new("Frame")
-local ContentFrame = Instance.new("Frame")
-local GamesScroll = Instance.new("ScrollingFrame")
-local ScriptsScroll = Instance.new("ScrollingFrame")
-local CloseButton = Instance.new("TextButton")
-local ToggleButton = Instance.new("ImageButton") 
-
--- Звук нажатия
-local ClickSound = Instance.new("Sound")
-ClickSound.SoundId = "rbxassetid://78674772963766"
-ClickSound.Volume = 1
-ClickSound.Parent = game:GetService("SoundService")
-
-local function PlayClick() ClickSound:Play() end
-
--- Настройки ScreenGui
 ScreenGui.Name = "HELL_WORLD_HUB"
-ScreenGui.Parent = game:GetService("CoreGui")
+local successCore, _ = pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
+if not successCore then ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
 ScreenGui.ResetOnSpawn = false
-ScreenGui.DisplayOrder = 9999
+ScreenGui.DisplayOrder = 999 
 
--- КРУГЛАЯ КНОПКА SHOW/HIDE
-ToggleButton.Name = "ToggleButton"
+local function PlayClick() 
+    local s = Instance.new("Sound")
+    s.SoundId = "rbxassetid://78674772963766"
+    s.Volume = 1
+    s.Parent = game:GetService("SoundService")
+    s:Play()
+    game:GetService("Debris"):AddItem(s, 1)
+end
+
+-- ==========================================
+-- КНОПКА SHOW/HIDE
+-- ==========================================
+local ToggleButton = Instance.new("TextButton")
 ToggleButton.Parent = ScreenGui
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-ToggleButton.Position = UDim2.new(0.05, 0, 0.2, 0)
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Active = true
-ToggleButton.Draggable = true
-ToggleButton.ZIndex = 10000
-ToggleButton.Image = "rbxassetid://132061454992669"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+ToggleButton.Position = UDim2.new(0.02, 0, 0.15, 0)
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Text = "H"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 24
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.ZIndex = 10000 
+ToggleButton.Draggable = true 
 Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
 local TStroke = Instance.new("UIStroke", ToggleButton)
-TStroke.Color = Color3.fromRGB(0, 170, 255)
-TStroke.Thickness = 3
+TStroke.Color = Color3.fromRGB(255, 255, 255)
+TStroke.Thickness = 2
+
+-- Логика сохранения
+local function SaveCustomScripts(scriptsTable)
+    if writefile then pcall(function() writefile(SaveFileName, HttpService:JSONEncode(scriptsTable)) end) end
+end
+local function LoadCustomScripts()
+    if isfile and isfile(SaveFileName) then
+        local s, r = pcall(function() return HttpService:JSONDecode(readfile(SaveFileName)) end)
+        return s and r or {}
+    end
+    return {}
+end
+local CustomData = LoadCustomScripts()
 
 -- ГЛАВНОЕ МЕНЮ
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
+local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
-MainFrame.Position = UDim2.new(0.5, -125, 0.5, -160)
-MainFrame.Size = UDim2.new(0, 260, 0, 380)
-MainFrame.Visible = true
+MainFrame.Position = UDim2.new(0.5, -140, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 280, 0, 420)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.ZIndex = 500
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
-local MStroke = Instance.new("UIStroke", MainFrame)
-MStroke.Color = Color3.fromRGB(0, 100, 200)
+Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(0, 100, 200)
 
--- ЗАГОЛОВОК (ПЕРЕИМЕНОВАНО В HELL_WORLD)
-Title.Parent = MainFrame
+local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 Title.Text = "  HELL_WORLD HUB"
@@ -60,159 +68,215 @@ Title.TextColor3 = Color3.fromRGB(0, 180, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 501
+Title.ZIndex = 510
 Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 12)
 
-CloseButton.Parent = Title
+local CloseButton = Instance.new("TextButton", Title)
 CloseButton.Position = UDim2.new(1, -35, 0, 0)
 CloseButton.Size = UDim2.new(0, 35, 0, 35)
 CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
 CloseButton.BackgroundTransparency = 1
 CloseButton.TextSize = 20
-CloseButton.ZIndex = 502
+CloseButton.ZIndex = 511
 
--- ПАНЕЛЬ ВКЛАДОК
-TabContainer.Parent = MainFrame
+-- ТАБЫ
+local TabContainer = Instance.new("Frame", MainFrame)
 TabContainer.Position = UDim2.new(0, 5, 0, 45)
 TabContainer.Size = UDim2.new(1, -10, 0, 35)
 TabContainer.BackgroundTransparency = 1
-TabContainer.ZIndex = 501
 
 local function CreateTabBtn(name, pos)
-    local btn = Instance.new("TextButton")
-    btn.Parent = TabContainer
-    btn.Size = UDim2.new(0.48, 0, 1, 0)
+    local btn = Instance.new("TextButton", TabContainer)
+    btn.Size = UDim2.new(0.31, 0, 1, 0)
     btn.Position = pos
     btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
     btn.Text = name
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    btn.ZIndex = 505
+    btn.TextSize = 10
+    btn.ZIndex = 520
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
     return btn
 end
 
 local GamesTabBtn = CreateTabBtn("GAMES", UDim2.new(0, 0, 0, 0))
-local ScriptsTabBtn = CreateTabBtn("SCRIPTS", UDim2.new(0.52, 0, 0, 0))
+local ScriptsTabBtn = CreateTabBtn("SCRIPTS", UDim2.new(0.345, 0, 0, 0))
+local CustomTabBtn = CreateTabBtn("CUSTOM", UDim2.new(0.69, 0, 0, 0))
 
--- КОНТЕНТ
-ContentFrame.Parent = MainFrame
+local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.Position = UDim2.new(0, 5, 0, 85)
-ContentFrame.Size = UDim2.new(1, -10, 1, -90)
+ContentFrame.Size = UDim2.new(1, -10, 1, -95)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.ZIndex = 501
 
 local function CreateScroll()
-    local s = Instance.new("ScrollingFrame")
+    local s = Instance.new("ScrollingFrame", ContentFrame)
     s.Size = UDim2.new(1, 0, 1, 0)
     s.BackgroundTransparency = 1
     s.BorderSizePixel = 0
-    s.ScrollBarThickness = 3
-    s.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+    s.ScrollBarThickness = 2
     s.Visible = false
     s.ZIndex = 600
-    
     local l = Instance.new("UIListLayout", s)
     l.Padding = UDim.new(0, 8)
     l.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    l.SortOrder = Enum.SortOrder.LayoutOrder
-    
     l:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         s.CanvasSize = UDim2.new(0, 0, 0, l.AbsoluteContentSize.Y + 20)
     end)
     return s
 end
 
-GamesScroll = CreateScroll() GamesScroll.Parent = ContentFrame
-ScriptsScroll = CreateScroll() ScriptsScroll.Parent = ContentFrame
+local GamesScroll = CreateScroll()
+local ScriptsScroll = CreateScroll()
+local CustomScroll = CreateScroll()
 
--- ОКНО ПОДТВЕРЖДЕНИЯ
-local ConfirmFrame = Instance.new("Frame")
-ConfirmFrame.Parent = MainFrame
+-- ПОДТВЕРЖДЕНИЕ
+local ConfirmFrame = Instance.new("Frame", MainFrame)
 ConfirmFrame.Size = UDim2.new(0.9, 0, 0.4, 0)
 ConfirmFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
 ConfirmFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 ConfirmFrame.Visible = false
-ConfirmFrame.ZIndex = 3000
+ConfirmFrame.ZIndex = 5000
 Instance.new("UICorner", ConfirmFrame)
 Instance.new("UIStroke", ConfirmFrame).Color = Color3.fromRGB(0, 170, 255)
 
 local CFTitle = Instance.new("TextLabel", ConfirmFrame)
 CFTitle.Size = UDim2.new(1, 0, 0.6, 0)
-CFTitle.Text = "Запустить выбранный скрипт?"
-CFTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 CFTitle.BackgroundTransparency = 1
+CFTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 CFTitle.Font = Enum.Font.GothamMedium
-CFTitle.ZIndex = 3001
+CFTitle.ZIndex = 5001
 
 local Yes = Instance.new("TextButton", ConfirmFrame)
-Yes.Size = UDim2.new(0.4, 0, 0.3, 0) Yes.Position = UDim2.new(0.07, 0, 0.6, 0)
-Yes.BackgroundColor3 = Color3.fromRGB(0, 150, 80) Yes.Text = "ДА" Yes.TextColor3 = Color3.fromRGB(255, 255, 255)
-Yes.ZIndex = 3002
+Yes.Size = UDim2.new(0.4, 0, 0.25, 0); Yes.Position = UDim2.new(0.07, 0, 0.65, 0)
+Yes.BackgroundColor3 = Color3.fromRGB(0, 150, 80); Yes.Text = "ДА"; Yes.ZIndex = 5001
 Instance.new("UICorner", Yes)
 
 local No = Instance.new("TextButton", ConfirmFrame)
-No.Size = UDim2.new(0.4, 0, 0.3, 0) No.Position = UDim2.new(0.53, 0, 0.6, 0)
-No.BackgroundColor3 = Color3.fromRGB(150, 50, 50) No.Text = "НЕТ" No.TextColor3 = Color3.fromRGB(255, 255, 255)
-No.ZIndex = 3002
+No.Size = UDim2.new(0.4, 0, 0.25, 0); No.Position = UDim2.new(0.53, 0, 0.65, 0)
+No.BackgroundColor3 = Color3.fromRGB(150, 50, 50); No.Text = "НЕТ"; No.ZIndex = 5001
 Instance.new("UICorner", No)
 
-local selectedUrl = ""
-local function AddButton(name, url, parent, special)
-    local btn = Instance.new("TextButton")
-    btn.Parent = parent
-    btn.Size = UDim2.new(0.95, 0, 0, 40)
-    btn.BackgroundColor3 = special and Color3.fromRGB(0, 60, 120) or Color3.fromRGB(40, 40, 45)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamMedium
-    btn.ZIndex = 700
-    
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    local s = Instance.new("UIStroke", btn)
-    s.Color = Color3.fromRGB(0, 170, 255) s.Transparency = 0.6
-    
-    btn.MouseButton1Click:Connect(function()
-        PlayClick()
-        selectedUrl = url
-        ConfirmFrame.Visible = true
+local selectedData = "" -- Переименовал для ясности (может быть URL или Код)
+
+-- МЕНЮ ДОБАВЛЕНИЯ
+local AddMenuFrame = Instance.new("Frame", CustomScroll)
+AddMenuFrame.Size = UDim2.new(0.95, 0, 0, 125)
+AddMenuFrame.BackgroundTransparency = 1; AddMenuFrame.Visible = false; AddMenuFrame.ZIndex = 800
+Instance.new("UIListLayout", AddMenuFrame).Padding = UDim.new(0, 5)
+
+local CustomNameInput = Instance.new("TextBox", AddMenuFrame)
+CustomNameInput.Size = UDim2.new(1, 0, 0, 35); CustomNameInput.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+CustomNameInput.PlaceholderText = "Название..."; CustomNameInput.Text = ""; CustomNameInput.TextColor3 = Color3.fromRGB(255, 255, 255); CustomNameInput.ZIndex = 810
+Instance.new("UICorner", CustomNameInput)
+
+local CustomUrlInput = Instance.new("TextBox", AddMenuFrame)
+CustomUrlInput.Size = UDim2.new(1, 0, 0, 35); CustomUrlInput.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+CustomUrlInput.PlaceholderText = "URL или Код..."; CustomUrlInput.Text = ""; CustomUrlInput.TextColor3 = Color3.fromRGB(255, 255, 255); CustomUrlInput.ZIndex = 810
+Instance.new("UICorner", CustomUrlInput)
+
+local function AddButton(name, data, parent, special)
+    local btnFrame = Instance.new("Frame", parent)
+    btnFrame.Size = UDim2.new(0.95, 0, 0, 40)
+    btnFrame.BackgroundColor3 = special and Color3.fromRGB(0, 60, 120) or Color3.fromRGB(40, 40, 45)
+    btnFrame.ZIndex = 700
+    Instance.new("UICorner", btnFrame)
+
+    local mainBtn = Instance.new("TextButton", btnFrame)
+    mainBtn.Size = (parent == CustomScroll) and UDim2.new(0.7, 0, 1, 0) or UDim2.new(1, 0, 1, 0)
+    mainBtn.BackgroundTransparency = 1; mainBtn.Text = name; mainBtn.TextColor3 = Color3.fromRGB(255, 255, 255); mainBtn.ZIndex = 705
+
+    mainBtn.MouseButton1Click:Connect(function()
+        PlayClick(); selectedData = data; CFTitle.Text = "Запустить '"..name.."'?"; ConfirmFrame.Visible = true
     end)
+
+    if parent == CustomScroll then
+        local editBtn = Instance.new("TextButton", btnFrame)
+        editBtn.Size = UDim2.new(0.12, 0, 0.8, 0); editBtn.Position = UDim2.new(0.72, 0, 0.1, 0)
+        editBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200); editBtn.Text = "✏️"; editBtn.ZIndex = 705
+        Instance.new("UICorner", editBtn)
+
+        local delBtn = Instance.new("TextButton", btnFrame)
+        delBtn.Size = UDim2.new(0.12, 0, 0.8, 0); delBtn.Position = UDim2.new(0.86, 0, 0.1, 0)
+        delBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50); delBtn.Text = "🗑️"; delBtn.ZIndex = 705
+        Instance.new("UICorner", delBtn)
+
+        delBtn.MouseButton1Click:Connect(function()
+            PlayClick()
+            for i, v in pairs(CustomData) do if v.Name == name then table.remove(CustomData, i) break end end
+            SaveCustomScripts(CustomData); btnFrame:Destroy()
+        end)
+
+        editBtn.MouseButton1Click:Connect(function()
+            PlayClick()
+            CustomNameInput.Text = name
+            CustomUrlInput.Text = data
+            AddMenuFrame.Visible = true
+            for i, v in pairs(CustomData) do if v.Name == name then table.remove(CustomData, i) break end end
+            SaveCustomScripts(CustomData); btnFrame:Destroy()
+        end)
+    end
 end
 
--- ЛОГИКА
+-- КНОПКА +
+local OpenAddMenuBtn = Instance.new("TextButton", CustomScroll)
+OpenAddMenuBtn.Size = UDim2.new(0.95, 0, 0, 40); OpenAddMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+OpenAddMenuBtn.Text = "+"; OpenAddMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255); OpenAddMenuBtn.ZIndex = 800
+Instance.new("UICorner", OpenAddMenuBtn)
+
+local FinalAddBtn = Instance.new("TextButton", AddMenuFrame)
+FinalAddBtn.Size = UDim2.new(1, 0, 0, 35); FinalAddBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 80); FinalAddBtn.Text = "ADD"; FinalAddBtn.TextColor3 = Color3.fromRGB(255,255,255); FinalAddBtn.ZIndex = 810
+Instance.new("UICorner", FinalAddBtn)
+
+OpenAddMenuBtn.MouseButton1Click:Connect(function() PlayClick(); AddMenuFrame.Visible = not AddMenuFrame.Visible end)
+FinalAddBtn.MouseButton1Click:Connect(function()
+    if CustomNameInput.Text ~= "" and CustomUrlInput.Text ~= "" then
+        PlayClick(); table.insert(CustomData, {Name = CustomNameInput.Text, Url = CustomUrlInput.Text})
+        SaveCustomScripts(CustomData); AddButton(CustomNameInput.Text, CustomUrlInput.Text, CustomScroll)
+        CustomNameInput.Text = ""; CustomUrlInput.Text = ""; AddMenuFrame.Visible = false
+    end
+end)
+
 local function SwitchTab(tab)
     PlayClick()
-    GamesScroll.Visible = (tab == "Games")
-    ScriptsScroll.Visible = (tab == "Scripts")
+    GamesScroll.Visible = (tab == "Games"); ScriptsScroll.Visible = (tab == "Scripts"); CustomScroll.Visible = (tab == "Custom")
     GamesTabBtn.BackgroundColor3 = (tab == "Games") and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(35, 35, 40)
     ScriptsTabBtn.BackgroundColor3 = (tab == "Scripts") and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(35, 35, 40)
+    CustomTabBtn.BackgroundColor3 = (tab == "Custom") and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(35, 35, 40)
 end
 
 GamesTabBtn.MouseButton1Click:Connect(function() SwitchTab("Games") end)
 ScriptsTabBtn.MouseButton1Click:Connect(function() SwitchTab("Scripts") end)
-Yes.MouseButton1Click:Connect(function() PlayClick(); ConfirmFrame.Visible = false; loadstring(game:HttpGet(selectedUrl))() end)
+CustomTabBtn.MouseButton1Click:Connect(function() SwitchTab("Custom") end)
+
+-- ЛОГИКА ЗАПУСКА (Принимает URL и Лоадстринг)
+Yes.MouseButton1Click:Connect(function() 
+    PlayClick(); ConfirmFrame.Visible = false
+    pcall(function() 
+        if string.sub(selectedData, 1, 4) == "http" then
+            loadstring(game:HttpGet(selectedData))()
+        else
+            loadstring(selectedData)()
+        end
+    end)
+end)
+
 No.MouseButton1Click:Connect(function() PlayClick(); ConfirmFrame.Visible = false end)
 ToggleButton.MouseButton1Click:Connect(function() PlayClick(); MainFrame.Visible = not MainFrame.Visible end)
 CloseButton.MouseButton1Click:Connect(function() PlayClick(); ScreenGui:Destroy() end)
 
--- НАПОЛНЕНИЕ
+-- ЗАПОЛНЕНИЕ
+AddButton("Minesweeper", "https://raw.githubusercontent.com/Xkaka228X/Minesweeper/refs/heads/main/README.md", GamesScroll)
+AddButton("Wordle", "https://raw.githubusercontent.com/Xkaka228X/Wordle/refs/heads/main/README.md", GamesScroll)
+AddButton("Gallows (Виселица)", "https://raw.githubusercontent.com/Xkaka228X/Gallows/refs/heads/main/README.md", GamesScroll)
+AddButton("Classic Mini Games", "https://raw.githubusercontent.com/Xkaka228X/Classic-mini-games/refs/heads/main/README.md", GamesScroll)
+AddButton("Retro Mini Games", "https://raw.githubusercontent.com/Xkaka228X/Retro-mini-games-hub/refs/heads/main/README.md", GamesScroll)
+AddButton("Lidar Spectre", "https://raw.githubusercontent.com/Xkaka228X/Lidar-spectre/refs/heads/main/README.md", ScriptsScroll)
+AddButton("Hello GUI", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/README.md", ScriptsScroll)
+AddButton("Friend Manager Pro", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/Friend%20manager%20pro", ScriptsScroll)
+AddButton("Speedrun Manager", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/Ultimate%20Speedrun%20Manager", ScriptsScroll)
+AddButton("Luxury Visuals", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/LUXURY%20VISUALS%20HUB", ScriptsScroll, true)
+AddButton("Easy TP GUI", "https://raw.githubusercontent.com/Xkaka228X/Easytpgui/refs/heads/main/README.md", ScriptsScroll)
 
--- ВКЛАДКА ИГРЫ
-AddButton("Minesweeper", "https://raw.githubusercontent.com/Xkaka228X/Minesweeper/main/README.md", GamesScroll)
-AddButton("Wordle", "https://raw.githubusercontent.com/Xkaka228X/Wordle/main/README.md", GamesScroll)
-AddButton("Gallows", "https://raw.githubusercontent.com/Xkaka228X/Gallows/main/README.md", GamesScroll)
-AddButton("Classic Mini Games", "https://raw.githubusercontent.com/Xkaka228X/Classic-mini-games/main/README.md", GamesScroll)
-AddButton("Retro Mini Games", "https://raw.githubusercontent.com/Xkaka228X/Retro-mini-games-hub/main/README.md", GamesScroll)
-
--- ВКЛАДКА СКРИПТЫ (HELLO GUI -> SERVER HOP V12.3)
-AddButton("Lidar Spectre", "https://raw.githubusercontent.com/Xkaka228X/Lidar-spectre/main/README.md", ScriptsScroll)
-AddButton("Easy TP GUI", "https://raw.githubusercontent.com/Xkaka228X/Easytpgui/main/README.md", ScriptsScroll)
-AddButton("Server Hop V12.3", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/main/README.md", ScriptsScroll) -- ПЕРЕИМЕНОВАНО
-AddButton("Friend Manager Pro", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/main/Friend%20manager%20pro", ScriptsScroll, true)
-AddButton("Speedrun Manager", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/main/Ultimate%20Speedrun%20Manager", ScriptsScroll, true)
-AddButton("LUXURY VISUALS", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/main/LUXURY%20VISUALS%20HUB", ScriptsScroll, true)
-
+for _, item in pairs(CustomData) do AddButton(item.Name, item.Url, CustomScroll) end
 SwitchTab("Games")
-
