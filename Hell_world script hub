@@ -157,7 +157,7 @@ No.Size = UDim2.new(0.4, 0, 0.25, 0); No.Position = UDim2.new(0.53, 0, 0.65, 0)
 No.BackgroundColor3 = Color3.fromRGB(150, 50, 50); No.Text = "НЕТ"; No.ZIndex = 5001
 Instance.new("UICorner", No)
 
-local selectedData = "" -- Переименовал для ясности (может быть URL или Код)
+local selectedData = ""
 
 -- МЕНЮ ДОБАВЛЕНИЯ
 local AddMenuFrame = Instance.new("Frame", CustomScroll)
@@ -249,7 +249,7 @@ GamesTabBtn.MouseButton1Click:Connect(function() SwitchTab("Games") end)
 ScriptsTabBtn.MouseButton1Click:Connect(function() SwitchTab("Scripts") end)
 CustomTabBtn.MouseButton1Click:Connect(function() SwitchTab("Custom") end)
 
--- ЛОГИКА ЗАПУСКА (Принимает URL и Лоадстринг)
+-- ЛОГИКА ЗАПУСКА
 Yes.MouseButton1Click:Connect(function() 
     PlayClick(); ConfirmFrame.Visible = false
     pcall(function() 
@@ -271,8 +271,10 @@ AddButton("Wordle", "https://raw.githubusercontent.com/Xkaka228X/Wordle/refs/hea
 AddButton("Gallows (Виселица)", "https://raw.githubusercontent.com/Xkaka228X/Gallows/refs/heads/main/README.md", GamesScroll)
 AddButton("Classic Mini Games", "https://raw.githubusercontent.com/Xkaka228X/Classic-mini-games/refs/heads/main/README.md", GamesScroll)
 AddButton("Retro Mini Games", "https://raw.githubusercontent.com/Xkaka228X/Retro-mini-games-hub/refs/heads/main/README.md", GamesScroll)
+AddButton("Mini Games Hub 2", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/Mini%20games%20hub2", GamesScroll)
+
 AddButton("Lidar Spectre", "https://raw.githubusercontent.com/Xkaka228X/Lidar-spectre/refs/heads/main/README.md", ScriptsScroll)
-AddButton("Hello GUI", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/README.md", ScriptsScroll)
+AddButton("Server Hop", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/README.md", ScriptsScroll) -- Переименовано
 AddButton("Friend Manager Pro", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/Friend%20manager%20pro", ScriptsScroll)
 AddButton("Speedrun Manager", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/Ultimate%20Speedrun%20Manager", ScriptsScroll)
 AddButton("Luxury Visuals", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/LUXURY%20VISUALS%20HUB", ScriptsScroll, true)
