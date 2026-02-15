@@ -1,0 +1,209 @@
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local player = game.Players.LocalPlayer
+
+-- Названия файлов
+local fileName_list = "speedrun_categories_list.txt"
+local fileName_lang = "speedrun_lang.txt"
+local function getRecFile(cat) return "sr_rec_" .. cat .. ".txt" end
+local function getLogFile(cat) return "sr_log_" .. cat .. ".json" end
+
+-- ТАБЛИЦА ПЕРЕВОДА (ЛОКАЛИЗАЦИЯ)
+local lang = "RU"
+if isfile(fileName_lang) then lang = readfile(fileName_lang) end
+
+local i18n = {
+    RU = {
+        start = "СТАРТ",
+        stop = "СТОП",
+        run = "БЕГ...",
+        best = "РЕКОРД: ",
+        history = "ИСТОРИЯ",
+        new_cat = "Забег ",
+        empty = "Пусто",
+        delete_cat = "Удалить категорию?",
+        confirm = "ОК"
+    },
+    EN = {
+        start = "START",
+        stop = "STOP",
+        run = "RUNNING",
+        best = "BEST: ",
+        history = "HISTORY",
+        new_cat = "Run ",
+        empty = "Empty",
+        delete_cat = "Delete category?",
+        confirm = "OK"
+    }
+}
+
+-- Переменные
+local categories = {"Parkour", "Sprint"}
+local currentCategory = 1
+local running, collapsed, showLog = false, false, false
+local startTime = 0
+local bestTimes, history = {}, {}
+
+-- Загрузка данных
+if isfile(fileName_list) then
+    local decoded = HttpService:JSONDecode(readfile(fileName_list))
+    if #decoded > 0 then categories = decoded end
+end
+
+local function loadData(cat)
+    bestTimes[cat] = isfile(getRecFile(cat)) and tonumber(readfile(getRecFile(cat))) or 999999
+    history[cat] = isfile(getLogFile(cat)) and HttpService:JSONDecode(readfile(getLogFile(cat))) or {}
+end
+
+local function formatTime(t)
+    if t >= 999999 then return "--:--.--" end
+    local mins, secs = math.floor(t / 60), math.floor(t % 60)
+    local ms = math.floor((t % 1) * 100)
+    return string.format("%02d:%02d.%02d", mins, secs, ms)
+end
+
+for _, cat in pairs(categories) do loadData(cat) end
+
+-- СОЗДАНИЕ GUI
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 270, 0, 220)
+Main.Position = UDim2.new(0.5, -135, 0.2, 0)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Main.ClipsDescendants = true
+Instance.new("UICorner", Main)
+
+-- ШАПКА И ПЕРЕТАСКИВАНИЕ
+local Header = Instance.new("Frame", Main)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Instance.new("UICorner", Header)
+
+local function makeDraggable(clickObj, moveObj)
+    local dragging, dragStart, startPos
+    clickObj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = moveObj.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            moveObj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input) dragging = false end)
+end
+makeDraggable(Header, Main)
+
+-- КНОПКИ В ШАПКЕ
+local function createHeadBtn(txt, pos, color)
+    local b = Instance.new("TextButton", Header); b.Size = UDim2.new(0, 30, 1, 0); b.Position = pos
+    b.Text = txt; b.TextColor3 = color or Color3.new(1,1,1); b.BackgroundTransparency = 1; b.Font = "SourceSansBold"; return b
+end
+
+local LangBtn = createHeadBtn(lang, UDim2.new(0,5,0,0), Color3.new(0.3, 0.6, 1))
+local CollBtn = createHeadBtn("_", UDim2.new(0,35,0,0))
+local PrevBtn = createHeadBtn("<", UDim2.new(0,65,0,0))
+local CatLbl = Instance.new("TextLabel", Header); CatLbl.Size = UDim2.new(0,80,1,0); CatLbl.Position = UDim2.new(0,95,0,0); CatLbl.BackgroundTransparency = 1; CatLbl.TextColor3 = Color3.new(1,0.9,0); CatLbl.Font = "SourceSansBold"; CatLbl.TextScaled = true
+local NextBtn = createHeadBtn(">", UDim2.new(0,175,0,0))
+local AddBtn = createHeadBtn("+", UDim2.new(0,205,0,0), Color3.new(0,1,0.5))
+local DelBtn = createHeadBtn("X", UDim2.new(0,235,0,0), Color3.new(1,0.3,0.3))
+
+-- КОНТЕНТ
+local Content = Instance.new("Frame", Main); Content.Size = UDim2.new(1,0,1,-35); Content.Position = UDim2.new(0,0,0,35); Content.BackgroundTransparency = 1
+local TimerBtn = Instance.new("TextButton", Content); TimerBtn.Size = UDim2.new(1,0,0,50); TimerBtn.Position = UDim2.new(0,0,0,5); TimerBtn.BackgroundTransparency = 1; TimerBtn.Font = "Code"; TimerBtn.TextColor3 = Color3.new(1,1,1); TimerBtn.TextSize = 35; TimerBtn.Text = "00:00.00"
+local BestLbl = Instance.new("TextLabel", Content); BestLbl.Size = UDim2.new(1,0,0,20); BestLbl.Position = UDim2.new(0,0,0,50); BestLbl.BackgroundTransparency = 1; BestLbl.TextColor3 = Color3.new(0,1,0.6); BestLbl.Font = "SourceSans"
+
+local StartBtn = Instance.new("TextButton", Content); StartBtn.Size = UDim2.new(0.44, 0, 0, 35); StartBtn.Position = UDim2.new(0.04, 0, 0.8, 0); StartBtn.BackgroundColor3 = Color3.fromRGB(0,120,60); StartBtn.Font = "SourceSansBold"; Instance.new("UICorner", StartBtn)
+local StopBtn = Instance.new("TextButton", Content); StopBtn.Size = UDim2.new(0.44, 0, 0, 35); StopBtn.Position = UDim2.new(0.52, 0, 0.8, 0); StopBtn.BackgroundColor3 = Color3.fromRGB(120,20,20); StopBtn.Font = "SourceSansBold"; Instance.new("UICorner", StopBtn)
+
+local LogFrame = Instance.new("ScrollingFrame", Content); LogFrame.Size = UDim2.new(0.94,0,0,80); LogFrame.Position = UDim2.new(0.03,0,0,75); LogFrame.Visible = false; LogFrame.BackgroundColor3 = Color3.new(0.02,0.02,0.02); LogFrame.CanvasSize = UDim2.new(0,0,0,0); LogFrame.ScrollBarThickness = 3
+Instance.new("UIListLayout", LogFrame).Padding = UDim.new(0,2)
+
+-- ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕХ ТЕКСТОВ
+local function updateDisplay()
+    local cat = categories[currentCategory]
+    local t = i18n[lang]
+    
+    CatLbl.Text = cat
+    BestLbl.Text = t.best .. formatTime(bestTimes[cat])
+    StartBtn.Text = running and t.run or t.start
+    StopBtn.Text = t.stop
+    
+    -- Очистка и перерисовка истории
+    for _, v in pairs(LogFrame:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
+    
+    if #history[cat] == 0 then
+        local empty = Instance.new("TextLabel", LogFrame); empty.Size = UDim2.new(1,0,0,30); empty.Text = t.empty; empty.TextColor3 = Color3.new(0.4,0.4,0.4); empty.BackgroundTransparency = 1
+    else
+        for i, v in ipairs(history[cat]) do
+            local item = Instance.new("Frame", LogFrame); item.Size = UDim2.new(1,0,0,24); item.BackgroundColor3 = Color3.new(0.1,0.1,0.1)
+            local txt = Instance.new("TextLabel", item); txt.Size = UDim2.new(0.8,0,1,0); txt.Position = UDim2.new(0.05,0,0,0); txt.Text = i..". "..formatTime(v); txt.TextColor3 = Color3.new(0.9,0.9,0.9); txt.BackgroundTransparency = 1; txt.TextXAlignment = "Left"
+            local del = Instance.new("TextButton", item); del.Size = UDim2.new(0.15,0,0.8,0); del.Position = UDim2.new(0.82,0,0.1,0); del.Text = "x"; del.BackgroundColor3 = Color3.new(0.3,0,0); del.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", del)
+            del.MouseButton1Click:Connect(function()
+                table.remove(history[cat], i); writefile(getLogFile(cat), HttpService:JSONEncode(history[cat]))
+                local nb = 999999; for _, tv in pairs(history[cat]) do if tv < nb then nb = tv end end
+                bestTimes[cat] = nb; writefile(getRecFile(cat), tostring(nb)); updateDisplay()
+            end)
+        end
+    end
+    LogFrame.CanvasSize = UDim2.new(0,0,0, #history[cat] * 26)
+end
+
+-- ЛОГИКА КНОПОК
+LangBtn.MouseButton1Click:Connect(function()
+    lang = (lang == "RU") and "EN" or "RU"
+    LangBtn.Text = lang
+    writefile(fileName_lang, lang)
+    updateDisplay()
+end)
+
+TimerBtn.MouseButton1Click:Connect(function() showLog = not showLog; LogFrame.Visible = showLog end)
+
+NextBtn.MouseButton1Click:Connect(function() 
+    if not running then currentCategory = (currentCategory % #categories) + 1; updateDisplay() end 
+end)
+
+PrevBtn.MouseButton1Click:Connect(function() 
+    if not running then currentCategory = currentCategory - 1; if currentCategory < 1 then currentCategory = #categories end; updateDisplay() end 
+end)
+
+AddBtn.MouseButton1Click:Connect(function()
+    local name = i18n[lang].new_cat .. #categories+1
+    table.insert(categories, name); bestTimes[name]=999999; history[name]={};
+    writefile(fileName_list, HttpService:JSONEncode(categories)); currentCategory = #categories; updateDisplay()
+end)
+
+DelBtn.MouseButton1Click:Connect(function()
+    if #categories > 1 then
+        local cat = categories[currentCategory]
+        if isfile(getRecFile(cat)) then delfile(getRecFile(cat)) end
+        if isfile(getLogFile(cat)) then delfile(getLogFile(cat)) end
+        table.remove(categories, currentCategory); currentCategory = 1
+        writefile(fileName_list, HttpService:JSONEncode(categories)); updateDisplay()
+    end
+end)
+
+CollBtn.MouseButton1Click:Connect(function()
+    collapsed = not collapsed; Main:TweenSize(collapsed and UDim2.new(0,270,0,35) or UDim2.new(0,270,0,220), "Out", "Quart", 0.3, true); Content.Visible = not collapsed
+end)
+
+RunService.RenderStepped:Connect(function() if running then TimerBtn.Text = formatTime(tick() - startTime) end end)
+
+StartBtn.MouseButton1Click:Connect(function() 
+    startTime, running = tick(), true; updateDisplay() 
+end)
+
+StopBtn.MouseButton1Click:Connect(function()
+    if running then
+        running = false; local final = tick() - startTime; local cat = categories[currentCategory]
+        table.insert(history[cat], 1, final); writefile(getLogFile(cat), HttpService:JSONEncode(history[cat]))
+        if final < bestTimes[cat] then bestTimes[cat] = final; writefile(getRecFile(cat), tostring(final)) end
+        updateDisplay()
+    else TimerBtn.Text = "00:00.00" end
+end)
+
+updateDisplay()
+
