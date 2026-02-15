@@ -25,9 +25,11 @@ local Phrases = {
 
 -- === СИСТЕМА СОХРАНЕНИЯ ===
 local SavedData = {}
-local function SaveToFile() writefile(FileName, HttpService:JSONEncode(SavedData)) end
+local function SaveToFile() 
+    if writefile then writefile(FileName, HttpService:JSONEncode(SavedData)) end 
+end
 local function LoadSaved() 
-    if isfile(FileName) then 
+    if isfile and isfile(FileName) then 
         local s, d = pcall(function() return HttpService:JSONDecode(readfile(FileName)) end)
         if s then SavedData = d end
     end 
@@ -217,9 +219,16 @@ end
 local function RenderPub(mode)
     PubScroll:ClearAllChildren()
     Instance.new("UIListLayout", PubScroll).Padding = UDim.new(0, 5)
-    if mode == "Min" then table.sort(allServers, function(a,b) return a.playing < b.playing end)
-    elseif mode == "Max" then table.sort(allServers, function(a,b) return a.playing > b.playing end) end
-    for _, s in pairs(allServers) do CreateCard(s, PubScroll, false) end
+    
+    if mode == "Min" then 
+        table.sort(allServers, function(a,b) return a.playing < b.playing end)
+    elseif mode == "Max" then 
+        table.sort(allServers, function(a,b) return a.playing > b.playing end) 
+    end
+    
+    for _, s in pairs(allServers) do 
+        CreateCard(s, PubScroll, false) 
+    end
     PubScroll.CanvasSize = UDim2.new(0,0,0,#allServers * 50)
 end
 
@@ -227,21 +236,48 @@ local function RenderSaved()
     SavScroll:ClearAllChildren()
     Instance.new("UIListLayout", SavScroll).Padding = UDim.new(0, 5)
     local count = 0
-    for id, s in pairs(SavedData) do count = count + 1 CreateCard(s, SavScroll, true) end
+    for id, s in pairs(SavedData) do 
+        count = count + 1 
+        CreateCard(s, SavScroll, true) 
+    end
     SavScroll.CanvasSize = UDim2.new(0,0,0,count * 50)
 end
 
+-- ФУНКЦИЯ ЗАГРУЗКИ 1000 СЕРВЕРОВ
 local function Fetch()
     allServers = {}
-    local success, result = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?limit=50")).data
-    end)
-    if success then for _, s in pairs(result) do if s.id ~= JobId then table.insert(allServers, s) end end end
+    local cursor = ""
+    local maxToFetch = 1000
+    local fetchedSoFar = 0
+    
+    repeat
+        local url = "https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?limit=100"
+        if cursor ~= "" then url = url .. "&cursor=" .. cursor end
+        
+        local success, result = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet(url))
+        end)
+        
+        if success and result and result.data then
+            for _, s in pairs(result.data) do
+                if s.id ~= JobId then
+                    table.insert(allServers, s)
+                end
+            end
+            fetchedSoFar = #allServers
+            cursor = result.nextPageCursor
+        else
+            break
+        end
+        
+        -- Мини-пауза чтобы не ловить ошибки HTTP 429
+        if cursor then task.wait(0.1) end
+    until not cursor or fetchedSoFar >= maxToFetch
 end
 
 -- КНОПКИ
 SaveCurrentBtn.MouseButton1Click:Connect(function()
-    SavedData[JobId] = {id = JobId, playing = #Players:GetPlayers(), maxPlayers = game.Players.MaxPlayers, ping = "Current"}
+    SavedData[JobId] = {id = JobId, playing = #Players:GetPlayers(), maxPlayers = Players.MaxPlayers, ping = "Current"}
     SaveToFile()
     RenderSaved()
     SaveCurrentBtn.Text = "✅ СОХРАНЕНО!"
@@ -249,17 +285,46 @@ SaveCurrentBtn.MouseButton1Click:Connect(function()
     SaveCurrentBtn.Text = Phrases[Lang].SaveCur
 end)
 
-RefreshBtn.MouseButton1Click:Connect(function() Fetch() RenderPub("Min") end)
-MinBtn.MouseButton1Click:Connect(function() RenderPub("Min") end)
-MaxBtn.MouseButton1Click:Connect(function() RenderPub("Max") end)
+RefreshBtn.MouseButton1Click:Connect(function() 
+    RefreshBtn.Text = "⌛..."
+    Fetch() 
+    RenderPub("Min") 
+    RefreshBtn.Text = "🔄 " .. Phrases[Lang].Refresh
+end)
+
+-- При нажатии МИН список обновляется с нуля до 1000
+MinBtn.MouseButton1Click:Connect(function() 
+    MinBtn.Text = "⌛..."
+    Fetch()
+    RenderPub("Min") 
+    MinBtn.Text = Phrases[Lang].Min
+end)
+
+MaxBtn.MouseButton1Click:Connect(function() 
+    MaxBtn.Text = "⌛..."
+    Fetch()
+    RenderPub("Max") 
+    MaxBtn.Text = Phrases[Lang].Max
+end)
+
 RandBtn.MouseButton1Click:Connect(function() 
-    if #allServers > 0 then currentTarget = allServers[math.random(1, #allServers)].id ConfFrame.Visible = true end
+    if #allServers > 0 then 
+        currentTarget = allServers[math.random(1, #allServers)].id 
+        ConfFrame.Visible = true 
+    else
+        Fetch()
+        if #allServers > 0 then
+            currentTarget = allServers[math.random(1, #allServers)].id 
+            ConfFrame.Visible = true 
+        end
+    end
 end)
 
 PubBtn.MouseButton1Click:Connect(function() 
     PubContent.Visible = true SavContent.Visible = false
     PubBtn.BackgroundColor3 = Theme.Secondary SavBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
 end)
+
 SavBtn.MouseButton1Click:Connect(function() 
     PubContent.Visible = false SavContent.Visible = true RenderSaved()
     SavBtn.BackgroundColor3 = Theme.Secondary PubBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
@@ -283,14 +348,28 @@ end)
 
 Yes.MouseButton1Click:Connect(function() TeleportService:TeleportToPlaceInstance(PlaceId, currentTarget, Players.LocalPlayer) end)
 No.MouseButton1Click:Connect(function() ConfFrame.Visible = false end)
-MainButton.MouseButton1Click:Connect(function() Holder.Visible = not Holder.Visible if Holder.Visible then Fetch() RenderPub("Min") end end)
+MainButton.MouseButton1Click:Connect(function() 
+    Holder.Visible = not Holder.Visible 
+    if Holder.Visible and #allServers == 0 then 
+        Fetch() 
+        RenderPub("Min") 
+    end 
+end)
 
--- DRAG
+-- DRAG СИСТЕМА
 local d, s, sp
-MainButton.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then d=true s=i.Position sp=MainButton.Position end end)
-UserInputService.InputChanged:Connect(function(i) if d and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-    local delta = i.Position - s
-    MainButton.Position = UDim2.new(sp.X.Scale, sp.X.Offset + delta.X, sp.Y.Scale, sp.Y.Offset + delta.Y)
-    Holder.Position = UDim2.new(MainButton.Position.X.Scale, MainButton.Position.X.Offset - 85, MainButton.Position.Y.Scale, MainButton.Position.Y.Offset + 50)
-end end)
+MainButton.InputBegan:Connect(function(i) 
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then 
+        d=true s=i.Position sp=MainButton.Position 
+    end 
+end)
+
+UserInputService.InputChanged:Connect(function(i) 
+    if d and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local delta = i.Position - s
+        MainButton.Position = UDim2.new(sp.X.Scale, sp.X.Offset + delta.X, sp.Y.Scale, sp.Y.Offset + delta.Y)
+        Holder.Position = UDim2.new(MainButton.Position.X.Scale, MainButton.Position.X.Offset - 85, MainButton.Position.Y.Scale, MainButton.Position.Y.Offset + 50)
+    end 
+end)
+
 MainButton.InputEnded:Connect(function() d=false end)
