@@ -1,0 +1,108 @@
+
+local p = game:GetService("Players").LocalPlayer
+local gui = p:WaitForChild("PlayerGui")
+local inputS = game:GetService("UserInputService")
+
+if gui:FindFirstChild("HELL_HUB") then gui.HELL_HUB:Destroy() end
+
+local screen = Instance.new("ScreenGui", gui)
+screen.Name = "HELL_HUB"
+screen.ResetOnSpawn = false
+
+local function drag(o, h)
+    local active, start, startPos
+    h.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            active = true; start = i.Position; startPos = o.Position
+            i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then active = false end end)
+        end
+    end)
+    inputS.InputChanged:Connect(function(i)
+        if active and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            local d = i.Position - start
+            o.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
+end
+
+local base = Instance.new("Frame", screen)
+base.Size = UDim2.new(0, 320, 0, 420)
+base.Position = UDim2.new(0.5, -160, 0.5, -210)
+base.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+base.BorderSizePixel = 0
+base.ClipsDescendants = true
+Instance.new("UICorner", base).CornerRadius = UDim.new(0, 10)
+
+local bg = Instance.new("Frame", base)
+bg.Size = UDim2.new(1, 0, 1, 0); bg.BackgroundTransparency = 1
+local sm = {"😀", "🔥", "🚀", "⚡", "🎮", "🎲", "🎯", "💎", "🌟", "😎"}
+for i = 1, 35 do
+    local l = Instance.new("TextLabel", bg)
+    l.Text = sm[math.random(1, #sm)]; l.Position = UDim2.new(math.random(), 0, math.random(), 0)
+    l.BackgroundTransparency = 1; l.TextTransparency = 0.75; l.Size = UDim2.new(0, 20, 0, 20)
+end
+
+local head = Instance.new("Frame", base)
+head.Size = UDim2.new(1, 0, 0, 45)
+head.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+Instance.new("UICorner", head)
+drag(base, head)
+
+local name = Instance.new("TextLabel", head)
+name.Size = UDim2.new(1, 0, 1, 0); name.Position = UDim2.new(0, 12, 0, 0)
+name.Text = "EPIC HUB | HELL_WORLD"; name.TextColor3 = Color3.new(1, 1, 1)
+name.Font = "GothamBold"; name.TextSize = 14; name.BackgroundTransparency = 1; name.TextXAlignment = "Left"
+
+local function btn(t, x, c)
+    local b = Instance.new("TextButton", head)
+    b.Size = UDim2.new(0, 28, 0, 28); b.Position = UDim2.new(1, x, 0, 8)
+    b.BackgroundColor3 = c; b.Text = t; b.TextColor3 = Color3.new(1,1,1)
+    b.Font = "GothamBold"; b.TextSize = 14; Instance.new("UICorner", b)
+    return b
+end
+
+local cls = btn("X", -35, Color3.fromRGB(230, 50, 50))
+local min = btn("_", -70, Color3.fromRGB(0, 100, 200))
+
+local sc = Instance.new("ScrollingFrame", base)
+sc.Size = UDim2.new(1, -10, 1, -60); sc.Position = UDim2.new(0, 5, 0, 50)
+sc.BackgroundTransparency = 1; sc.CanvasSize = UDim2.new(0, 0, 0, 700); sc.ScrollBarThickness = 0
+Instance.new("UIListLayout", sc).Padding = UDim.new(0, 5)
+
+local list = {
+    {"🕹️ ARCANOID", "https://raw.githubusercontent.com/Xkaka228X/Arcanoid/refs/heads/main/README.md"},
+    {"🔢 2048", "https://raw.githubusercontent.com/Xkaka228X/2048-Roblox-edition/refs/heads/main/README.md"},
+    {"🔥 CLICKER", "https://raw.githubusercontent.com/Xkaka228X/Hell-clicker-45-stage/refs/heads/main/README.md"},
+    {"🐦 BIRD", "https://raw.githubusercontent.com/Xkaka228X/Flappy-bird/refs/heads/main/README.md"},
+    {"🐍 SNAKE", "https://raw.githubusercontent.com/Xkaka228X/Snake-pro/refs/heads/main/README.md"},
+    {"🏎️ RACING", "https://raw.githubusercontent.com/Xkaka228X/Racing-pro/refs/heads/main/README.md"},
+    {"📝 WORDLE", "https://raw.githubusercontent.com/Xkaka228X/Wordle/main/README.md"},
+    {"😵 GALLOWS", "https://raw.githubusercontent.com/Xkaka228X/Gallows/main/README.md"},
+    {"♟️ CHESS", "https://raw.githubusercontent.com/farfr737-wq/Chess/main/README.md"},
+    {"⚪ CHECKERS", "https://raw.githubusercontent.com/Xkaka228X/Checkers/main/README.md"},
+    {"❌ TIC-TAC", "https://raw.githubusercontent.com/Xkaka228X/Tic-tac-teo/main/README.md"},
+    {"🧱 TETRIS", "https://raw.githubusercontent.com/Xkaka228X/Tetris/main/README.md"},
+    {"💣 MINES", "https://raw.githubusercontent.com/Xkaka228X/Minesweeper/main/README.md"}
+}
+
+for _, v in ipairs(list) do
+    local b = Instance.new("TextButton", sc)
+    b.Size = UDim2.new(0.95, 0, 0, 38); b.Text = v[1]
+    b.BackgroundColor3 = Color3.fromRGB(35, 35, 40); b.TextColor3 = Color3.new(1, 1, 1)
+    b.Font = "Gotham"; b.TextSize = 12; Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function()
+        local s, r = pcall(game.HttpGet, game, v[2])
+        if s then loadstring(r)() end
+    end)
+end
+
+local tog = Instance.new("TextButton", screen)
+tog.Size = UDim2.new(0, 55, 0, 55); tog.Position = UDim2.new(0, 20, 0.7, 0)
+tog.BackgroundColor3 = Color3.fromRGB(0, 140, 255); tog.Text = "😀"
+tog.TextSize = 30; tog.Visible = false; Instance.new("UICorner", tog).CornerRadius = UDim.new(1, 0)
+drag(tog, tog)
+
+min.MouseButton1Click:Connect(function() base.Visible = false; tog.Visible = true end)
+tog.MouseButton1Click:Connect(function() base.Visible = true; tog.Visible = false end)
+cls.MouseButton1Click:Connect(function() screen:Destroy() end)
+
