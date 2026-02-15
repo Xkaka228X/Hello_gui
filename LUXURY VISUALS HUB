@@ -1,0 +1,123 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "🎨 ULTIMATE GRAPHICS ENGINE",
+   LoadingTitle = "Генерация 50+ пресетов...",
+   LoadingSubtitle = "by Gemini AI for Delta",
+   ConfigurationSaving = { Enabled = false }
+})
+
+local Lighting = game:GetService("Lighting")
+
+-- Функция полной очистки
+local function Clean()
+    for _, v in pairs(Lighting:GetChildren()) do
+        if v:IsA("PostEffect") or v:IsA("Sky") or v:IsA("Atmosphere") then v:Destroy() end
+    end
+    Lighting.Brightness = 2
+    Lighting.ClockTime = 14
+    Lighting.FogEnd = 100000
+    Lighting.ExposureCompensation = 0
+    Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+    Lighting.GlobalShadows = true
+end
+
+-- Функция смены материалов
+local function SetMat(mat)
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Transparency < 1 then obj.Material = mat end
+    end
+end
+
+local function FX(class, props)
+    local inst = Instance.new(class, Lighting)
+    for i, v in pairs(props) do inst[i] = v end
+    return inst
+end
+
+--- ☀️ КАТЕГОРИЯ: ТЕНИ И ЛУЧИ (НОВАЯ!) ---
+local T5 = Window:CreateTab("☀️ Shadows & Rays", 4483362458)
+T5:CreateButton({Name = "❌ СБРОСИТЬ ТЕНИ/ЛУЧИ", Callback = function() 
+    for _, v in pairs(Lighting:GetChildren()) do 
+        if v:IsA("SunRaysEffect") or v:IsA("BloomEffect") then v:Destroy() end 
+    end
+    Lighting.GlobalShadows = true
+end})
+T5:CreateSection("Световые эффекты")
+T5:CreateButton({Name = "God Rays (Яркие лучи)", Callback = function() FX("SunRaysEffect", {Intensity=0.2, Spread=1}) end})
+T5:CreateButton({Name = "Golden Sun (Золотые лучи)", Callback = function() FX("SunRaysEffect", {Intensity=0.15}) FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(255,230,150)}) end})
+T5:CreateButton({Name = "Ultra Shadows (Твердые тени)", Callback = function() Lighting.GlobalShadows = true Lighting.Brightness = 3 end})
+T5:CreateButton({Name = "No Shadows (FPS Boost)", Callback = function() Lighting.GlobalShadows = false end})
+T5:CreateButton({Name = "Soft Glow (Мягкое свечение)", Callback = function() FX("BloomEffect", {Intensity=1, Size=20, Threshold=0.5}) end})
+T5:CreateButton({Name = "Heavenly Light", Callback = function() FX("SunRaysEffect", {Intensity=0.4}) FX("BloomEffect", {Intensity=0.8}) end})
+T5:CreateButton({Name = "Darker Shadows (Контраст)", Callback = function() Lighting.OutdoorAmbient = Color3.new(0,0,0) end})
+T5:CreateButton({Name = "Volumetric Light (Объем)", Callback = function() FX("Atmosphere", {Density=0.3, Glare=0.5, Haze=1}) end})
+T5:CreateButton({Name = "Lens Flare Style", Callback = function() FX("SunRaysEffect", {Intensity=0.1}) FX("BloomEffect", {Intensity=2, Threshold=0.9}) end})
+T5:CreateButton({Name = "Sunset Rays", Callback = function() Lighting.ClockTime = 17.8 FX("SunRaysEffect", {Intensity=0.25}) end})
+T5:CreateButton({Name = "High Exposure", Callback = function() Lighting.ExposureCompensation = 1.5 end})
+
+
+--- ✨ КАТЕГОРИЯ: РЕАЛИЗМ И ЛЮКС (11 КНОПОК) ---
+local T1 = Window:CreateTab("✨ Luxury RTX", 4483362458)
+T1:CreateButton({Name = "❌ УБРАТЬ ВСЕ ЭФФЕКТЫ", Callback = Clean})
+T1:CreateSection("Пресеты освещения")
+T1:CreateButton({Name = "Ultra RTX", Callback = function() Clean() FX("ColorCorrectionEffect", {Saturation=0.2, Contrast=0.2}) FX("BloomEffect", {Intensity=0.5}) FX("SunRaysEffect", {Intensity=0.1}) end})
+T1:CreateButton({Name = "Vivid Life (Сочно)", Callback = function() Clean() FX("ColorCorrectionEffect", {Saturation=1.5}) end})
+T1:CreateButton({Name = "Soft Dream", Callback = function() Clean() FX("BloomEffect", {Intensity=1, Size=50}) end})
+T1:CreateButton({Name = "Cold Morning", Callback = function() Clean() Lighting.ClockTime=7 FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(200,230,255)}) end})
+T1:CreateButton({Name = "Golden Hour", Callback = function() Clean() Lighting.ClockTime=17.5 FX("ColorCorrectionEffect", {Saturation=0.5}) end})
+T1:CreateButton({Name = "Cinematic 4K", Callback = function() Clean() FX("ColorCorrectionEffect", {Contrast=0.4, Saturation=0.1}) end})
+T1:CreateButton({Name = "Summer Heat", Callback = function() Clean() Lighting.Brightness=4 FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(255,240,200)}) end})
+T1:CreateButton({Name = "Deep Shadows", Callback = function() Clean() Lighting.GlobalShadows=true FX("ColorCorrectionEffect", {Contrast=0.6}) end})
+T1:CreateButton({Name = "Bright Night", Callback = function() Clean() Lighting.ClockTime=0 Lighting.Brightness=5 end})
+T1:CreateButton({Name = "Pink Sky", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(255,200,255)}) end})
+T1:CreateButton({Name = "High Saturation+", Callback = function() Clean() FX("ColorCorrectionEffect", {Saturation=3}) end})
+
+--- ☣️ КАТЕГОРИЯ: АПОКАЛИПСИС И МИР (11 КНОПОК) ---
+local T2 = Window:CreateTab("☣️ Apocalypse", 4483362458)
+T2:CreateButton({Name = "❌ ВЕРНУТЬ МИР В НОРМУ", Callback = Clean})
+T2:CreateSection("Сценарии выживания")
+T2:CreateButton({Name = "Nuclear Winter", Callback = function() Clean() SetMat("Concrete") Lighting.FogEnd=400 FX("ColorCorrectionEffect", {Saturation=-0.8}) end})
+T2:CreateButton({Name = "Sandstorm", Callback = function() Clean() SetMat("Sand") Lighting.FogEnd=200 Lighting.FogColor=Color3.fromRGB(180,140,80) end})
+T2:CreateButton({Name = "Toxic Fog", Callback = function() Clean() Lighting.FogEnd=300 Lighting.FogColor=Color3.fromRGB(100,255,100) end})
+T2:CreateButton({Name = "Silent Hill", Callback = function() Clean() Lighting.FogEnd=150 FX("ColorCorrectionEffect", {Saturation=-1}) end})
+T2:CreateButton({Name = "Hellfire", Callback = function() Clean() Lighting.ClockTime=18 FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(255,50,50)}) end})
+T2:CreateButton({Name = "Overgrown", Callback = function() Clean() SetMat("Grass") FX("ColorCorrectionEffect", {Saturation=1}) end})
+T2:CreateButton({Name = "Rusty World", Callback = function() Clean() SetMat("CorrodedMetal") end})
+T2:CreateButton({Name = "Blue Radiation", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(0,255,255), Brightness=0.2}) end})
+T2:CreateButton({Name = "Ashfall", Callback = function() Clean() Lighting.FogEnd=500 Lighting.FogColor=Color3.fromRGB(50,50,50) end})
+T2:CreateButton({Name = "Drought (Засуха)", Callback = function() Clean() SetMat("Slate") FX("ColorCorrectionEffect", {Saturation=-0.2, TintColor=Color3.fromRGB(255,220,180)}) end})
+T2:CreateButton({Name = "End of World", Callback = function() Clean() Lighting.ClockTime=20 FX("ColorCorrectionEffect", {Contrast=0.8, Saturation=0.5}) end})
+
+--- ⛈️ КАТЕГОРИЯ: ПОГОДА И ПРИРОДА (11 КНОПОК) ---
+local T3 = Window:CreateTab("🌧️ Weather", 4483362458)
+T3:CreateButton({Name = "❌ ОЧИСТИТЬ НЕБО", Callback = Clean})
+T3:CreateSection("Погодные условия")
+T3:CreateButton({Name = "Heavy Rain", Callback = function() Clean() FX("BlurEffect", {Size=5}) Lighting.FogEnd=500 end})
+T3:CreateButton({Name = "Blizzard", Callback = function() Clean() SetMat("Snow") Lighting.FogEnd=200 end})
+T3:CreateButton({Name = "Thunderstorm", Callback = function() Clean() Lighting.Brightness=0.3 spawn(function() while task.wait(5) do Lighting.Brightness=10 task.wait(0.1) Lighting.Brightness=0.3 end end) end})
+T3:CreateButton({Name = "Cloudy Day", Callback = function() Clean() Lighting.Brightness=1 FX("ColorCorrectionEffect", {Contrast=0.1}) end})
+T3:CreateButton({Name = "Mist (Дымка)", Callback = function() Clean() Lighting.FogEnd=1000 Lighting.FogColor=Color3.fromRGB(200,200,200) end})
+T3:CreateButton({Name = "Midnight Rain", Callback = function() Clean() Lighting.ClockTime=0 FX("BlurEffect", {Size=2}) end})
+T3:CreateButton({Name = "Autumn Vibe", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(255,150,50)}) end})
+T3:CreateButton({Name = "Spring Bloom", Callback = function() Clean() FX("ColorCorrectionEffect", {Saturation=0.4, TintColor=Color3.fromRGB(255,255,200)}) end})
+T3:CreateButton({Name = "Heatwave", Callback = function() Clean() FX("ColorCorrectionEffect", {Brightness=0.1, Contrast=0.2}) end})
+T3:CreateButton({Name = "Tornado Sky", Callback = function() Clean() Lighting.FogColor=Color3.fromRGB(70,70,80) Lighting.FogEnd=600 end})
+T3:CreateButton({Name = "Eclipse", Callback = function() Clean() Lighting.ClockTime=14 Lighting.Brightness=0.1 Lighting.OutdoorAmbient=Color3.new(0,0,0) end})
+
+--- 📺 КАТЕГОРИЯ: ЭФФЕКТЫ И РЕТРО (11 КНОПОК) ---
+local T4 = Window:CreateTab("📺 Retro & FX", 4483362458)
+T4:CreateButton({Name = "❌ ВЫКЛЮЧИТЬ ЭФФЕКТЫ", Callback = Clean})
+T4:CreateSection("Спецэффекты")
+T4:CreateButton({Name = "VHS 1980", Callback = function() Clean() FX("BlurEffect", {Size=2}) FX("ColorCorrectionEffect", {Contrast=0.3, Saturation=-0.2}) end})
+T4:CreateButton({Name = "GameBoy", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(155,188,15), Saturation=-1, Contrast=2}) end})
+T4:CreateButton({Name = "Matrix", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(0,255,0), Contrast=0.5}) end})
+T4:CreateButton({Name = "Noir (Ч/Б)", Callback = function() Clean() FX("ColorCorrectionEffect", {Saturation=-1, Contrast=0.2}) end})
+T4:CreateButton({Name = "Drunk Blur", Callback = function() local b = FX("BlurEffect", {Size=0}) spawn(function() while b.Parent do for i=0,10 do b.Size=i task.wait(0.05) end for i=10,0,-1 do b.Size=i task.wait(0.05) end end end) end})
+T4:CreateButton({Name = "Night Vision", Callback = function() Clean() Lighting.Brightness=4 FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(0,255,0)}) end})
+T4:CreateButton({Name = "8-Bit Look", Callback = function() Clean() FX("ColorCorrectionEffect", {Contrast=0.8, Saturation=0.5}) end})
+T4:CreateButton({Name = "Negative", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(0,0,0), Brightness=1}) end})
+T4:CreateButton({Name = "Underwater", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(0,100,255)}) FX("BlurEffect", {Size=4}) end})
+T4:CreateButton({Name = "Sepia (Old Photo)", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(112,66,20), Saturation=-0.5}) end})
+T4:CreateButton({Name = "Purple Haze", Callback = function() Clean() FX("ColorCorrectionEffect", {TintColor=Color3.fromRGB(150,0,255), Saturation=0.5}) end})
+
