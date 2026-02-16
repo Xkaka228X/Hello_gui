@@ -1,0 +1,226 @@
+--[[ 
+    JFON EXECUTOR - PRO FINAL (F9 TOGGLE FIX)
+    Updates: F9 works every time, Big UI, Smart RUN, Cloud Scripts
+]]
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+-- 1. ТЕМА И ПАПКИ
+local Theme = {
+    Background = Color3.fromRGB(10, 10, 10),
+    Accent = Color3.fromRGB(0, 255, 255),
+    Text = Color3.fromRGB(255, 255, 255),
+    Button = Color3.fromRGB(20, 20, 20),
+}
+
+if not isfolder("JfonScripts") then 
+    makefolder("JfonScripts") 
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "JfonExecutorFinal_Stable"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local function addCorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = parent
+end
+
+local function addStroke(parent)
+    local stroke = Instance.new("UIStroke")
+    stroke.Parent = parent
+    stroke.Color = Theme.Accent
+    stroke.Thickness = 1.5
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+end
+
+-------------------------------------------------------------------------
+-- КНОПКА ОТКРЫТИЯ (DRAGGABLE)
+-------------------------------------------------------------------------
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.5, 0)
+ToggleBtn.BackgroundColor3 = Theme.Background
+ToggleBtn.Text = "J"
+ToggleBtn.TextColor3 = Theme.Accent
+ToggleBtn.TextSize = 24
+ToggleBtn.Font = Enum.Font.GothamBold
+addCorner(ToggleBtn, 12)
+addStroke(ToggleBtn)
+
+local dragging, dragInput, dragStart, startPos
+ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = ToggleBtn.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-------------------------------------------------------------------------
+-- ГЛАВНОЕ ОКНО
+-------------------------------------------------------------------------
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Theme.Background
+MainFrame.ClipsDescendants = true
+MainFrame.Visible = false
+addCorner(MainFrame, 10)
+addStroke(MainFrame)
+
+local TARGET_SIZE = UDim2.new(0.9, 0, 0.8, 0)
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Parent = MainFrame
+Sidebar.BackgroundColor3 = Theme.Button
+Sidebar.Size = UDim2.new(0.12, 0, 1, 0)
+Sidebar.Position = UDim2.new(0.88, 0, 0, 0)
+addCorner(Sidebar, 8)
+local SidebarList = Instance.new("UIListLayout", Sidebar)
+SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SidebarList.Padding = UDim.new(0, 10)
+
+local Container = Instance.new("Frame", MainFrame)
+Container.Size = UDim2.new(0.88, 0, 1, 0)
+Container.BackgroundTransparency = 1
+
+local EditorTab = Instance.new("Frame", Container); EditorTab.Size = UDim2.new(1,0,1,0); EditorTab.BackgroundTransparency = 1
+local SavedTab = Instance.new("ScrollingFrame", Container); SavedTab.Size = UDim2.new(1,0,1,0); SavedTab.BackgroundTransparency = 1; SavedTab.Visible = false; SavedTab.ScrollBarThickness = 3
+local CloudTab = Instance.new("ScrollingFrame", Container); CloudTab.Size = UDim2.new(1,0,1,0); CloudTab.BackgroundTransparency = 1; CloudTab.Visible = false; CloudTab.ScrollBarThickness = 3
+Instance.new("UIListLayout", SavedTab).Padding = UDim.new(0,5)
+Instance.new("UIListLayout", CloudTab).Padding = UDim.new(0,5)
+
+local EditorBox = Instance.new("TextBox")
+EditorBox.Parent = EditorTab
+EditorBox.Size = UDim2.new(0.96, 0, 0.82, 0)
+EditorBox.Position = UDim2.new(0.02, 0, 0.03, 0)
+EditorBox.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+EditorBox.TextColor3 = Theme.Accent
+EditorBox.TextXAlignment = "Left"; EditorBox.TextYAlignment = "Top"
+EditorBox.MultiLine = true
+EditorBox.ClearTextOnFocus = false
+EditorBox.Font = "Code"; EditorBox.TextSize = 14
+EditorBox.Text = "" 
+EditorBox.PlaceholderText = "-- Вставь код, URL или loadstring сюда..." 
+EditorBox.PlaceholderColor3 = Color3.fromRGB(80, 80, 80)
+addCorner(EditorBox, 6)
+
+-------------------------------------------------------------------------
+-- ЛОГИКА ВКЛАДКИ SAVED
+-------------------------------------------------------------------------
+local function refreshSaved()
+    for _, item in pairs(SavedTab:GetChildren()) do if item:IsA("Frame") then item:Destroy() end end
+    local files = listfiles("JfonScripts")
+    for _, path in pairs(files) do
+        local name = path:gsub("JfonScripts/", ""):gsub("JfonScripts\\", "")
+        local item = Instance.new("Frame", SavedTab); item.Size = UDim2.new(0.95, 0, 0, 50); item.BackgroundColor3 = Theme.Button; addCorner(item, 6)
+        local label = Instance.new("TextLabel", item); label.Text = name; label.Size = UDim2.new(0.6, 0, 1, 0); label.Position = UDim2.new(0.05, 0, 0, 0); label.TextColor3 = Theme.Text; label.BackgroundTransparency = 1; label.TextXAlignment = "Left"; label.Font = "Gotham"
+        local loadBtn = Instance.new("TextButton", item); loadBtn.Text = "LOAD"; loadBtn.Size = UDim2.new(0.15, 0, 0.7, 0); loadBtn.Position = UDim2.new(0.65, 0, 0.15, 0); loadBtn.BackgroundColor3 = Theme.Background; loadBtn.TextColor3 = Color3.new(0, 1, 0); addCorner(loadBtn, 4)
+        loadBtn.MouseButton1Click:Connect(function() EditorBox.Text = readfile(path); EditorTab.Visible = true; SavedTab.Visible = false; CloudTab.Visible = false end)
+        local delBtn = Instance.new("TextButton", item); delBtn.Text = "DEL"; delBtn.Size = UDim2.new(0.12, 0, 0.7, 0); delBtn.Position = UDim2.new(0.82, 0, 0.15, 0); delBtn.BackgroundColor3 = Theme.Background; delBtn.TextColor3 = Color3.new(1, 0, 0); addCorner(delBtn, 4)
+        delBtn.MouseButton1Click:Connect(function() delfile(path); item:Destroy() end)
+    end
+end
+
+-------------------------------------------------------------------------
+-- УМНЫЙ ЗАПУСК
+-------------------------------------------------------------------------
+local function ExecuteScript(input)
+    if input == "" then return end
+    local cleanInput = input:gsub("^%s*(.-)%s*$", "%1")
+    local success, err = pcall(function()
+        if cleanInput:match("^https?://") then loadstring(game:HttpGet(cleanInput))()
+        else loadstring(cleanInput)() end
+    end)
+    if not success then warn("Jfon Error: "..tostring(err)) end
+end
+
+-------------------------------------------------------------------------
+-- КНОПКИ САЙДБАРА
+-------------------------------------------------------------------------
+local isOpen = false
+local function toggle()
+    if isOpen then MainFrame:TweenSize(UDim2.new(0,0,0,0), "In", "Back", 0.4, true); wait(0.4); MainFrame.Visible = false
+    else MainFrame.Visible = true; MainFrame:TweenSize(TARGET_SIZE, "Out", "Elastic", 0.6, true) end
+    isOpen = not isOpen
+end
+ToggleBtn.MouseButton1Click:Connect(toggle)
+
+local function createSide(txt, cb)
+    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(0.8, 0, 0, 45); b.BackgroundColor3 = Theme.Background; b.TextColor3 = Theme.Accent; b.Text = txt; b.Font = "GothamBold"; addCorner(b, 6)
+    b.MouseButton1Click:Connect(cb)
+end
+
+Instance.new("Frame", Sidebar).Size = UDim2.new(1,0,0,10)
+createSide(">_", function() EditorTab.Visible=true; SavedTab.Visible=false; CloudTab.Visible=false end)
+createSide("CLOUD", function() EditorTab.Visible=false; SavedTab.Visible=false; CloudTab.Visible=true end)
+createSide("SAVED", function() EditorTab.Visible=false; SavedTab.Visible=true; CloudTab.Visible=false; refreshSaved() end)
+
+-- ИСПРАВЛЕННАЯ КНОПКА F9 (ЦИКЛИЧНОЕ НАЖАТИЕ)
+createSide("F9", function() 
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F9, false, game)
+    task.wait(0.05)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F9, false, game)
+end)
+
+createSide("EXIT", function() toggle() end)
+
+-------------------------------------------------------------------------
+-- CLOUD SCRIPTS
+-------------------------------------------------------------------------
+local function addCloud(name, url)
+    local f = Instance.new("Frame", CloudTab); f.Size = UDim2.new(0.95, 0, 0, 60); f.BackgroundColor3 = Theme.Button; addCorner(f, 8); addStroke(f)
+    local l = Instance.new("TextLabel", f); l.Text = name; l.Size = UDim2.new(0.7,0,1,0); l.Position = UDim2.new(0.05,0,0,0); l.TextColor3 = Theme.Accent; l.BackgroundTransparency = 1; l.TextXAlignment = "Left"; l.Font = "GothamBold"
+    local b = Instance.new("TextButton", f); b.Text = "RUN"; b.Size = UDim2.new(0.2,0,0.6,0); b.Position = UDim2.new(0.75,0,0.2,0); b.BackgroundColor3 = Theme.Background; b.TextColor3 = Theme.Accent; addCorner(b, 6)
+    b.MouseButton1Click:Connect(function() ExecuteScript(url) end)
+end
+
+addCloud("Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
+addCloud("Dark Dex V3", "https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDexV3.lua")
+addCloud("Fly Gui V3", "https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt")
+addCloud("Simple Hub", "https://pastefy.app/aSVflAr5/raw")
+addCloud("Easy TP GUI", "https://raw.githubusercontent.com/Xkaka228X/Easytpgui/refs/heads/main/README.md")
+addCloud("Hello World Hub", "https://raw.githubusercontent.com/Xkaka228X/Hello_gui/refs/heads/main/Hell_world%20script%20hub")
+
+-------------------------------------------------------------------------
+-- НИЖНИЕ КНОПКИ ДЕЙСТВИЯ
+-------------------------------------------------------------------------
+local function action(txt, pos, cb)
+    local b = Instance.new("TextButton", EditorTab); b.Size = UDim2.new(0.22, 0, 0.08, 0); b.Position = pos; b.BackgroundColor3 = Theme.Button; b.TextColor3 = Theme.Accent; b.Text = txt; addCorner(b, 6); addStroke(b)
+    b.MouseButton1Click:Connect(cb)
+end
+
+action("RUN", UDim2.new(0.02, 0, 0.88, 0), function() ExecuteScript(EditorBox.Text) end)
+action("CLEAR", UDim2.new(0.26, 0, 0.88, 0), function() EditorBox.Text = "" end)
+action("COPY", UDim2.new(0.50, 0, 0.88, 0), function() setclipboard(EditorBox.Text) end)
+
+-- SAVE SYSTEM (MODAL)
+local SaveModal = Instance.new("Frame", ScreenGui); SaveModal.Size = UDim2.new(0, 300, 0, 150); SaveModal.Position = UDim2.new(0.5, 0, 0.5, 0); SaveModal.AnchorPoint = Vector2.new(0.5, 0.5); SaveModal.BackgroundColor3 = Theme.Background; SaveModal.Visible = false; SaveModal.ZIndex = 20; addCorner(SaveModal, 10); addStroke(SaveModal)
+local SaveInput = Instance.new("TextBox", SaveModal); SaveInput.Size = UDim2.new(0.8, 0, 0.3, 0); SaveInput.Position = UDim2.new(0.1, 0, 0.25, 0); SaveInput.BackgroundColor3 = Theme.Button; SaveInput.TextColor3 = Theme.Accent; SaveInput.PlaceholderText = "Название скрипта..." ; addCorner(SaveInput, 6)
+local ConfirmSave = Instance.new("TextButton", SaveModal); ConfirmSave.Size = UDim2.new(0.4, 0, 0.25, 0); ConfirmSave.Position = UDim2.new(0.3, 0, 0.65, 0); ConfirmSave.Text = "СОХРАНИТЬ"; ConfirmSave.BackgroundColor3 = Theme.Button; ConfirmSave.TextColor3 = Theme.Accent; addCorner(ConfirmSave, 6)
+
+action("SAVE", UDim2.new(0.74, 0, 0.88, 0), function() SaveModal.Visible = true; SaveInput.Text = "Script_"..math.random(1,999) end)
+
+ConfirmSave.MouseButton1Click:Connect(function()
+    local name = SaveInput.Text
+    if name == "" then name = "Script_"..math.random(1,100) end
+    writefile("JfonScripts/"..name..".lua", EditorBox.Text)
+    ConfirmSave.Text = "ГОТОВО!"; wait(1); ConfirmSave.Text = "СОХРАНИТЬ"; SaveModal.Visible = false
+    refreshSaved()
+end)
+
