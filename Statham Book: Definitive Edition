@@ -1,0 +1,223 @@
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local CoverFrame = Instance.new("Frame")
+local CoverImage = Instance.new("ImageLabel")
+local OpenButton = Instance.new("TextButton")
+local PagesFrame = Instance.new("Frame")
+local LeftPage = Instance.new("Frame")
+local RightPage = Instance.new("Frame")
+local QuoteLabel = Instance.new("TextLabel")
+local SayButton = Instance.new("TextButton")
+local NextButton = Instance.new("TextButton")
+local PrevButton = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton")
+local PageCounter = Instance.new("TextLabel")
+
+-- Функция шума
+local function ApplyNoise(parent)
+    local noise = Instance.new("ImageLabel")
+    noise.Name = "Noise"
+    noise.Parent = parent
+    noise.Size = UDim2.new(1, 0, 1, 0)
+    noise.BackgroundTransparency = 1
+    noise.Image = "rbxassetid://1310065050"
+    noise.ImageTransparency = 0.88
+    noise.ScaleType = Enum.ScaleType.Tile
+    noise.TileSize = UDim2.new(0, 128, 0, 128)
+    noise.ZIndex = parent.ZIndex + 1
+end
+
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "Statham_Full_V3"
+ScreenGui.ResetOnSpawn = false
+
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 15)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
+MainFrame.Size = UDim2.new(0, 500, 0, 320)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame)
+ApplyNoise(MainFrame)
+
+-- Обложка
+CoverFrame.Parent = MainFrame
+CoverFrame.Size = UDim2.new(1, 0, 1, 0)
+CoverFrame.BackgroundColor3 = Color3.fromRGB(40, 30, 20)
+CoverFrame.ZIndex = 10
+
+CoverImage.Parent = CoverFrame
+CoverImage.Size = UDim2.new(0.7, 0, 0.7, 0)
+CoverImage.Position = UDim2.new(0.15, 0, 0.05, 0)
+CoverImage.Image = "rbxassetid://12441348346"
+CoverImage.BackgroundTransparency = 1
+CoverImage.ZIndex = 11
+
+OpenButton.Parent = CoverFrame
+OpenButton.Size = UDim2.new(0.5, 0, 0, 45)
+OpenButton.Position = UDim2.new(0.25, 0, 0.8, 0)
+OpenButton.BackgroundColor3 = Color3.fromRGB(180, 140, 45)
+OpenButton.Text = "ОТКРЫТЬ ИЗДАНИЕ"
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.TextSize = 16
+OpenButton.ZIndex = 12
+Instance.new("UICorner", OpenButton)
+
+-- Страницы
+PagesFrame.Parent = MainFrame
+PagesFrame.Size = UDim2.new(1, 0, 1, 0)
+PagesFrame.Visible = false
+PagesFrame.ZIndex = 2
+
+local function SetupPage(page, pos)
+    page.Parent = PagesFrame
+    page.BackgroundColor3 = Color3.fromRGB(245, 242, 225)
+    page.Position = pos
+    page.Size = UDim2.new(0.47, 0, 0.94, 0)
+    page.ZIndex = 3
+    Instance.new("UICorner", page)
+    ApplyNoise(page)
+    local grad = Instance.new("UIGradient", page)
+    grad.Color = ColorSequence.new(Color3.fromRGB(255,255,255), Color3.fromRGB(210,205,190))
+end
+
+SetupPage(LeftPage, UDim2.new(0.02, 0, 0.03, 0))
+SetupPage(RightPage, UDim2.new(0.51, 0, 0.03, 0))
+
+QuoteLabel.Parent = LeftPage
+QuoteLabel.Size = UDim2.new(0.85, 0, 0.8, 0)
+QuoteLabel.Position = UDim2.new(0.07, 0, 0.1, 0)
+QuoteLabel.BackgroundTransparency = 1
+QuoteLabel.Font = Enum.Font.Antique
+QuoteLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+QuoteLabel.TextSize = 15
+QuoteLabel.TextWrapped = true
+QuoteLabel.ZIndex = 6
+
+PageCounter.Parent = LeftPage
+PageCounter.Size = UDim2.new(1, 0, 0, 20)
+PageCounter.Position = UDim2.new(0, 0, 0.9, 0)
+PageCounter.BackgroundTransparency = 1
+PageCounter.Font = Enum.Font.Code
+PageCounter.TextColor3 = Color3.fromRGB(80, 80, 80)
+PageCounter.ZIndex = 6
+
+local function styleBtn(btn, text, pos, color)
+    btn.Parent = RightPage
+    btn.Size = UDim2.new(0.85, 0, 0, 32)
+    btn.Position = pos
+    btn.BackgroundColor3 = color
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 11
+    btn.ZIndex = 10
+    Instance.new("UICorner", btn)
+end
+
+styleBtn(PrevButton, "ПРЕД. ЦИТАТА", UDim2.new(0.07, 0, 0.1, 0), Color3.fromRGB(100, 100, 50))
+styleBtn(NextButton, "СЛЕД. ЦИТАТА", UDim2.new(0.07, 0, 0.25, 0), Color3.fromRGB(50, 80, 50))
+styleBtn(SayButton, "ВЫДАТЬ В ЧАТ", UDim2.new(0.07, 0, 0.5, 0), Color3.fromRGB(50, 50, 100))
+styleBtn(CloseButton, "ЗАКРЫТЬ КНИГУ", UDim2.new(0.07, 0, 0.8, 0), Color3.fromRGB(100, 50, 50))
+
+-- Список цитат (все 113)
+local quotes = {
+    "Я ВАМ ЗАПРЕЩАЮ", "ТОТ, КТО ЗНАЕТ… ЗНАЕТ", "ЕСЛИ ТЕБЯ НЕЗАСЛУЖЕННО ОБИДЕЛИ, ВЕРНИСЬ И ЗАСЛУЖИ",
+    "СУП ИЗ ОДНОЙ РЫБЫ НАЗЫВАЕТСЯ УХА, А СУП ИЗ 5 РЫБ НАЗЫВАЕТСЯ УХАХАХАХАХА", "НЕМОЙ ХЕРНИ НЕ СКАЖЕТ",
+    "КУПИЛ МУЖИК ШТАНЫ ДЛЯ ТАНЦЕВ, А ОНИ ЕМУ КАК РАЗ-ДВА-ТРИ, РАЗ-ДВА-ТРИ", "РАБОТА – НЕ ВОЛК. РАБОТА – ЭТО ВОРК, А ВОЛК – ЭТО ХОДИТЬ",
+    "ЖИ-ШИ ПИШИ ОТ ДУШИ", "ЖИВИ, КАЙФУЙ, ИГРАЙ, ГУЛЯЙ УПАЛ – ВСТАВАЙ, НАГЛЕЙ, РУГАЙ ЧУЖИХ РОНЯЙ, СВОИХ СПАСАЙ ПЕЛЬМЕНИ, СУП, КАРТОШКА, ЧАЙ",
+    "ПОЧЕСАЛ ЯЙЦА, ПОНЮХАЛ РУКУ", "ЛУЧШЕ ВЫПИТЬ ЛИТР ПИВА, ЧЕМ НЕ ВЫПИТЬ ЛИТР ПИВА", "ХОЗЯЙСТВО ВЕСТИ, НЕ ХЕРОМ ТРЯСТИ",
+    "СНАЧАЛА КОМПЛИМЕНТЫ, ПОТОМ ПЛАТИШЬ АЛИМЕНТЫ", "ДЕЛУ ВРЕМЯ, А ПОТЕХЕ ЧАС, ПИВО, ВОДОЧКА И КВАС", "ЛУЧШЕ 5 СМ СПЕРЕДИ, ЧЕМ 2 СЗАДИ",
+    "НА ПЕРВЫЙ УРОК МОЖНО И ОПОЗДАТЬ, ВЕДЬ УЧИТЬСЯ НИКОГДА НЕ ПОЗДНО", "ЕСЛИ ТЕБЕ ГДЕ-ТО НЕ РАДЫ В РВАНЫХ НОСКАХ, ТО И В ЦЕЛЫХ ТУДА ИДТИ НЕ СТОИТ",
+    "НЕ ХОЧЕШЬ СРАТЬ, НЕ МУЧАЙ ЖОПУ", "БОЮСЬ ТОЛЬКО АЛЛАХА, И ПЬЯНОГО КАЗАХА", "ПОКА НЕ ДОКАЗАНО, НЕ ВОЛНУЕТ, ЧТО СКАЗАНО",
+    "ХОЧУ ЭЧПОЧМАК", "ЗАПОМНИТЕ, А ТО ЗАБУДЕТЕ", "ОЧКО – ПОНЯТИЕ РАСТЯЖИМОЕ", "СКОЛЬКО ПИСЕЙ НЕ ТРЯСИ, ОДНА КАПЕЛЬКА В ТРУСЫ",
+    "ЕСЛИ ЖИЗНЬ – ЭТО ВЫЗОВ, Я ПЕРЕЗВОНЮ", "НЕ БОЛЕЙТЕ РАКОМ. БОЛЕЙТЕ СТОЯ", "ЛУЧШЕ ПОСРАТЬ И ОПОЗДАТЬ, ЧЕМ ПРИЙТИ И ОБОСРАТЬСЯ",
+    "ЕСЛИ ГРУСТНО, ВЫПЕЙ ЧАЮ, СТАНЕТ ЛЕГЧЕ, ОТВЕЧАЮ", "ВЫ ИМЕЕТЕ ПРАВО, НО НЕ ИМЕЕТЕ ЛЕВО", 
+    "СЕКСА НЕ БУДЕТ, ТОЛЬКО ПОСЛЕ СВАДЬБЫ. СКАЖИ СВОЕЙ МАМЕ – ВЕНЧАТЬСЯ БУДЕМ В ХРАМЕ", "Я СРАТЬ",
+    "СПРЯТАТЬ ЧУВСТВА ЛЕГКО, А ВОТ СПРЯТАТЬ СТОЯК СЛОЖНЕЕ", "ГЛУПЫЙ ЧЕЛОВЕК ЖАЛУЕТСЯ НА ДЫРКУ В КАРМАНЕ, А МУДРЫЙ ИСПОЛЬЗУЕТ ЕЕ, ЧТОБЫ ПОЧЕСАТЬ ЯЙЦА",
+    "ЕСЛИ ВАС ПОЛИВАЮТ ГОВНОМ, ЗНАЧИТ ВЫ ЗАСТАВИЛИ КОГО-ТО ОБОСРАТЬСЯ", "ОСТАНОВКУ ЗНАЕШЬ? Я ОСТАНОВИЛ",
+    "ЕСЛИ Я ВДРУГ СТАНУ ТЕБЕ НУЖЕН, ТО Я ТАМ ЖЕ, ГДЕ И БЫЛ, КОГДА БЫЛ НЕ НУЖЕН", "ЕСЛИ ЗА ДВУМЯ ЗАЙЦАМИ ПОГОНИШЬСЯ, ТО НЕ ВЫЛОВИТЬ ТЕБЕ РЫБКУ ИЗ ПРУДА",
+    "ЕСЛИ ПАЦАН СКАЗАЛ, ТО СДЕЛАЕТ, ЕСЛИ НЕ СДЕЛАЛ, ЗНАЧИТ, ПОШУТИЛ", "БЕСПЛАТНЫЙ СЫР НА ТО И БЕСПЛАТНЫЙ, ЧТО СЫР",
+    "А ТЫ ПОПРОБУЙ МЕНЯ НАЙТИ, КОГДА ОТКЛЮЧЕНЫ ТЕЛЕФОНЫ И НЕТ МЕНЯ В СЕТИ", "СИЛА НЕ В БАБКАХ, ВЕДЬ БАБКИ УЖЕ СТАРЫЕ",
+    "ШКАФ – НЕ ТУМБА. ТИМОН – НЕ ПУМБА", "ПОСРАТЬ БЕЗ СИГАРЕТКИ, КАК ЧАЙ БЕЗ КОНФЕТКИ", "СКАЖИ МНЕ, КТО ТВОЙ ДРУГ, И ОБА ИДИТЕ НАХЕР",
+    "ЛУЧШЕ ВЫПЬЮ СТОПКУ ВОДКИ, ЧЕМ СНИМУСЬ В КИНО В КОЛГОТКАХ", "ТЫ ЖИВЕШЬ КАК КАРТА ЛЯЖЕТ, Я ЖИВУ КАК МАМА СКАЖЕТ", "ТУТ – ЭТО ВАМ НЕ ТАМ",
+    "ДОСТАЛ НОЖ – РЕЖЬ. ВЗЯЛ ДОШИК – ЕШЬ", "ХМЕЛИ СУМЕЛИ, И ТЫ СМОЖЕШЬ!", "ШАГ ВЛЕВО, ШАГ ВПРАВО – ЭТО ДВА ШАГА",
+    "ЗАВТРА РАНО ВСТАВАТЬ, ВСТАНУ ПОСЛЕЗАВТРА", "ТОПЛЕНОЕ МОЛОКО ЗНАЕШЬ? Я УТОПИЛ", 
+    "КОГДА ТЫ ПОЧУВСТВУЕШЬ СЕБЯ ЛОХОМ, ТО ВСПОМНИ, ЧТО КТО-ТО СЕЙЧАС ВСТРЕЧАЕТСЯ С ТВОЕЙ БЫВШЕЙ",
+    "РАНЬШЕ Я ДУМАЛ, ЧТО ВЕЧНОЙ ЛЮБВИ НЕ СУЩЕСТВУЕТ, ПОКА НЕ ВСТРЕТИЛ ПИВО", "ГОВОРИШЬ НА МЕНЯ – ПЕРЕВОДИШЬ НА СЕБЯ",
+    "ПЕРЕВОД НЕ ПОЛУЧИЛСЯ, НА ТЕБЯ ПОНОС СВАЛИЛСЯ", "ПРЕСС ДЛЯ ЛОХОВ – ПИВНОЙ ЖИВОТ ДЛЯ МУЖИКОВ",
+    "НИКОГДА НЕ ОТКЛАДЫВАЙ НА ЗАВТРА ТО, НА ЧТО МОЖНО ЗАБИТЬ СЕГОДНЯ", "ЗАПОМНИ, ОДНА ОШИБКА И ТЫ ОШИБСЯ", "ЕСЛИ ЗАБЛУДИЛСЯ В ЛЕСУ, ИДИ ДОМОЙ",
+    "СЛАБЫЙ МУЖЧИНА ИЩЕТ ОПРАВДАНИЯ, А НАСТОЯЩИЙ МУЖИК ИХ ЗАРАНЕЕ ПОДГОТОВИЛ", "Я НАСТОЯЩИЙ ЭКСТРЕМАЛ, Я СРАЛ В ГОСТЯХ И НЕ СМЫВАЛ",
+    "ДЕВУШКА ВЫНАШИВАЕТ РЕБЕНКА 9 МЕСЯЦЕВ. Я ВЫНОШУ ЕГО С ОДНОГО УДАРА", "НЕ БОЙСЯ, КОГДА ТЫ ОДИН – БОЙСЯ, КОГДА ТЫ ДВА",
+    "НЕ ВАЖНО, КТО ПРАВ, ВАЖНО, КТО ЛЕВ", "СОБАКАМ НЕЛЬЗЯ ДОВЕРЯТЬ, ПОТОМУ ЧТО ОНИ ИЗДАЮТ LIE", "ПОМНИ, ЕСЛИ ТЕБЯ СЪЕЛИ, У ТЕБЯ ЕСТЬ ДВА ВЫХОДА",
+    "НЕ ЯЙЦА КРАСЯТ ЧЕЛОВЕКА, А ЧЕЛОВЕК ЯЙЦА", "Я ТАКОЙ ЧЕЛОВЕК, КОТОРЫЙ ТЕРПИТ, ТЕРПИТ, А ПОТОМ КАК ТЕРПИТ, ТЕРПИТ",
+    "НАДЕВАЙТЕ ШАПКИ, БРАТЬЯ, КОГДА НА УЛИЦЕ МОРОЗ", "ПАЦАНЫ НЕ УСТУПАЮТ БАБКАМ МЕСТО, ВЕДЬ БАБКИ В ЖИЗНИ – НЕ ГЛАВНОЕ",
+    "ПАРЫ – НЕ УДАРЫ, МОЖНО И ПРОПУСТИТЬ. УЧЕБА – НЕ УСЕЙН БОЛТ, НЕ УБЕЖИТ", "ЛУЧШЕ ВЫПЬЮ СТОПКУ ВОДКИ, ЧЕМ СНИМУСЬ В КИНО В КОЛГОТКАХ",
+    "ЛЮБИШЬ ЯЙЦА ЖУХАТЬ, ЛЮБИ И ПАЛЬЦЫ НЮХАТЬ", "ЛЬВА ТОЛСТОГО ЗНАЕШЬ? Я ПОКОРМИЛ", 
+    "БАЗАР, КАК ВОДА. ЧЕМ БОЛЬШЕ ФИЛЬТРУЕШЬ, ТЕМ МЕНЬШЕ ПРОБЛЕМ С ПОЧКАМИ", "ЕСЛИ ПАНИЧЕСКАЯ АТАКА НЕИЗБЕЖНА, АТАКУЙ ПЕРВЫМ",
+    "У ВСЕХ ЛЫСЫХ ПРИЧЕСКИ ОДИНАКОВЫЕ", "СЕМЬ РАЗ ОТПЕЙ – ОДИН ОТЛЕЙ", "НАЗЫВАЕШЬ МЕНЯ БРАТОМ, А ГДЕ ТЫ БЫЛ, КОГДА Я РЕЗАЛ ЛУК И ПЛАКАЛ?",
+    "НОЙ НЕ НЫЛ, И ТЫ НЕ НОЙ", "КОГДА Я ВИЖУ ИМЕНА ПАРОЧЕК, ВЫРЕЗАННЫЕ НА ДЕРЕВЬЯХ, Я ДУМАЮ, ПОЧЕМУ ЭТИ ЛЮДИ БЕРУТ НА СВИДАНИЕ НОЖ",
+    "ГОРЧИЦУ ЗНАЕШЬ? Я ОГОРЧИЛ", "ЛЫСИНА И ЧЕЛОЧКА – ДАСТ ЛЮБАЯ ТЕЛОЧКА", "РАЗ В СУТКИ, СУП ДОЛЖЕН БЫТЬ В ЖЕЛУДКЕ",
+    "АЛКОГОЛИЗМ – ЭТО СТРАШНО, НО Я НЕ ИЗ ТРУСЛИВЫХ", "ДАЮТ БЕРИ, НЕ ДАЮТ – ОТБЕРИ", "ПОЗВОНОЧНИК ЗНАЕШЬ? Я ПОЗВОНИЛ",
+    "ТРИ СЛОВА – ЭТО ДВА СЛОВА", "НЕ СПЕШИ, А ТО – УСПЕЕШЬ", "МАМА ДЕНЕЖКУ ДАЛА, ЖИЗНЬ НОРМАЛЬНАЯ ПОШЛА",
+    "ЧЕМ СТАРШЕ ЧЕЛОВЕК, ТЕМ БОЛЬШЕ ЕМУ ЛЕТ", "КТО НОСИТ КОФТУ АДИДАС, ТОМУ ЛЮБАЯ БАБА ДАСТ", "ТОЛЬКО ПОДКАБЛУЧНИК БУДЕТ ОТПРАШИВАТЬСЯ У ЖЕНЫ",
+    "ТОЛЬКО ПОДКАБЛУЧНИК СПРАШИВАЕТ У ЖЕНЫ, МОЖНО ЛИ СХОДИТЬ ВЫПИТЬ ПИВО С ПАЦАНАМИ, НАСТОЯЩИЙ МУЖИК И ТАК ЗНАЕТ, ЧТО НЕЛЬЗЯ",
+    "НЕ БОЙСЯ НОЖА, БОЙСЯ ВИЛКИ – ОДИН УДАР ЧЕТЫРЕ ДЫРКИ", "ЕСЛИ Б МОРЕ БЫЛО ВОДКОЙ, Я БЫ СТАЛ ПОДВОДНОЙ ЛОДКОЙ",
+    "ХОРОШИЙ ЧЕЛОВЕК ПЛОХОЙ ВОЗДУХ В СЕБЕ ДЕРЖАТЬ НЕ БУДЕТ", "МЫ В ОТВЕТЕ ЗА ТЕХ, КОМУ НАЛИВАЕМ", 
+    "ПРОШУ ПРОЩЕНИЯ МАТЕРЕЙ, ЧЬИХ ВОЗБУДИЛ Я ДОЧЕРЕЙ", "КТО ОБЗЫВАЕТСЯ, ТОТ САМ ТАК НАЗЫВАЕТСЯ", "ТЫ ПЧЕЛА, Я ПЧЕЛОВОД",
+    "РОЛЛЫ ДЛЯ ЛОХОВ, ПЕЛЬМЕШКИ ДЛЯ ПАЦАНОВ", "НИКОГДА НЕ СДАВАЙТЕСЬ, ИДИТЕ К СВОЕЙ ЦЕЛИ! А ЕСЛИ БУДЕТ СЛОЖНО – СДАВАЙТЕСЬ",
+    "В ЖИЗНИ ВСЕГДА ЕСТЬ ДВЕ ДОРОГИ: ОДНА – ПЕРВАЯ, А ДРУГАЯ – ВТОРАЯ", "ДЕЛАЙ, КАК НАДО. КАК НЕ НАДО, НЕ ДЕЛАЙ",
+    "СНИМУ КВАРТИРУ. ПОРЯДОК НА РАЙОНЕ ГАРАНТИРУЮ", "МАРИАНСКУЮ ВПАДИНУ ЗНАЕШЬ? ЭТО Я УПАЛ", "КАК ГОВОРИЛ МОЙ ДЕД, «Я ТВОЙ ДЕД»",
+    "БЕЗ ПОДОШВЫ ТАПОЧКИ – ЭТО ПРОСТО ТРЯПОЧКИ", "СЛОВО – НЕ ВОРОБЕЙ. ВООБЩЕ НИЧТО НЕ ВОРОБЕЙ, КРОМЕ САМОГО ВОРОБЬЯ",
+    "КОГДА ЖЕНЩИНА ПОДНИМАЕТ РУКУ, ОНА ПЕРЕСТАЕТ БЫТЬ ЖЕНЩИНОЙ, И СТАНОВИТСЯ СПАРРИНГ-ПАРТНЕРОМ",
+    "СОЕДИНЕННЫЕ ШТАТЫ ЗНАЕШЬ? Я СОЕДИНИЛ", "ОДИН МОЙ ДРУГ, ЧТОБЫ НЕ ЗАБОЛЕТЬ, ЕЛ ЧЕСНОК, А НАДО БЫЛО ПОЛЬЗОВАТЬСЯ ПРЕЗЕРВАТИВАМИ",
+    "НЕУДОБНО – ЭТО КОГДА ВЫПРОСИЛ, А У ТЕБЯ НЕ СТОИТ", "НЕ ОЧАРОВЫВАЙСЯ, ЧТОБЫ НЕ РАЗОЧАРОВАТЬСЯ", "НИКОГДА НЕ СДАВАЙСЯ, ТЫ ЖЕ НЕ КВАРТИРА",
+    "СМЕХ, КОНЕЧНО, – ЛУЧШЕЕ ЛЕКАРСТВО, НО НЕ ПРИ ПОНОСЕ", "ЭТО НЕ У МЕНЯ НЕТ ДЕВУШКИ. ЭТО НИ У ОДНОЙ ДЕВУШКИ НЕТ МЕНЯ",
+    "Я БЫ ВЫИГРАЛ, ЕСЛИ БЫ НЕ ПРОИГРАЛ", "ВОЗДУХ НЕ ЧУВСТВУЕТСЯ, ПОКА ЕГО НЕ ИСПОРТИЛИ", "ЖИЗНЬ – ИГРА, А МЫ В НЕЙ ДОДИКИ",
+    "ТОТ, КТО СДЕЛАЛ ИЗ МУХИ СЛОНА, ПУСКАЙ САМ ЕГО И КОРМИТ", "ЛЮБОВЬ – ЭТО НЕ ТОЛЬКО ЦВЕТЫ, ЭТО ТАКЖЕ СЛУШАТЬ, КАК ОН РАССКАЗЫВАЕТ ПРО ДОТУ",
+    "ДОЛГО НЕ ДУМАЙ – ДЕЛАЙ!", "ЕСЛИ В ДЕТСТВЕ КУШАЛ МАНКУ, ДАШЬ ЛЮЛЕЙ ЛЮБОМУ ТАНКУ", 
+    "БЕСИТ, КОГДА НА КАССЕ ГОВОРЯТ, ЧТО ПРИНИМАЮТ ЛЮБУЮ КАРТУ, НО НЕ ХОТЯТ БРАТЬ БУБНОВЫЙ ВАЛЕТ",
+    "ЧТОБЫ СПЕРЕДИ ПОГЛАДИТЬ, НУЖНО СЗАДИ ПОЛИЗАТЬ", "ВСТАЛ С УТРА ПОРАНЬШЕ, СТОЯК МЕШАЕТ ИДТИ ДАЛЬШЕ", 
+    "НЕТ ПОЛНОСТЬЮ ЗДОРОВЫХ, ЕСТЬ НЕДООБСЛЕДОВАННЫЕ", "ЛЕВОЙ ДРОЧУ, ПРАВОЙ ЖОПУ ЩЕКОЧУ",
+    "ПО-НАСТОЯЩЕМУ НЕСГИБАЕМЫМ ЧЕЛОВЕКА ДЕЛАЕТ НЕ ХАРАКТЕР ИЛИ ВОСПИТАНИЕ, А МЕЖПОЗВОНОЧНАЯ ГРЫЖА",
+    "МНЕ ЧУЖОГО НЕ НАДО, НО СВОЕ Я ВОЗЬМУ, ЧЬЕ БЫ ОНО НИ БЫЛО", "ИЗБИЛ БОМЖА, ЧТОБЫ ТОТ СПАЛ В БОЛЬНИЦЕ, А НЕ НА УЛИЦЕ",
+    "КАК ГОВОРИЛ МОЙ ДЕД: «НИКОГО НЕ СЛУШАЙ». ПОТОМ ОН ЕЩЕ ЧТО-ТО ГОВОРИЛ..."
+}
+
+local index = 1
+
+local function UpdateQuote()
+    QuoteLabel.Text = "« " .. quotes[index] .. " »"
+    PageCounter.Text = "Стр. " .. index
+end
+
+UpdateQuote()
+
+OpenButton.MouseButton1Click:Connect(function()
+    CoverFrame.Visible = false
+    PagesFrame.Visible = true
+end)
+
+NextButton.MouseButton1Click:Connect(function()
+    index = index + 1
+    if index > #quotes then index = 1 end
+    UpdateQuote()
+end)
+
+PrevButton.MouseButton1Click:Connect(function()
+    index = index - 1
+    if index < 1 then index = #quotes end
+    UpdateQuote()
+end)
+
+SayButton.MouseButton1Click:Connect(function()
+    local msg = quotes[index]
+    if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then
+        game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(msg)
+    else
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+    end
+end)
+
+CloseButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
