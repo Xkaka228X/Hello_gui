@@ -1,3 +1,4 @@
+-- STATHAM BOOK: GLOBAL DEFINITIVE EDITION (Full 113 Quotes)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local CoverFrame = Instance.new("Frame")
@@ -10,10 +11,13 @@ local QuoteLabel = Instance.new("TextLabel")
 local SayButton = Instance.new("TextButton")
 local NextButton = Instance.new("TextButton")
 local PrevButton = Instance.new("TextButton")
+local LangButton = Instance.new("TextButton")
 local CloseButton = Instance.new("TextButton")
 local PageCounter = Instance.new("TextLabel")
+local BookTitle = Instance.new("TextLabel")
+local Description = Instance.new("TextLabel")
 
--- Функция шума
+-- Функция для эффекта старой бумаги (шум)
 local function ApplyNoise(parent)
     local noise = Instance.new("ImageLabel")
     noise.Name = "Noise"
@@ -28,42 +32,51 @@ local function ApplyNoise(parent)
 end
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Statham_Full_V3"
+ScreenGui.Name = "Statham_Final_113"
 ScreenGui.ResetOnSpawn = false
 
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 15)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 20, 15)
 MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
 MainFrame.Size = UDim2.new(0, 500, 0, 320)
 MainFrame.Active = true
 MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 ApplyNoise(MainFrame)
 
--- Обложка
+-- ОБЛОЖКА
 CoverFrame.Parent = MainFrame
 CoverFrame.Size = UDim2.new(1, 0, 1, 0)
-CoverFrame.BackgroundColor3 = Color3.fromRGB(40, 30, 20)
+CoverFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 15)
 CoverFrame.ZIndex = 10
 
 CoverImage.Parent = CoverFrame
-CoverImage.Size = UDim2.new(0.7, 0, 0.7, 0)
-CoverImage.Position = UDim2.new(0.15, 0, 0.05, 0)
+CoverImage.Size = UDim2.new(0.6, 0, 0.6, 0)
+CoverImage.Position = UDim2.new(0.2, 0, 0.05, 0)
 CoverImage.Image = "rbxassetid://12441348346"
 CoverImage.BackgroundTransparency = 1
 CoverImage.ZIndex = 11
 
+BookTitle.Parent = CoverFrame
+BookTitle.Size = UDim2.new(1, 0, 0, 30)
+BookTitle.Position = UDim2.new(0, 0, 0.68, 0)
+BookTitle.Text = "STATHAM BOOK: DEFINITIVE EDITION"
+BookTitle.Font = Enum.Font.GothamBold
+BookTitle.TextColor3 = Color3.fromRGB(218, 165, 32)
+BookTitle.TextSize = 18
+BookTitle.ZIndex = 12
+
 OpenButton.Parent = CoverFrame
-OpenButton.Size = UDim2.new(0.5, 0, 0, 45)
-OpenButton.Position = UDim2.new(0.25, 0, 0.8, 0)
+OpenButton.Size = UDim2.new(0.4, 0, 0, 40)
+OpenButton.Position = UDim2.new(0.3, 0, 0.82, 0)
 OpenButton.BackgroundColor3 = Color3.fromRGB(180, 140, 45)
-OpenButton.Text = "ОТКРЫТЬ ИЗДАНИЕ"
+OpenButton.Text = "READ / ЧИТАТЬ"
 OpenButton.Font = Enum.Font.GothamBold
-OpenButton.TextSize = 16
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 OpenButton.ZIndex = 12
 Instance.new("UICorner", OpenButton)
 
--- Страницы
+-- СТРАНИЦЫ
 PagesFrame.Parent = MainFrame
 PagesFrame.Size = UDim2.new(1, 0, 1, 0)
 PagesFrame.Visible = false
@@ -78,11 +91,21 @@ local function SetupPage(page, pos)
     Instance.new("UICorner", page)
     ApplyNoise(page)
     local grad = Instance.new("UIGradient", page)
-    grad.Color = ColorSequence.new(Color3.fromRGB(255,255,255), Color3.fromRGB(210,205,190))
+    grad.Color = ColorSequence.new(Color3.fromRGB(255,255,255), Color3.fromRGB(215,210,195))
 end
 
 SetupPage(LeftPage, UDim2.new(0.02, 0, 0.03, 0))
 SetupPage(RightPage, UDim2.new(0.51, 0, 0.03, 0))
+
+Description.Parent = LeftPage
+Description.Size = UDim2.new(0.85, 0, 0.8, 0)
+Description.Position = UDim2.new(0.07, 0, 0.1, 0)
+Description.BackgroundTransparency = 1
+Description.Font = Enum.Font.Antique
+Description.TextColor3 = Color3.fromRGB(40, 40, 40)
+Description.TextSize = 14
+Description.TextWrapped = true
+Description.ZIndex = 6
 
 QuoteLabel.Parent = LeftPage
 QuoteLabel.Size = UDim2.new(0.85, 0, 0.8, 0)
@@ -92,6 +115,7 @@ QuoteLabel.Font = Enum.Font.Antique
 QuoteLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
 QuoteLabel.TextSize = 15
 QuoteLabel.TextWrapped = true
+QuoteLabel.Visible = false
 QuoteLabel.ZIndex = 6
 
 PageCounter.Parent = LeftPage
@@ -99,99 +123,191 @@ PageCounter.Size = UDim2.new(1, 0, 0, 20)
 PageCounter.Position = UDim2.new(0, 0, 0.9, 0)
 PageCounter.BackgroundTransparency = 1
 PageCounter.Font = Enum.Font.Code
-PageCounter.TextColor3 = Color3.fromRGB(80, 80, 80)
+PageCounter.TextColor3 = Color3.fromRGB(100, 100, 100)
 PageCounter.ZIndex = 6
 
-local function styleBtn(btn, text, pos, color)
+local function styleBtn(btn, pos, color)
     btn.Parent = RightPage
     btn.Size = UDim2.new(0.85, 0, 0, 32)
     btn.Position = pos
     btn.BackgroundColor3 = color
-    btn.Text = text
     btn.Font = Enum.Font.GothamBold
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 11
+    btn.TextSize = 10
     btn.ZIndex = 10
     Instance.new("UICorner", btn)
 end
 
-styleBtn(PrevButton, "ПРЕД. ЦИТАТА", UDim2.new(0.07, 0, 0.1, 0), Color3.fromRGB(100, 100, 50))
-styleBtn(NextButton, "СЛЕД. ЦИТАТА", UDim2.new(0.07, 0, 0.25, 0), Color3.fromRGB(50, 80, 50))
-styleBtn(SayButton, "ВЫДАТЬ В ЧАТ", UDim2.new(0.07, 0, 0.5, 0), Color3.fromRGB(50, 50, 100))
-styleBtn(CloseButton, "ЗАКРЫТЬ КНИГУ", UDim2.new(0.07, 0, 0.8, 0), Color3.fromRGB(100, 50, 50))
+styleBtn(PrevButton, UDim2.new(0.07, 0, 0.08, 0), Color3.fromRGB(100, 90, 40))
+styleBtn(NextButton, UDim2.new(0.07, 0, 0.22, 0), Color3.fromRGB(50, 90, 50))
+styleBtn(SayButton, UDim2.new(0.07, 0, 0.42, 0), Color3.fromRGB(55, 75, 120))
+styleBtn(LangButton, UDim2.new(0.07, 0, 0.62, 0), Color3.fromRGB(70, 70, 70))
+styleBtn(CloseButton, UDim2.new(0.07, 0, 0.85, 0), Color3.fromRGB(120, 50, 50))
 
--- Список цитат (все 113)
+-- БАЗА ИЗ 113 ЦИТАТ
 local quotes = {
-    "Я ВАМ ЗАПРЕЩАЮ", "ТОТ, КТО ЗНАЕТ… ЗНАЕТ", "ЕСЛИ ТЕБЯ НЕЗАСЛУЖЕННО ОБИДЕЛИ, ВЕРНИСЬ И ЗАСЛУЖИ",
-    "СУП ИЗ ОДНОЙ РЫБЫ НАЗЫВАЕТСЯ УХА, А СУП ИЗ 5 РЫБ НАЗЫВАЕТСЯ УХАХАХАХАХА", "НЕМОЙ ХЕРНИ НЕ СКАЖЕТ",
-    "КУПИЛ МУЖИК ШТАНЫ ДЛЯ ТАНЦЕВ, А ОНИ ЕМУ КАК РАЗ-ДВА-ТРИ, РАЗ-ДВА-ТРИ", "РАБОТА – НЕ ВОЛК. РАБОТА – ЭТО ВОРК, А ВОЛК – ЭТО ХОДИТЬ",
-    "ЖИ-ШИ ПИШИ ОТ ДУШИ", "ЖИВИ, КАЙФУЙ, ИГРАЙ, ГУЛЯЙ УПАЛ – ВСТАВАЙ, НАГЛЕЙ, РУГАЙ ЧУЖИХ РОНЯЙ, СВОИХ СПАСАЙ ПЕЛЬМЕНИ, СУП, КАРТОШКА, ЧАЙ",
-    "ПОЧЕСАЛ ЯЙЦА, ПОНЮХАЛ РУКУ", "ЛУЧШЕ ВЫПИТЬ ЛИТР ПИВА, ЧЕМ НЕ ВЫПИТЬ ЛИТР ПИВА", "ХОЗЯЙСТВО ВЕСТИ, НЕ ХЕРОМ ТРЯСТИ",
-    "СНАЧАЛА КОМПЛИМЕНТЫ, ПОТОМ ПЛАТИШЬ АЛИМЕНТЫ", "ДЕЛУ ВРЕМЯ, А ПОТЕХЕ ЧАС, ПИВО, ВОДОЧКА И КВАС", "ЛУЧШЕ 5 СМ СПЕРЕДИ, ЧЕМ 2 СЗАДИ",
-    "НА ПЕРВЫЙ УРОК МОЖНО И ОПОЗДАТЬ, ВЕДЬ УЧИТЬСЯ НИКОГДА НЕ ПОЗДНО", "ЕСЛИ ТЕБЕ ГДЕ-ТО НЕ РАДЫ В РВАНЫХ НОСКАХ, ТО И В ЦЕЛЫХ ТУДА ИДТИ НЕ СТОИТ",
-    "НЕ ХОЧЕШЬ СРАТЬ, НЕ МУЧАЙ ЖОПУ", "БОЮСЬ ТОЛЬКО АЛЛАХА, И ПЬЯНОГО КАЗАХА", "ПОКА НЕ ДОКАЗАНО, НЕ ВОЛНУЕТ, ЧТО СКАЗАНО",
-    "ХОЧУ ЭЧПОЧМАК", "ЗАПОМНИТЕ, А ТО ЗАБУДЕТЕ", "ОЧКО – ПОНЯТИЕ РАСТЯЖИМОЕ", "СКОЛЬКО ПИСЕЙ НЕ ТРЯСИ, ОДНА КАПЕЛЬКА В ТРУСЫ",
-    "ЕСЛИ ЖИЗНЬ – ЭТО ВЫЗОВ, Я ПЕРЕЗВОНЮ", "НЕ БОЛЕЙТЕ РАКОМ. БОЛЕЙТЕ СТОЯ", "ЛУЧШЕ ПОСРАТЬ И ОПОЗДАТЬ, ЧЕМ ПРИЙТИ И ОБОСРАТЬСЯ",
-    "ЕСЛИ ГРУСТНО, ВЫПЕЙ ЧАЮ, СТАНЕТ ЛЕГЧЕ, ОТВЕЧАЮ", "ВЫ ИМЕЕТЕ ПРАВО, НО НЕ ИМЕЕТЕ ЛЕВО", 
-    "СЕКСА НЕ БУДЕТ, ТОЛЬКО ПОСЛЕ СВАДЬБЫ. СКАЖИ СВОЕЙ МАМЕ – ВЕНЧАТЬСЯ БУДЕМ В ХРАМЕ", "Я СРАТЬ",
-    "СПРЯТАТЬ ЧУВСТВА ЛЕГКО, А ВОТ СПРЯТАТЬ СТОЯК СЛОЖНЕЕ", "ГЛУПЫЙ ЧЕЛОВЕК ЖАЛУЕТСЯ НА ДЫРКУ В КАРМАНЕ, А МУДРЫЙ ИСПОЛЬЗУЕТ ЕЕ, ЧТОБЫ ПОЧЕСАТЬ ЯЙЦА",
-    "ЕСЛИ ВАС ПОЛИВАЮТ ГОВНОМ, ЗНАЧИТ ВЫ ЗАСТАВИЛИ КОГО-ТО ОБОСРАТЬСЯ", "ОСТАНОВКУ ЗНАЕШЬ? Я ОСТАНОВИЛ",
-    "ЕСЛИ Я ВДРУГ СТАНУ ТЕБЕ НУЖЕН, ТО Я ТАМ ЖЕ, ГДЕ И БЫЛ, КОГДА БЫЛ НЕ НУЖЕН", "ЕСЛИ ЗА ДВУМЯ ЗАЙЦАМИ ПОГОНИШЬСЯ, ТО НЕ ВЫЛОВИТЬ ТЕБЕ РЫБКУ ИЗ ПРУДА",
-    "ЕСЛИ ПАЦАН СКАЗАЛ, ТО СДЕЛАЕТ, ЕСЛИ НЕ СДЕЛАЛ, ЗНАЧИТ, ПОШУТИЛ", "БЕСПЛАТНЫЙ СЫР НА ТО И БЕСПЛАТНЫЙ, ЧТО СЫР",
-    "А ТЫ ПОПРОБУЙ МЕНЯ НАЙТИ, КОГДА ОТКЛЮЧЕНЫ ТЕЛЕФОНЫ И НЕТ МЕНЯ В СЕТИ", "СИЛА НЕ В БАБКАХ, ВЕДЬ БАБКИ УЖЕ СТАРЫЕ",
-    "ШКАФ – НЕ ТУМБА. ТИМОН – НЕ ПУМБА", "ПОСРАТЬ БЕЗ СИГАРЕТКИ, КАК ЧАЙ БЕЗ КОНФЕТКИ", "СКАЖИ МНЕ, КТО ТВОЙ ДРУГ, И ОБА ИДИТЕ НАХЕР",
-    "ЛУЧШЕ ВЫПЬЮ СТОПКУ ВОДКИ, ЧЕМ СНИМУСЬ В КИНО В КОЛГОТКАХ", "ТЫ ЖИВЕШЬ КАК КАРТА ЛЯЖЕТ, Я ЖИВУ КАК МАМА СКАЖЕТ", "ТУТ – ЭТО ВАМ НЕ ТАМ",
-    "ДОСТАЛ НОЖ – РЕЖЬ. ВЗЯЛ ДОШИК – ЕШЬ", "ХМЕЛИ СУМЕЛИ, И ТЫ СМОЖЕШЬ!", "ШАГ ВЛЕВО, ШАГ ВПРАВО – ЭТО ДВА ШАГА",
-    "ЗАВТРА РАНО ВСТАВАТЬ, ВСТАНУ ПОСЛЕЗАВТРА", "ТОПЛЕНОЕ МОЛОКО ЗНАЕШЬ? Я УТОПИЛ", 
-    "КОГДА ТЫ ПОЧУВСТВУЕШЬ СЕБЯ ЛОХОМ, ТО ВСПОМНИ, ЧТО КТО-ТО СЕЙЧАС ВСТРЕЧАЕТСЯ С ТВОЕЙ БЫВШЕЙ",
-    "РАНЬШЕ Я ДУМАЛ, ЧТО ВЕЧНОЙ ЛЮБВИ НЕ СУЩЕСТВУЕТ, ПОКА НЕ ВСТРЕТИЛ ПИВО", "ГОВОРИШЬ НА МЕНЯ – ПЕРЕВОДИШЬ НА СЕБЯ",
-    "ПЕРЕВОД НЕ ПОЛУЧИЛСЯ, НА ТЕБЯ ПОНОС СВАЛИЛСЯ", "ПРЕСС ДЛЯ ЛОХОВ – ПИВНОЙ ЖИВОТ ДЛЯ МУЖИКОВ",
-    "НИКОГДА НЕ ОТКЛАДЫВАЙ НА ЗАВТРА ТО, НА ЧТО МОЖНО ЗАБИТЬ СЕГОДНЯ", "ЗАПОМНИ, ОДНА ОШИБКА И ТЫ ОШИБСЯ", "ЕСЛИ ЗАБЛУДИЛСЯ В ЛЕСУ, ИДИ ДОМОЙ",
-    "СЛАБЫЙ МУЖЧИНА ИЩЕТ ОПРАВДАНИЯ, А НАСТОЯЩИЙ МУЖИК ИХ ЗАРАНЕЕ ПОДГОТОВИЛ", "Я НАСТОЯЩИЙ ЭКСТРЕМАЛ, Я СРАЛ В ГОСТЯХ И НЕ СМЫВАЛ",
-    "ДЕВУШКА ВЫНАШИВАЕТ РЕБЕНКА 9 МЕСЯЦЕВ. Я ВЫНОШУ ЕГО С ОДНОГО УДАРА", "НЕ БОЙСЯ, КОГДА ТЫ ОДИН – БОЙСЯ, КОГДА ТЫ ДВА",
-    "НЕ ВАЖНО, КТО ПРАВ, ВАЖНО, КТО ЛЕВ", "СОБАКАМ НЕЛЬЗЯ ДОВЕРЯТЬ, ПОТОМУ ЧТО ОНИ ИЗДАЮТ LIE", "ПОМНИ, ЕСЛИ ТЕБЯ СЪЕЛИ, У ТЕБЯ ЕСТЬ ДВА ВЫХОДА",
-    "НЕ ЯЙЦА КРАСЯТ ЧЕЛОВЕКА, А ЧЕЛОВЕК ЯЙЦА", "Я ТАКОЙ ЧЕЛОВЕК, КОТОРЫЙ ТЕРПИТ, ТЕРПИТ, А ПОТОМ КАК ТЕРПИТ, ТЕРПИТ",
-    "НАДЕВАЙТЕ ШАПКИ, БРАТЬЯ, КОГДА НА УЛИЦЕ МОРОЗ", "ПАЦАНЫ НЕ УСТУПАЮТ БАБКАМ МЕСТО, ВЕДЬ БАБКИ В ЖИЗНИ – НЕ ГЛАВНОЕ",
-    "ПАРЫ – НЕ УДАРЫ, МОЖНО И ПРОПУСТИТЬ. УЧЕБА – НЕ УСЕЙН БОЛТ, НЕ УБЕЖИТ", "ЛУЧШЕ ВЫПЬЮ СТОПКУ ВОДКИ, ЧЕМ СНИМУСЬ В КИНО В КОЛГОТКАХ",
-    "ЛЮБИШЬ ЯЙЦА ЖУХАТЬ, ЛЮБИ И ПАЛЬЦЫ НЮХАТЬ", "ЛЬВА ТОЛСТОГО ЗНАЕШЬ? Я ПОКОРМИЛ", 
-    "БАЗАР, КАК ВОДА. ЧЕМ БОЛЬШЕ ФИЛЬТРУЕШЬ, ТЕМ МЕНЬШЕ ПРОБЛЕМ С ПОЧКАМИ", "ЕСЛИ ПАНИЧЕСКАЯ АТАКА НЕИЗБЕЖНА, АТАКУЙ ПЕРВЫМ",
-    "У ВСЕХ ЛЫСЫХ ПРИЧЕСКИ ОДИНАКОВЫЕ", "СЕМЬ РАЗ ОТПЕЙ – ОДИН ОТЛЕЙ", "НАЗЫВАЕШЬ МЕНЯ БРАТОМ, А ГДЕ ТЫ БЫЛ, КОГДА Я РЕЗАЛ ЛУК И ПЛАКАЛ?",
-    "НОЙ НЕ НЫЛ, И ТЫ НЕ НОЙ", "КОГДА Я ВИЖУ ИМЕНА ПАРОЧЕК, ВЫРЕЗАННЫЕ НА ДЕРЕВЬЯХ, Я ДУМАЮ, ПОЧЕМУ ЭТИ ЛЮДИ БЕРУТ НА СВИДАНИЕ НОЖ",
-    "ГОРЧИЦУ ЗНАЕШЬ? Я ОГОРЧИЛ", "ЛЫСИНА И ЧЕЛОЧКА – ДАСТ ЛЮБАЯ ТЕЛОЧКА", "РАЗ В СУТКИ, СУП ДОЛЖЕН БЫТЬ В ЖЕЛУДКЕ",
-    "АЛКОГОЛИЗМ – ЭТО СТРАШНО, НО Я НЕ ИЗ ТРУСЛИВЫХ", "ДАЮТ БЕРИ, НЕ ДАЮТ – ОТБЕРИ", "ПОЗВОНОЧНИК ЗНАЕШЬ? Я ПОЗВОНИЛ",
-    "ТРИ СЛОВА – ЭТО ДВА СЛОВА", "НЕ СПЕШИ, А ТО – УСПЕЕШЬ", "МАМА ДЕНЕЖКУ ДАЛА, ЖИЗНЬ НОРМАЛЬНАЯ ПОШЛА",
-    "ЧЕМ СТАРШЕ ЧЕЛОВЕК, ТЕМ БОЛЬШЕ ЕМУ ЛЕТ", "КТО НОСИТ КОФТУ АДИДАС, ТОМУ ЛЮБАЯ БАБА ДАСТ", "ТОЛЬКО ПОДКАБЛУЧНИК БУДЕТ ОТПРАШИВАТЬСЯ У ЖЕНЫ",
-    "ТОЛЬКО ПОДКАБЛУЧНИК СПРАШИВАЕТ У ЖЕНЫ, МОЖНО ЛИ СХОДИТЬ ВЫПИТЬ ПИВО С ПАЦАНАМИ, НАСТОЯЩИЙ МУЖИК И ТАК ЗНАЕТ, ЧТО НЕЛЬЗЯ",
-    "НЕ БОЙСЯ НОЖА, БОЙСЯ ВИЛКИ – ОДИН УДАР ЧЕТЫРЕ ДЫРКИ", "ЕСЛИ Б МОРЕ БЫЛО ВОДКОЙ, Я БЫ СТАЛ ПОДВОДНОЙ ЛОДКОЙ",
-    "ХОРОШИЙ ЧЕЛОВЕК ПЛОХОЙ ВОЗДУХ В СЕБЕ ДЕРЖАТЬ НЕ БУДЕТ", "МЫ В ОТВЕТЕ ЗА ТЕХ, КОМУ НАЛИВАЕМ", 
-    "ПРОШУ ПРОЩЕНИЯ МАТЕРЕЙ, ЧЬИХ ВОЗБУДИЛ Я ДОЧЕРЕЙ", "КТО ОБЗЫВАЕТСЯ, ТОТ САМ ТАК НАЗЫВАЕТСЯ", "ТЫ ПЧЕЛА, Я ПЧЕЛОВОД",
-    "РОЛЛЫ ДЛЯ ЛОХОВ, ПЕЛЬМЕШКИ ДЛЯ ПАЦАНОВ", "НИКОГДА НЕ СДАВАЙТЕСЬ, ИДИТЕ К СВОЕЙ ЦЕЛИ! А ЕСЛИ БУДЕТ СЛОЖНО – СДАВАЙТЕСЬ",
-    "В ЖИЗНИ ВСЕГДА ЕСТЬ ДВЕ ДОРОГИ: ОДНА – ПЕРВАЯ, А ДРУГАЯ – ВТОРАЯ", "ДЕЛАЙ, КАК НАДО. КАК НЕ НАДО, НЕ ДЕЛАЙ",
-    "СНИМУ КВАРТИРУ. ПОРЯДОК НА РАЙОНЕ ГАРАНТИРУЮ", "МАРИАНСКУЮ ВПАДИНУ ЗНАЕШЬ? ЭТО Я УПАЛ", "КАК ГОВОРИЛ МОЙ ДЕД, «Я ТВОЙ ДЕД»",
-    "БЕЗ ПОДОШВЫ ТАПОЧКИ – ЭТО ПРОСТО ТРЯПОЧКИ", "СЛОВО – НЕ ВОРОБЕЙ. ВООБЩЕ НИЧТО НЕ ВОРОБЕЙ, КРОМЕ САМОГО ВОРОБЬЯ",
-    "КОГДА ЖЕНЩИНА ПОДНИМАЕТ РУКУ, ОНА ПЕРЕСТАЕТ БЫТЬ ЖЕНЩИНОЙ, И СТАНОВИТСЯ СПАРРИНГ-ПАРТНЕРОМ",
-    "СОЕДИНЕННЫЕ ШТАТЫ ЗНАЕШЬ? Я СОЕДИНИЛ", "ОДИН МОЙ ДРУГ, ЧТОБЫ НЕ ЗАБОЛЕТЬ, ЕЛ ЧЕСНОК, А НАДО БЫЛО ПОЛЬЗОВАТЬСЯ ПРЕЗЕРВАТИВАМИ",
-    "НЕУДОБНО – ЭТО КОГДА ВЫПРОСИЛ, А У ТЕБЯ НЕ СТОИТ", "НЕ ОЧАРОВЫВАЙСЯ, ЧТОБЫ НЕ РАЗОЧАРОВАТЬСЯ", "НИКОГДА НЕ СДАВАЙСЯ, ТЫ ЖЕ НЕ КВАРТИРА",
-    "СМЕХ, КОНЕЧНО, – ЛУЧШЕЕ ЛЕКАРСТВО, НО НЕ ПРИ ПОНОСЕ", "ЭТО НЕ У МЕНЯ НЕТ ДЕВУШКИ. ЭТО НИ У ОДНОЙ ДЕВУШКИ НЕТ МЕНЯ",
-    "Я БЫ ВЫИГРАЛ, ЕСЛИ БЫ НЕ ПРОИГРАЛ", "ВОЗДУХ НЕ ЧУВСТВУЕТСЯ, ПОКА ЕГО НЕ ИСПОРТИЛИ", "ЖИЗНЬ – ИГРА, А МЫ В НЕЙ ДОДИКИ",
-    "ТОТ, КТО СДЕЛАЛ ИЗ МУХИ СЛОНА, ПУСКАЙ САМ ЕГО И КОРМИТ", "ЛЮБОВЬ – ЭТО НЕ ТОЛЬКО ЦВЕТЫ, ЭТО ТАКЖЕ СЛУШАТЬ, КАК ОН РАССКАЗЫВАЕТ ПРО ДОТУ",
-    "ДОЛГО НЕ ДУМАЙ – ДЕЛАЙ!", "ЕСЛИ В ДЕТСТВЕ КУШАЛ МАНКУ, ДАШЬ ЛЮЛЕЙ ЛЮБОМУ ТАНКУ", 
-    "БЕСИТ, КОГДА НА КАССЕ ГОВОРЯТ, ЧТО ПРИНИМАЮТ ЛЮБУЮ КАРТУ, НО НЕ ХОТЯТ БРАТЬ БУБНОВЫЙ ВАЛЕТ",
-    "ЧТОБЫ СПЕРЕДИ ПОГЛАДИТЬ, НУЖНО СЗАДИ ПОЛИЗАТЬ", "ВСТАЛ С УТРА ПОРАНЬШЕ, СТОЯК МЕШАЕТ ИДТИ ДАЛЬШЕ", 
-    "НЕТ ПОЛНОСТЬЮ ЗДОРОВЫХ, ЕСТЬ НЕДООБСЛЕДОВАННЫЕ", "ЛЕВОЙ ДРОЧУ, ПРАВОЙ ЖОПУ ЩЕКОЧУ",
-    "ПО-НАСТОЯЩЕМУ НЕСГИБАЕМЫМ ЧЕЛОВЕКА ДЕЛАЕТ НЕ ХАРАКТЕР ИЛИ ВОСПИТАНИЕ, А МЕЖПОЗВОНОЧНАЯ ГРЫЖА",
-    "МНЕ ЧУЖОГО НЕ НАДО, НО СВОЕ Я ВОЗЬМУ, ЧЬЕ БЫ ОНО НИ БЫЛО", "ИЗБИЛ БОМЖА, ЧТОБЫ ТОТ СПАЛ В БОЛЬНИЦЕ, А НЕ НА УЛИЦЕ",
-    "КАК ГОВОРИЛ МОЙ ДЕД: «НИКОГО НЕ СЛУШАЙ». ПОТОМ ОН ЕЩЕ ЧТО-ТО ГОВОРИЛ..."
+    {ru="Я ВАМ ЗАПРЕЩАЮ", en="I FORBID YOU"},
+    {ru="ТОТ, КТО ЗНАЕТ… ЗНАЕТ", en="HE WHO KNOWS... KNOWS"},
+    {ru="ЕСЛИ ТЕБЯ НЕЗАСЛУЖЕННО ОБИДЕЛИ, ВЕРНИСЬ И ЗАСЛУЖИ", en="IF UNJUSTLY OFFENDED, RETURN AND EARN IT"},
+    {ru="СУП ИЗ ОДНОЙ РЫБЫ - УХА, ИЗ 5 РЫБ - УХАХАХА", en="1-FISH SOUP IS BROTH, 5-FISH IS LOLOLOL"},
+    {ru="НЕМОЙ ХЕРНИ НЕ СКАЖЕТ", en="A MUTE MAN SPEAKS NO BULLSHIT"},
+    {ru="КУПИЛ МУЖИК ШТАНЫ ДЛЯ ТАНЦЕВ, А ОНИ ЕМУ КАК РАЗ-ДВА-ТРИ", en="GUY BOUGHT DANCE PANTS, THEY FIT 1-2-3"},
+    {ru="РАБОТА – НЕ ВОЛК. РАБОТА – ЭТО ВОРК, А ВОЛК – ЭТО ХОДИТЬ", en="WORK IS NOT A WOLF. WORK IS 'WORK', WOLF IS 'WALK'"},
+    {ru="ЖИ-ШИ ПИШИ ОТ ДУШИ", en="WRITE FROM THE HEART, FORGET THE RULES"},
+    {ru="ЖИВИ, КАЙФУЙ, ПЕЛЬМЕНИ, СУП, КАРТОШКА, ЧАЙ", en="LIVE, ENJOY, DUMPLINGS, SOUP, POTATOES, TEA"},
+    {ru="ПОЧЕСАЛ ЯЙЦА, ПОНЮХАЛ РУКУ", en="SCRATCHED BALLS, SNIFFED HAND"},
+    {ru="ЛУЧШЕ ВЫПИТЬ ЛИТР ПИВА, ЧЕМ НЕ ВЫПИТЬ ЛИТР ПИВА", en="BETTER A LITER OF BEER THAN ZERO BEERS"},
+    {ru="ХОЗЯЙСТВО ВЕСТИ, НЕ ХЕРОМ ТРЯСТИ", en="MANAGING A HOME ISN'T JUST SHAKING YOUR JUNK"},
+    {ru="СНАЧАЛА КОМПЛИМЕНТЫ, ПОТОМ ПЛАТИШЬ АЛИМЕНТЫ", en="FIRST COMPLIMENTS, THEN ALIMONY"},
+    {ru="ДЕЛУ ВРЕМЯ, ПОТЕХЕ ЧАС, ПИВО, ВОДОЧКА И КВАС", en="TIME FOR WORK, HOUR FOR FUN, BEER AND VODKA"},
+    {ru="ЛУЧШЕ 5 СМ СПЕРЕДИ, ЧЕМ 2 СМ СЗАДИ", en="BETTER 5CM IN FRONT THAN 2CM IN BACK"},
+    {ru="НА ПЕРВЫЙ УРОК МОЖНО И ОПОЗДАТЬ", en="BEING LATE FOR THE FIRST CLASS IS OKAY"},
+    {ru="В РВАНЫХ НОСКАХ ТУДА ИДТИ НЕ СТОИТ", en="DON'T GO THERE IN RIPPED SOCKS"},
+    {ru="НЕ ХОЧЕШЬ СРАТЬ, НЕ МУЧАЙ ЖОПУ", en="IF YOU CAN'T SHIT, DON'T TORTURE THE ANUS"},
+    {ru="БОЮСЬ ТОЛЬКО АЛЛАХА И ПЬЯНОГО КАЗАХА", en="I FEAR ONLY GOD AND A DRUNK KAZAKH"},
+    {ru="ПОКА НЕ ДОКАЗАНО, НЕ ВОЛНУЕТ ЧТО СКАЗАНО", en="UNPROVEN WORDS ARE IRRELEVANT"},
+    {ru="ХОЧУ ЭЧПОЧМАК", en="I WANT AN ECHPOCHMAK"},
+    {ru="ЗАПОМНИТЕ, А ТО ЗАБУДЕТЕ", en="REMEMBER THIS, OR YOU'LL FORGET"},
+    {ru="ОЧКО – ПОНЯТИЕ РАСТЯЖИМОЕ", en="THE ANUS IS A FLEXIBLE CONCEPT"},
+    {ru="СКОЛЬКО ПИСЕЙ НЕ ТРЯСИ, КАПЕЛЬКА В ТРУСЫ", en="SHAKE IT ALL YOU WANT, ONE DROP STAYS"},
+    {ru="ЕСЛИ ЖИЗНЬ – ВЫЗОВ, Я ПЕРЕЗВОНЮ", en="IF LIFE CALLS, I'LL CALL BACK"},
+    {ru="НЕ БОЛЕЙТЕ РАКОМ. БОЛЕЙТЕ СТОЯ", en="DON'T GET SICK WITH CANCER. GET SICK STANDING UP"},
+    {ru="ЛУЧШЕ ПОСРАТЬ И ОПОЗДАТЬ, ЧЕМ ПРИЙТИ И ОБОСРАТЬСЯ", en="BETTER LATE THAN SHITTING YOUR PANTS ON ARRIVAL"},
+    {ru="ЕСЛИ ГРУСТНО, ВЫПЕЙ ЧАЮ", en="IF SAD, DRINK TEA, I PROMISE IT HELPS"},
+    {ru="ВЫ ИМЕЕТЕ ПРАВО, НО НЕ ИМЕЕТЕ ЛЕВО", en="YOU HAVE THE RIGHT, BUT NO LEFT"},
+    {ru="СЕКСА НЕ БУДЕТ ДО СВАДЬБЫ", en="NO SEX UNTIL MARRIAGE, MOM SAID SO"},
+    {ru="Я СРАТЬ", en="I'M GOING TO SHIT"},
+    {ru="СПРЯТАТЬ СТОЯК СЛОЖНЕЕ", en="HARDER TO HIDE A BONER THAN FEELINGS"},
+    {ru="ДЫРКА В КАРМАНЕ ЧТОБ ЧЕСАТЬ ЯЙЦА", en="HOLE IN POCKET IS FOR SCRATCHING BALLS"},
+    {ru="ЕСЛИ ПОЛИВАЮТ ГОВНОМ, ВЫ ЗАСТАВИЛИ ОБОСРАТЬСЯ", en="IF THEY HATE, YOU MADE THEM SHIT THEMSELVES"},
+    {ru="ОСТАНОВКУ ЗНАЕШЬ? Я ОСТАНОВИЛ", en="KNOW THE STOP? I STOPPED IT"},
+    {ru="Я ТАМ ЖЕ, ГДЕ БЫЛ, КОГДА БЫЛ НЕ НУЖЕН", en="I'M WHERE I WAS WHEN I WASN'T NEEDED"},
+    {ru="ЗА ДВУМЯ ЗАЙЦАМИ НЕ ВЫЛОВИШЬ РЫБКУ", en="CHASING TWO HARES CATCHES NO FISH"},
+    {ru="НЕ СДЕЛАЛ - ЗНАЧИТ ПОШУТИЛ", en="IF HE DIDN'T DO IT, HE WAS JOKING"},
+    {ru="БЕСПЛАТНЫЙ СЫР - ЭТО СЫР", en="FREE CHEESE IS JUST CHEESE"},
+    {ru="ПОПРОБУЙ МЕНЯ НАЙТИ БЕЗ СЕТИ", en="TRY TO FIND ME WHEN I'M OFFLINE"},
+    {ru="СИЛА НЕ В БАБКАХ, БАБКИ СТАРЫЕ", en="POWER ISN'T IN MONEY, GRANDMAS ARE OLD"},
+    {ru="ШКАФ НЕ ТУМБА, ТИМОН НЕ ПУМБА", en="WARDROBE ISN'T A STAND, TIMON ISN'T PUMBA"},
+    {ru="ПОСРАТЬ БЕЗ СИГАРЕТКИ КАК ЧАЙ БЕЗ КОНФЕТКИ", en="SHITTING WITHOUT A SMOKE IS LIKE TEA NO CAKE"},
+    {ru="КТО ТВОЙ ДРУГ? ОБА ИДИТЕ НАХЕР", en="WHO'S YOUR FRIEND? BOTH OF YOU PISS OFF"},
+    {ru="НЕ СНИМУСЬ В КИНО В КОЛГОТКАХ", en="I WON'T WEAR TIGHTS FOR A MOVIE"},
+    {ru="ЖИВУ КАК МАМА СКАЖЕТ", en="I LIVE AS MY MOTHER TELLS ME"},
+    {ru="ТУТ – ЭТО ВАМ НЕ ТАМ", en="HERE IS NOT THERE"},
+    {ru="ДОСТАЛ НОЖ – РЕЖЬ. ДОШИК – ЕШЬ", en="KNIFE OUT - CUT. NOODLES OUT - EAT"},
+    {ru="ХМЕЛИ СУМЕЛИ И ТЫ СМОЖЕШЬ", en="THE SPICES DID IT, SO CAN YOU"},
+    {ru="ШАГ ВПРАВО - ЭТО ДВА ШАГА", en="STEP RIGHT - THAT'S TWO STEPS"},
+    {ru="ВСТАНУ ПОСЛЕЗАВТРА", en="I'LL WAKE UP THE DAY AFTER TOMORROW"},
+    {ru="ТОПЛЕНОЕ МОЛОКО? Я УТОПИЛ", en="MELTED MILK? I DROWNED IT"},
+    {ru="КТО-ТО ВСТРЕЧАЕТСЯ С ТВОЕЙ БЫВШЕЙ", en="SOMEONE IS DATING YOUR EX RIGHT NOW"},
+    {ru="ВЕЧНОЙ ЛЮБВИ НЕТ, ПОКА НЕ ВСТРЕТИЛ ПИВО", en="NO ETERNAL LOVE UNTIL YOU MEET BEER"},
+    {ru="ГОВОРИШЬ НА МЕНЯ – ПЕРЕВОДИШЬ НА СЕБЯ", en="WHATEVER YOU SAY TO ME REBOUNDS TO YOU"},
+    {ru="НА ТЕБЯ ПОНОС СВАЛИЛСЯ", en="MAY DIARRHEA FALL UPON THEE"},
+    {ru="ПРЕСС ДЛЯ ЛОХОВ, ЖИВОТ ДЛЯ МУЖИКОВ", en="ABS FOR LOSERS, BELLY FOR MEN"},
+    {ru="НЕ ОТКЛАДЫВАЙ ТО, НА ЧТО МОЖНО ЗАБИТЬ", en="DON'T POSTPONE WHAT YOU CAN JUST IGNORE"},
+    {ru="ОДНА ОШИБКА И ТЫ ОШИБСЯ", en="ONE MISTAKE AND YOU ARE MISTAKEN"},
+    {ru="ЗАБЛУДИЛСЯ? ИДИ ДОМОЙ", en="LOST IN WOODS? GO HOME"},
+    {ru="МУЖИК ОПРАВДАНИЯ ПОДГОТОВИЛ ЗАРАНЕЕ", en="A REAL MAN PREPARES EXCUSES IN ADVANCE"},
+    {ru="СРАЛ В ГОСТЯХ И НЕ СМЫВАЛ", en="I SHIT AT YOUR HOUSE AND DIDN'T FLUSH"},
+    {ru="ВЫНОШУ РЕБЕНКА С ОДНОГО УДАРА", en="I DELIVER A CHILD WITH ONE PUNCH"},
+    {ru="БОЙСЯ КОГДА ТЫ ДВА", en="FEAR WHEN YOU ARE TWO"},
+    {ru="ВАЖНО КТО ЛЕВ", en="IT MATTERS WHO IS A LION"},
+    {ru="СОБАКИ ИЗДАЮТ LIE", en="DOGS EMIT A LIE"},
+    {ru="У ТЕБЯ ЕСТЬ ДВА ВЫХОДА", en="IF EATEN, YOU HAVE TWO EXITS"},
+    {ru="ЧЕЛОВЕК КРАСИТ ЯЙЦА", en="A MAN PAINTS THE EGGS"},
+    {ru="ТЕРПИТ, ТЕРПИТ, А ПОТОМ ТЕРПИТ", en="HE ENDURES, THEN ENDURES MORE"},
+    {ru="НАДЕВАЙТЕ ШАПКИ", en="WEAR YOUR HATS, BROTHERS"},
+    {ru="БАБКИ В ЖИЗНИ НЕ ГЛАВНОЕ", en="MONEY/GRANDMAS AREN'T EVERYTHING"},
+    {ru="ПАРЫ МОЖНО И ПРОПУСТИТЬ", en="CLASSES CAN BE SKIPPED"},
+    {ru="ПАЛЬЦЫ НЮХАТЬ", en="IF YOU LIKE BALLS, LIKE SNIFFING FINGERS"},
+    {ru="ЛЬВА ТОЛСТОГО ПОКОРМИЛ", en="I FED LEO TOLSTOY"},
+    {ru="ФИЛЬТРУЙ БАЗАР", en="FILTER YOUR WORDS LIKE WATER"},
+    {ru="АТАКУЙ ПЕРВЫМ", en="ATTACK THE PANIC FIRST"},
+    {ru="У ЛЫСЫХ ПРИЧЕСКИ ОДИНАКОВЫЕ", en="ALL BALD HAIRCUTS ARE THE SAME"},
+    {ru="СЕМЬ РАЗ ОТПЕЙ", en="SIP SEVEN TIMES, PEE ONCE"},
+    {ru="ГДЕ ТЫ БЫЛ КОГДА Я РЕЗАЛ ЛУК", en="WHERE WERE YOU WHEN I CRIED OVER ONIONS"},
+    {ru="НОЙ НЕ НЫЛ", en="NOAH DIDN'T WHINE"},
+    {ru="ЗАЧЕМ БРАТЬ НОЖ НА СВИДАНИЕ", en="WHY BRING A KNIFE TO A DATE"},
+    {ru="ГОРЧИЦУ ОГОРЧИЛ", en="I MADE THE MUSTARD SAD"},
+    {ru="ЛЫСИНА И ЧЕЛОЧКА", en="BALD HEAD AND BANGS GET THE GIRLS"},
+    {ru="СУП ДОЛЖЕН БЫТЬ В ЖЕЛУДКЕ", en="SOUP MUST BE IN THE STOMACH DAILY"},
+    {ru="АЛКОГОЛИЗМ ЭТО СТРАШНО НО Я НЕ ТРУС", en="ALCOHOLISM IS SCARY BUT I'M NO COWARD"},
+    {ru="ДАЮТ БЕРИ", en="TAKE IF GIVEN, STEAL IF NOT"},
+    {ru="ПОЗВОНОЧНИК? ПОЗВОНИЛ", en="BACKBONE? I CALLED IT"},
+    {ru="ТРИ СЛОВА ЭТО ДВА СЛОВА", en="THREE WORDS IS TWO WORDS"},
+    {ru="НЕ СПЕШИ А ТО УСПЕЕШЬ", en="DON'T RUSH OR YOU'LL MAKE IT"},
+    {ru="МАМА ДЕНЕЖКУ ДАЛА", en="MOM GAVE CASH, LIFE IS GOOD"},
+    {ru="ЧЕМ СТАРШЕ ТЕМ БОЛЬШЕ ЛЕТ", en="THE OLDER YOU GET, THE MORE YEARS YOU HAVE"},
+    {ru="КОФТА АДИДАС", en="ADIDAS HOODIE GETS THE LADIES"},
+    {ru="МУЖИК ЗНАЕТ ЧТО НЕЛЬЗЯ ПИВО", en="MAN KNOWS BEER IS FORBIDDEN BY WIFE"},
+    {ru="БОЙСЯ ВИЛКИ", en="FEAR THE FORK - 4 HOLES ONE HIT"},
+    {ru="МОРЕ БЫЛО ВОДКОЙ", en="IF THE SEA WAS VODKA I'D BE A SUBMARINE"},
+    {ru="ХОРОШИЙ ЧЕЛОВЕК ПЛОХОЙ ВОЗДУХ НЕ ДЕРЖИТ", en="GOOD MAN DOESN'T HOLD IN BAD GAS"},
+    {ru="ЗА ТЕХ КОМУ НАЛИВАЕМ", en="RESPONSIBLE FOR THOSE WE POUR FOR"},
+    {ru="ВОЗБУДИЛ Я ДОЧЕРЕЙ", en="SORRY MOTHERS FOR EXCITING DAUGHTERS"},
+    {ru="КТО ОБЗЫВАЕТСЯ ТОТ САМ ТАК", en="I KNOW YOU ARE BUT WHAT AM I"},
+    {ru="ТЫ ПЧЕЛА Я ПЧЕЛОВОД", en="YOU ARE THE BEE, I AM THE BEEKEEPER"},
+    {ru="ПЕЛЬМЕШКИ ДЛЯ ПАЦАНОВ", en="DUMPLINGS FOR THE BOYS"},
+    {ru="СДАВАЙТЕСЬ ЕСЛИ СЛОЖНО", en="GIVE UP IF IT GETS TOO HARD"},
+    {ru="ЕСТЬ ДВЕ ДОРОГИ", en="THERE ARE ALWAYS TWO WAYS"},
+    {ru="ДЕЛАЙ КАК НАДО", en="DO IT RIGHT. DON'T DO IT WRONG"},
+    {ru="ПОРЯДОК ГАРАНТИРУЮ", en="I GUARANTEE ORDER IN THE HOOD"},
+    {ru="МАРИАНСКАЯ ВПАДИНА? Я УПАЛ", en="MARIANA TRENCH? THAT WAS MY FALL"},
+    {ru="Я ТВОЙ ДЕД", en="I AM YOUR GRANDPA"},
+    {ru="ТАПОЧКИ БЕЗ ПОДОШВЫ - ТРЯПОЧКИ", en="SLIPPERS WITHOUT SOLES ARE RAGS"},
+    {ru="СЛОВО НЕ ВОРОБЕЙ", en="WORDS AREN'T SPARROWS. NOTHING IS."},
+    {ru="СПАРРИНГ-ПАРТНЕР", en="WOMAN WITH A RAISED HAND IS A SPARRING PARTNER"},
+    {ru="СОЕДИНЕННЫЕ ШТАТЫ? СОЕДИНИЛ", en="UNITED STATES? I UNITED THEM"},
+    {ru="ПОЛЬЗУЙТЕСЬ ПРЕЗЕРВАТИВАМИ", en="USE CONDOMS, NOT JUST GARLIC"},
+    {ru="НЕУДОБНО КОГДА НЕ СТОИТ", en="INCONVENIENT IS WHEN IT DOESN'T RISE"},
+    {ru="НЕ ОЧАРОВЫВАЙСЯ", en="DON'T GET CHARMED, WON'T BE DISAPPOINTED"},
+    {ru="ТЫ ЖЕ НЕ КВАРТИРА", en="DON'T GIVE UP, YOU AREN'T AN APARTMENT"},
+    {ru="СМЕХ НЕ ПРИ ПОНОСЕ", en="LAUGHTER ISN'T THE BEST MEDICINE FOR DIARRHEA"},
+    {ru="НИ У ОДНОЙ ДЕВУШКИ НЕТ МЕНЯ", en="NO GIRL HAS ME"},
+    {ru="ВЫИГРАЛ БЫ ЕСЛИ Б НЕ ПРОИГРАЛ", en="I'D WIN IF I DIDN'T LOSE"},
+    {ru="ВОЗДУХ ИСПОРТИЛИ", en="AIR IS UNFELT UNTIL SPOILED"},
+    {ru="МЫ В НЕЙ ДОДИКИ", en="LIFE IS A GAME, WE ARE LOSERS"},
+    {ru="СЛОНА ПУСТЬ САМ КОРМИТ", en="LET HIM FEED THE ELEPHANT HIMSELF"},
+    {ru="СЛУШАТЬ ПРО ДОТУ", en="LOVE IS LISTENING TO DOTA STORIES"},
+    {ru="ДОЛГО НЕ ДУМАЙ", en="DON'T THINK - DO"},
+    {ru="ДАШЬ ЛЮЛЕЙ ТАНКУ", en="EAT PORRIDGE, SMASH TANKS"},
+    {ru="БУБНОВЫЙ ВАЛЕТ", en="THEY DON'T TAKE THE JACK OF DIAMONDS"},
+    {ru="СЗАДИ ПОЛИЗАТЬ", en="LICK THE BACK TO IRON THE FRONT"},
+    {ru="СТОЯК МЕШАЕТ ИДТИ", en="MORNING WOOD STOPS THE WALK"},
+    {ru="НЕДООБСЛЕДОВАННЫЕ", en="NO HEALTHY PEOPLE, ONLY UNCHECKED ONES"},
+    {ru="ЛЕВОЙ ДРОЧУ", en="JACKING WITH LEFT, TICKLING WITH RIGHT"},
+    {ru="ГРЫЖА ДЕЛАЕТ НЕСГИБАЕМЫМ", en="HERNIA MAKES YOU UNBENDING"},
+    {ru="СВОЕ ВОЗЬМУ ЧЬЕ БЫ НИ БЫЛО", en="I'LL TAKE WHAT'S MINE, WHOEVER HAS IT"},
+    {ru="ИЗБИЛ БОМЖА", en="BEAT A TRAMP SO HE SLEEPS IN HOSPITAL"},
+    {ru="НИКОГДА НЕ СЛУШАЙ...", en="NEVER LISTEN TO ANYONE..."}
 }
 
-local index = 1
+local lang = "RU"
+local index = 0
 
-local function UpdateQuote()
-    QuoteLabel.Text = "« " .. quotes[index] .. " »"
-    PageCounter.Text = "Стр. " .. index
+local function UpdateUI()
+    local qCount = #quotes
+    if lang == "RU" then
+        PrevButton.Text = "ПРЕД. МУДРОСТЬ"
+        NextButton.Text = "СЛЕД. МУДРОСТЬ"
+        SayButton.Text = "ПРОПОТОЛКОВАТЬ В ЧАТ"
+        LangButton.Text = "ЯЗЫК: RU"
+        CloseButton.Text = "ВЕРНУТЬ НА ПОЛКУ"
+        Description.Text = "113 ступеней мудрости Стэйтема. Издательство 'Эксмо-Пацан' 2026. Запомни, а то забудешь."
+        PageCounter.Text = (index == 0) and "Инфо" or "Стр. " .. index
+        if index > 0 then QuoteLabel.Text = "« " .. quotes[index].ru .. " »" end
+    else
+        PrevButton.Text = "PREV WISDOM"
+        NextButton.Text = "NEXT WISDOM"
+        SayButton.Text = "PREACH IN CHAT"
+        LangButton.Text = "LANGUAGE: EN"
+        CloseButton.Text = "PUT ON SHELF"
+        Description.Text = "113 steps of Statham's wisdom. Definitive Global Edition. Remember it, or you'll forget."
+        PageCounter.Text = (index == 0) and "Info" or "Page " .. index
+        if index > 0 then QuoteLabel.Text = "“ " .. quotes[index].en .. " ”" end
+    end
 end
 
-UpdateQuote()
+UpdateUI()
 
 OpenButton.MouseButton1Click:Connect(function()
     CoverFrame.Visible = false
@@ -201,23 +317,39 @@ end)
 NextButton.MouseButton1Click:Connect(function()
     index = index + 1
     if index > #quotes then index = 1 end
-    UpdateQuote()
+    Description.Visible = false
+    QuoteLabel.Visible = true
+    UpdateUI()
 end)
 
 PrevButton.MouseButton1Click:Connect(function()
     index = index - 1
-    if index < 1 then index = #quotes end
-    UpdateQuote()
+    if index < 0 then index = 0 end
+    if index == 0 then
+        Description.Visible = true
+        QuoteLabel.Visible = false
+    else
+        Description.Visible = false
+        QuoteLabel.Visible = true
+    end
+    UpdateUI()
+end)
+
+LangButton.MouseButton1Click:Connect(function()
+    lang = (lang == "RU") and "EN" or "RU"
+    UpdateUI()
 end)
 
 SayButton.MouseButton1Click:Connect(function()
-    local msg = quotes[index]
-    if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then
-        game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(msg)
-    else
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+    if index > 0 then
+        local q = quotes[index]
+        local msg = (lang == "RU") and q.ru or q.en
+        if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then
+            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(msg)
+        else
+            game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+        end
     end
 end)
 
 CloseButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
