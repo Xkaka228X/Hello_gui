@@ -1,0 +1,219 @@
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local ToggleBtn = Instance.new("TextButton")
+local GridFrame = Instance.new("Frame")
+local UIGridLayout = Instance.new("UIGridLayout")
+local PageLabel = Instance.new("TextLabel")
+local SpyFrame = Instance.new("ScrollingFrame")
+
+local oldGui = game:GetService("CoreGui"):FindFirstChild("CamSpyProFinal")
+if oldGui then oldGui:Destroy() end
+ScreenGui.Name = "CamSpyProFinal"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local cameras = {}
+local fileName = "cam_pro_v3.json"
+local HttpService = game:GetService("HttpService")
+local camera = workspace.CurrentCamera
+local player = game.Players.LocalPlayer
+local currentPage = 1
+local maxPerPage = 9
+
+local MY_TEXTURE = "rbxassetid://135584613132195" 
+local MY_FONT_ID = 12187371840
+local customFont = Font.fromId(MY_FONT_ID)
+
+local worldMarkers = workspace:FindFirstChild("CameraWorldMarkers") or Instance.new("Folder", workspace)
+worldMarkers.Name = "CameraWorldMarkers"
+
+local function applyMetalStyle(obj, color, baseZ)
+    baseZ = baseZ or 1
+    obj.BackgroundColor3 = color
+    obj.ZIndex = baseZ
+    
+    local noise = Instance.new("ImageLabel")
+    noise.Name = "MetalNoise"
+    noise.Size = UDim2.new(1, 0, 1, 0)
+    noise.BackgroundTransparency = 1
+    noise.Image = MY_TEXTURE
+    noise.ImageTransparency = 0.7
+    noise.ScaleType = Enum.ScaleType.Tile
+    noise.TileSize = UDim2.new(0, 256, 0, 256)
+    noise.ZIndex = baseZ
+    noise.Parent = obj
+    
+    Instance.new("UICorner", obj).CornerRadius = UDim.new(0, 4)
+    local stroke = Instance.new("UIStroke", obj)
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Transparency = 0.7; stroke.Thickness = 1.2
+end
+
+local function makeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = frame.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+        end
+    end)
+    frame.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+local function getCameraName(index)
+    if index <= 9 then return tostring(index)
+    else
+        local offset = index - 10
+        local charCode = math.floor(offset / 9) + 65
+        return string.char(charCode) .. ((offset % 9) + 1)
+    end
+end
+
+local function render()
+    for _, v in pairs(GridFrame:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    worldMarkers:ClearAllChildren()
+
+    for i, data in ipairs(cameras) do
+        local bgui = Instance.new("BillboardGui", worldMarkers)
+        bgui.AlwaysOnTop = true; bgui.Size = UDim2.new(0, 80, 0, 40); bgui.ExtentsOffset = Vector3.new(0, 3, 0)
+        local att = Instance.new("Part", worldMarkers)
+        att.Anchored = true; att.CanCollide = false; att.Transparency = 1; att.Position = Vector3.new(data.x, data.y, data.z)
+        bgui.Adornee = att
+        
+        local txt = Instance.new("TextLabel", bgui)
+        txt.Size = UDim2.new(1, 0, 1, 0); txt.BackgroundTransparency = 1; txt.TextColor3 = Color3.new(1, 1, 1)
+        txt.FontFace = customFont; txt.TextSize = 14; txt.TextStrokeTransparency = 0.5
+        
+        task.spawn(function()
+            while att and att.Parent do
+                local char = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                if char then
+                    local d = math.floor((char.Position - att.Position).Magnitude)
+                    txt.Text = getCameraName(i) .. " 📹\n" .. d .. "m"
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+
+    local startIdx = (currentPage - 1) * maxPerPage + 1
+    local endIdx = math.min(startIdx + maxPerPage - 1, #cameras)
+
+    for i = startIdx, endIdx do
+        local data = cameras[i]
+        local btn = Instance.new("TextButton", GridFrame)
+        btn.Text = ""; btn.ZIndex = 5; applyMetalStyle(btn, Color3.fromRGB(55, 55, 60), 4)
+        
+        local lbl = Instance.new("TextLabel", btn)
+        lbl.Size = UDim2.new(1, 0, 1, 0); lbl.BackgroundTransparency = 1; lbl.Text = getCameraName(i)
+        lbl.TextColor3 = Color3.new(1,1,1); lbl.FontFace = customFont; lbl.TextSize = 20; lbl.ZIndex = 6
+
+        local del = Instance.new("TextButton", btn)
+        del.Size = UDim2.new(0, 18, 0, 18); del.Position = UDim2.new(1, -9, 0, -9); del.ZIndex = 7
+        del.BackgroundColor3 = Color3.fromRGB(150, 50, 50); del.Text = "×"; del.TextColor3 = Color3.new(1,1,1)
+        Instance.new("UICorner", del).CornerRadius = UDim.new(1,0)
+        
+        del.MouseButton1Click:Connect(function()
+            table.remove(cameras, i)
+            writefile(fileName, HttpService:JSONEncode(cameras))
+            render()
+        end)
+
+        btn.MouseButton1Click:Connect(function()
+            local anchor = workspace:FindFirstChild("CamAnchor") or Instance.new("Part", workspace)
+            anchor.Name = "CamAnchor"; anchor.Transparency = 1; anchor.Anchored = true; anchor.CanCollide = false
+            anchor.Position = Vector3.new(data.x, data.y + 2, data.z)
+            camera.CameraSubject = anchor; camera.CameraType = Enum.CameraType.Custom
+        end)
+    end
+    PageLabel.Text = "PAGE: " .. currentPage .. " / " .. math.max(1, math.ceil(#cameras / maxPerPage))
+end
+
+local function updateSpyList()
+    for _, v in pairs(SpyFrame:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    local listLayout = SpyFrame:FindFirstChildOfClass("UIListLayout") or Instance.new("UIListLayout", SpyFrame)
+    listLayout.Padding = UDim.new(0, 5); listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    listLayout.VerticalAlignment = Enum.VerticalAlignment.Top; listLayout.SortOrder = Enum.SortOrder.Name
+
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p ~= player then
+            local pBtn = Instance.new("TextButton", SpyFrame)
+            pBtn.Name = "01_" .. p.Name:lower(); pBtn.Size = UDim2.new(0.9, 0, 0, 35)
+            pBtn.Text = "  👤 " .. p.DisplayName; pBtn.TextColor3 = Color3.new(1, 1, 1)
+            pBtn.FontFace = customFont; pBtn.TextSize = 14; pBtn.TextXAlignment = Enum.TextXAlignment.Left
+            pBtn.ZIndex = 10; applyMetalStyle(pBtn, Color3.fromRGB(60, 60, 70), 9)
+            
+            pBtn.MouseButton1Click:Connect(function()
+                if p.Character and p.Character:FindFirstChild("Humanoid") then
+                    camera.CameraSubject = p.Character.Humanoid
+                    camera.CameraType = Enum.CameraType.Custom
+                end
+            end)
+        end
+    end
+    SpyFrame.CanvasPosition = Vector2.new(0, 0)
+end
+
+ToggleBtn.Parent = ScreenGui; ToggleBtn.Size = UDim2.new(0, 120, 0, 40); ToggleBtn.Position = UDim2.new(0.05, 0, 0.4, 0)
+applyMetalStyle(ToggleBtn, Color3.fromRGB(40, 40, 40), 10)
+ToggleBtn.Text = "📹 MENU"; ToggleBtn.TextColor3 = Color3.new(1, 1, 1); ToggleBtn.FontFace = customFont; ToggleBtn.ZIndex = 11; makeDraggable(ToggleBtn)
+
+MainFrame.Parent = ScreenGui; MainFrame.Size = UDim2.new(0, 560, 0, 400); MainFrame.Position = UDim2.new(0.5, -280, 0.5, -200); MainFrame.Visible = false
+applyMetalStyle(MainFrame, Color3.fromRGB(165, 165, 170), 1); makeDraggable(MainFrame)
+
+GridFrame.Parent = MainFrame; GridFrame.BackgroundTransparency = 1; GridFrame.Position = UDim2.new(0, 10, 0, 50); GridFrame.Size = UDim2.new(0, 310, 0, 240); GridFrame.ZIndex = 2
+UIGridLayout.Parent = GridFrame; UIGridLayout.CellSize = UDim2.new(0, 90, 0, 70); UIGridLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+
+SpyFrame.Parent = MainFrame; SpyFrame.Size = UDim2.new(0, 220, 0, 310); SpyFrame.Position = UDim2.new(1, -230, 0, 50)
+SpyFrame.ScrollBarThickness = 4; SpyFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y; SpyFrame.ZIndex = 2; applyMetalStyle(SpyFrame, Color3.fromRGB(45, 45, 50), 2)
+
+local function navBtn(t, x)
+    local b = Instance.new("TextButton", MainFrame)
+    b.Size = UDim2.new(0, 35, 0, 35); b.Position = UDim2.new(0, x, 0, 290); b.Text = t; b.TextColor3 = Color3.new(1,1,1); b.FontFace = customFont; b.ZIndex = 5
+    applyMetalStyle(b, Color3.fromRGB(70,70,70), 4)
+    return b
+end
+
+local PrevP = navBtn("<", 10)
+local NextP = navBtn(">", 285)
+PageLabel.Parent = MainFrame; PageLabel.Size = UDim2.new(0, 240, 0, 35); PageLabel.Position = UDim2.new(0, 45, 0, 290)
+PageLabel.BackgroundTransparency = 1; PageLabel.FontFace = customFont; PageLabel.TextSize = 16; PageLabel.TextColor3 = Color3.new(1,1,1); PageLabel.ZIndex = 5
+
+PrevP.MouseButton1Click:Connect(function() if currentPage > 1 then currentPage = currentPage - 1; render() end end)
+NextP.MouseButton1Click:Connect(function() if currentPage < math.ceil(#cameras/maxPerPage) then currentPage = currentPage + 1; render() end end)
+
+local SBtn = Instance.new("TextButton", MainFrame)
+SBtn.Size = UDim2.new(0, 145, 0, 45); SBtn.Position = UDim2.new(0, 10, 1, -60); SBtn.Text = "SAVE CAM"; SBtn.ZIndex = 6
+applyMetalStyle(SBtn, Color3.fromRGB(65, 75, 65), 5); SBtn.TextColor3 = Color3.new(1,1,1); SBtn.FontFace = customFont
+
+local EBtn = Instance.new("TextButton", MainFrame)
+EBtn.Size = UDim2.new(0, 145, 0, 45); EBtn.Position = UDim2.new(0, 165, 1, -60); EBtn.Text = "RESET VIEW"; EBtn.ZIndex = 6
+applyMetalStyle(EBtn, Color3.fromRGB(100, 50, 50), 5); EBtn.TextColor3 = Color3.new(1,1,1); EBtn.FontFace = customFont
+
+ToggleBtn.MouseButton1Click:Connect(function() 
+    MainFrame.Visible = not MainFrame.Visible 
+    if MainFrame.Visible then updateSpyList() render() end
+end)
+
+SBtn.MouseButton1Click:Connect(function()
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then 
+        table.insert(cameras, {x = hrp.Position.X, y = hrp.Position.Y, z = hrp.Position.Z})
+        writefile(fileName, HttpService:JSONEncode(cameras))
+        render()
+    end
+end)
+
+EBtn.MouseButton1Click:Connect(function() 
+    camera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+    camera.CameraType = Enum.CameraType.Custom 
+end)
+
+if isfile(fileName) then cameras = HttpService:JSONDecode(readfile(fileName)) end
+render()
+
