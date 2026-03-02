@@ -1,0 +1,179 @@
+local HttpService = game:GetService("HttpService")
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MyBinds"
+ScreenGui.Parent = game.CoreGui
+ScreenGui.DisplayOrder = 100
+
+local FILE = "binds_data.txt"
+local binds = {}
+
+-- ---ЭТО ВИЗУАЛ---
+local function Round(obj)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 10)
+    c.Parent = obj
+end
+
+-- ---РАБОТА С ФАЙЛАМИ---
+local function save()
+    writefile(FILE, HttpService:JSONEncode(binds))
+end
+
+local function load()
+    if isfile(FILE) then
+        local s, r = pcall(function() return HttpService:JSONDecode(readfile(FILE)) end)
+        return s and r or {}
+    end
+    return {}
+end
+
+-- ---ГЛАВНОЕ ОКНО---
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 250, 0, 500)
+Main.Position = UDim2.new(0.5, -125, 0.5, -250)
+Main.BackgroundColor3 = Color3.fromRGB(189, 189, 189)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
+Round(Main)
+
+-- ---ШАПКА---
+local Head = Instance.new("Frame")
+Head.Size = UDim2.new(1, 0, 0, 45)
+Head.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+Head.Parent = Main
+Round(Head)
+
+local function MakeBtn(txt, pos, clr)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, 35, 0, 35)
+    b.Position = pos
+    b.BackgroundColor3 = clr or Color3.fromRGB(80, 80, 80)
+    b.Text = txt
+    b.TextSize = 25
+    b.ZIndex = 3
+    b.Parent = Head
+    Round(b)
+    return b
+end
+
+local AddBtn = MakeBtn("+", UDim2.new(0, 5, 0, 5))
+local MinBtn = MakeBtn("_", UDim2.new(0, 45, 0, 5))
+local ExitBtn = MakeBtn("X", UDim2.new(1, -40, 0, 5), Color3.fromRGB(200, 50, 50))
+
+-- ---СПИСОК---
+local List = Instance.new("ScrollingFrame")
+List.Size = UDim2.new(1, -20, 1, -60)
+List.Position = UDim2.new(0, 10, 0, 55)
+List.BackgroundTransparency = 1
+List.BorderSizePixel = 0
+List.ScrollBarThickness = 4
+List.Parent = Main
+
+local Lay = Instance.new("UIListLayout")
+Lay.Parent = List
+Lay.Padding = UDim.new(0, 10)
+Lay.HorizontalAlignment = "Center"
+
+-- ---СВОРАЧИВАНИЕ---
+local mini = false
+MinBtn.MouseButton1Click:Connect(function()
+    mini = not mini
+    Main:TweenSize(mini and UDim2.new(0, 250, 0, 45) or UDim2.new(0, 250, 0, 500), "Out", "Quart", 0.3, true)
+    List.Visible = not mini
+end)
+
+-- ---ПОДТВЕРЖДЕНИЕ---
+local Conf = Instance.new("Frame")
+Conf.Size = UDim2.new(0, 200, 0, 120)
+Conf.Position = UDim2.new(0.5, -100, 0.4, 0)
+Conf.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+Conf.Visible = false
+Conf.ZIndex = 50
+Conf.Parent = ScreenGui
+Round(Conf)
+
+local Yes = Instance.new("TextButton")
+Yes.Size = UDim2.new(0, 80, 0, 35); Yes.Position = UDim2.new(0.1, 0, 0.6, 0); Yes.Text = "ДА"; Yes.BackgroundColor3 = Color3.fromRGB(0,150,0); Yes.ZIndex = 51; Yes.Parent = Conf; Round(Yes)
+
+local No = Instance.new("TextButton")
+No.Size = UDim2.new(0, 80, 0, 35); No.Position = UDim2.new(0.55, 0, 0.6, 0); No.Text = "НЕТ"; No.BackgroundColor3 = Color3.fromRGB(150,0,0); No.ZIndex = 51; No.Parent = Conf; Round(No)
+
+-- ---МЕНЮ ВВОДА---
+local Inp = Instance.new("Frame")
+Inp.Size = UDim2.new(0, 220, 0, 150)
+Inp.Position = UDim2.new(0.5, -110, 0.4, 0)
+Inp.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+Inp.Visible = false
+Inp.ZIndex = 60
+Inp.Parent = ScreenGui
+Round(Inp)
+
+local Box = Instance.new("TextBox")
+Box.Size = UDim2.new(0.9, 0, 0, 40); Box.Position = UDim2.new(0.05, 0, 0.2, 0); Box.PlaceholderText = "..."; Box.ZIndex = 61; Box.Parent = Inp; Round(Box)
+
+local Go = Instance.new("TextButton")
+Go.Size = UDim2.new(0.8, 0, 0, 40); Go.Position = UDim2.new(0.1, 0, 0.6, 0); Go.Text = "ОК"; Go.ZIndex = 61; Go.Parent = Inp; Round(Go)
+
+-- ---ЧАТ---
+local target = ""
+local function chat(m)
+    local tcs = game:GetService("TextChatService")
+    if tcs.ChatVersion == Enum.ChatVersion.TextChatService then
+        tcs.TextChannels.RBXGeneral:SendAsync(m)
+    else
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(m, "All")
+    end
+end
+
+-- ---РЕНДЕР---
+local function AddItem(m)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(0, 220, 0, 60)
+    f.BackgroundTransparency = 1
+    f.Parent = List
+
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, 175, 0, 60)
+    b.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    b.Text = m:upper()
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = "SourceSansBold"
+    b.TextSize = 20
+    b.Parent = f
+    Round(b)
+
+    local d = Instance.new("TextButton")
+    d.Size = UDim2.new(0, 40, 0, 60)
+    d.Position = UDim2.new(0, 180, 0, 0)
+    d.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+    d.Text = "X"
+    d.Parent = f
+    Round(d)
+
+    b.MouseButton1Click:Connect(function() target = m; Conf.Visible = true end)
+    d.MouseButton1Click:Connect(function()
+        for i, v in ipairs(binds) do if v == m then table.remove(binds, i); break end end
+        save(); f:Destroy()
+    end)
+    List.CanvasSize = UDim2.new(0, 0, 0, Lay.AbsoluteContentSize.Y + 20)
+end
+
+-- ---СТАРТ---
+binds = load()
+for _, v in ipairs(binds) do AddItem(v) end
+
+AddBtn.MouseButton1Click:Connect(function() Inp.Visible = not Inp.Visible end)
+Go.MouseButton1Click:Connect(function()
+    if Box.Text ~= "" then
+        table.insert(binds, Box.Text)
+        save(); AddItem(Box.Text)
+        Box.Text = ""; Inp.Visible = false
+    end
+end)
+
+Yes.MouseButton1Click:Connect(function() chat(target); Conf.Visible = false end)
+No.MouseButton1Click:Connect(function() Conf.Visible = false end)
+ExitBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
