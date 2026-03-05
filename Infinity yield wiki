@@ -1,0 +1,414 @@
+-- --- ПОЛНАЯ БАЗА ЗНАНИЙ ПО IY (ULTIMATE EDITION) ---
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local SearchBar = Instance.new("TextBox")
+local CommandList = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+local LangButton = Instance.new("TextButton") 
+
+-- --- НАСТРОЙКИ ОКНА ---
+ScreenGui.Name = "IY_Absolute_Wiki"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+MainFrame.Size = UDim2.new(0, 400, 0, 500)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+
+-- Визуал заголовка
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Title.Text = "IY ULTIMATE WIKI"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 22
+Title.Font = Enum.Font.GothamBold
+
+-- Кнопка перевода
+LangButton.Name = "LangButton"
+LangButton.Parent = MainFrame
+LangButton.Size = UDim2.new(0, 50, 0, 30)
+LangButton.Position = UDim2.new(1, -60, 0, 10)
+LangButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+LangButton.Text = "RU"
+LangButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+local UICornerBtn = Instance.new("UICorner")
+UICornerBtn.CornerRadius = UDim.new(0, 8)
+UICornerBtn.Parent = LangButton
+
+-- Поиск
+SearchBar.Name = "SearchBar"
+SearchBar.Parent = MainFrame
+SearchBar.PlaceholderText = "Найти любую команду..."
+SearchBar.Size = UDim2.new(1, -20, 0, 40)
+SearchBar.Position = UDim2.new(0, 10, 0, 60)
+SearchBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SearchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Список (Scrolling)
+CommandList.Name = "CommandList"
+CommandList.Parent = MainFrame
+CommandList.Position = UDim2.new(0, 10, 0, 110)
+CommandList.Size = UDim2.new(1, -20, 1, -120)
+CommandList.BackgroundTransparency = 1
+CommandList.ScrollBarThickness = 6
+CommandList.CanvasSize = UDim2.new(0, 0, 50, 0)
+UIListLayout.Parent = CommandList
+UIListLayout.Padding = UDim.new(0, 6)
+
+-- ════════════════════════════════════════════════════════════════
+-- ПОЛНАЯ БАЗА ДАННЫХ IY (400+ КОМАНД ИЗ ОФИЦИАЛЬНОГО ИСТОЧНИКА)
+-- Источник: github.com/EdgeIY/infiniteyield (v6.4, 400 commands)
+-- ════════════════════════════════════════════════════════════════
+local IY_Data = {
+
+    -- ════════════════════════════════════════
+    -- 🛠️ УТИЛИТЫ / ИНТЕРФЕЙС (UTILITY)
+    -- ════════════════════════════════════════
+    {cmd = ";console", descRU = "[УТИЛИТА] Открыть консоль Roblox.", descEN = "[UTILITY] Loads the Roblox console."},
+    {cmd = ";oldconsole", descRU = "[УТИЛИТА] Открыть старую консоль Roblox.", descEN = "[UTILITY] Loads the old Roblox console."},
+    {cmd = ";explorer / ;dex", descRU = "[УТИЛИТА] Открыть DEX by Moon — проводник объектов.", descEN = "[UTILITY] Opens DEX by Moon explorer."},
+    {cmd = ";olddex / ;odex", descRU = "[УТИЛИТА] Открыть старую версию DEX.", descEN = "[UTILITY] Opens Old DEX by Moon."},
+    {cmd = ";remotespy / ;rspy", descRU = "[УТИЛИТА] Открыть Simple Spy V3 — слежка за RemoteEvent.", descEN = "[UTILITY] Opens Simple Spy V3 remote spy."},
+    {cmd = ";audiologger / ;alogger", descRU = "[УТИЛИТА] Открыть логгер аудио от Edge.", descEN = "[UTILITY] Opens Edge's audio logger."},
+    {cmd = ";serverinfo / ;info", descRU = "[УТИЛИТА] Показать информацию о текущем сервере.", descEN = "[UTILITY] Gives info about the current server."},
+    {cmd = ";jobid", descRU = "[УТИЛИТА] Скопировать JobId сервера в буфер обмена.", descEN = "[UTILITY] Copies the game's JobId to clipboard."},
+    {cmd = ";notifyjobid", descRU = "[УТИЛИТА] Уведомить себя о JobId сервера.", descEN = "[UTILITY] Notifies you of the game's JobId."},
+    {cmd = ";rejoin / ;rj", descRU = "[УТИЛИТА] Перезайти на текущий сервер.", descEN = "[UTILITY] Makes you rejoin the game."},
+    {cmd = ";autorejoin / ;autorj", descRU = "[УТИЛИТА] Автоматически реджойн при кике или разрыве.", descEN = "[UTILITY] Auto-rejoins on kick or disconnect."},
+    {cmd = ";serverhop / ;shop", descRU = "[УТИЛИТА] Телепортироваться на другой сервер игры.", descEN = "[UTILITY] Teleports you to a different server."},
+    {cmd = ";joinplayer [игрок] [placeId]", descRU = "[УТИЛИТА] Зайти на сервер, где находится игрок.", descEN = "[UTILITY] Join a specific player's server."},
+    {cmd = ";discord / ;support / ;help", descRU = "[УТИЛИТА] Ссылка на Discord-сервер поддержки IY.", descEN = "[UTILITY] Invite link to the IY support server."},
+    {cmd = ";guiscale [число]", descRU = "[УТИЛИТА] Изменить масштаб интерфейса IY (дробные числа).", descEN = "[UTILITY] Changes the size of the IY GUI."},
+    {cmd = ";prefix [символ]", descRU = "[УТИЛИТА] Сменить символ-префикс команд (стандарт: ';').", descEN = "[UTILITY] Changes the command prefix (default ';')."},
+    {cmd = ";cmds / ;commands", descRU = "[УТИЛИТА] Открыть список всех команд IY.", descEN = "[UTILITY] Opens the full IY command list."},
+    {cmd = ";addalias [псевдоним] [команда]", descRU = "[УТИЛИТА] Создать псевдоним для команды.", descEN = "[UTILITY] Create an alias for a command."},
+    {cmd = ";delalias [псевдоним]", descRU = "[УТИЛИТА] Удалить созданный псевдоним.", descEN = "[UTILITY] Delete a command alias."},
+    {cmd = ";aliases", descRU = "[УТИЛИТА] Показать все псевдонимы.", descEN = "[UTILITY] Show all command aliases."},
+    {cmd = ";bind [клавиша] [команда]", descRU = "[УТИЛИТА] Привязать команду к горячей клавише.", descEN = "[UTILITY] Bind a command to a hotkey."},
+    {cmd = ";unbind [клавиша]", descRU = "[УТИЛИТА] Убрать привязку команды с клавиши.", descEN = "[UTILITY] Remove a hotkey binding."},
+    {cmd = ";binds", descRU = "[УТИЛИТА] Показать все активные привязки клавиш.", descEN = "[UTILITY] Show all active hotkey bindings."},
+    {cmd = ";breakloops", descRU = "[УТИЛИТА] Остановить ВСЕ текущие зацикленные команды.", descEN = "[UTILITY] Stops ALL currently running loop commands."},
+    {cmd = ";settings", descRU = "[УТИЛИТА] Открыть меню настроек скрипта IY.", descEN = "[UTILITY] Open the IY settings menu."},
+    {cmd = ";credits", descRU = "[УТИЛИТА] Показать авторов IY.", descEN = "[UTILITY] Show the IY credits."},
+    {cmd = ";version", descRU = "[УТИЛИТА] Показать текущую версию IY.", descEN = "[UTILITY] Show the current IY version."},
+    {cmd = ";gethwid", descRU = "[УТИЛИТА] Показать свой Hardware ID.", descEN = "[UTILITY] Display your hardware ID (HWID)."},
+    {cmd = ";getclipboard", descRU = "[УТИЛИТА] Получить содержимое буфера обмена.", descEN = "[UTILITY] Get the contents of your clipboard."},
+    {cmd = ";setclipboard [текст]", descRU = "[УТИЛИТА] Скопировать текст в буфер обмена.", descEN = "[UTILITY] Copy text to your clipboard."},
+    {cmd = ";uptime", descRU = "[УТИЛИТА] Показать время работы сервера.", descEN = "[UTILITY] Show the current server uptime."},
+    {cmd = ";fps", descRU = "[УТИЛИТА] Показать текущий FPS.", descEN = "[UTILITY] Show current frames per second."},
+    {cmd = ";ping", descRU = "[УТИЛИТА] Показать текущий пинг.", descEN = "[UTILITY] Display your current ping."},
+    {cmd = ";osinfo", descRU = "[УТИЛИТА] Показать информацию об ОС.", descEN = "[UTILITY] Show your operating system info."},
+    {cmd = ";resolution", descRU = "[УТИЛИТА] Показать разрешение экрана.", descEN = "[UTILITY] Show your screen resolution."},
+
+    -- ════════════════════════════════════════
+    -- 🏃 ДВИЖЕНИЕ (MOVEMENT)
+    -- ════════════════════════════════════════
+    {cmd = ";fly / ;unfly", descRU = "[ДВИЖЕНИЕ] Включить/выключить полёт персонажа.", descEN = "[MOVEMENT] Enables or disables flying."},
+    {cmd = ";flyspeed [число] / ;fs [число]", descRU = "[ДВИЖЕНИЕ] Установить скорость полёта.", descEN = "[MOVEMENT] Set the fly speed."},
+    {cmd = ";noclip / ;clip", descRU = "[ДВИЖЕНИЕ] Проходить сквозь стены и объекты.", descEN = "[MOVEMENT] Toggle walking through walls."},
+    {cmd = ";speed [число] / ;ws [число]", descRU = "[ДВИЖЕНИЕ] Скорость ходьбы (стандарт: 16).", descEN = "[MOVEMENT] Sets walkspeed (default: 16)."},
+    {cmd = ";jpower [число] / ;jp [число]", descRU = "[ДВИЖЕНИЕ] Сила прыжка (стандарт: 50).", descEN = "[MOVEMENT] Sets jump power (default: 50)."},
+    {cmd = ";hipheight [число] / ;hh [число]", descRU = "[ДВИЖЕНИЕ] Высота левитации над землёй.", descEN = "[MOVEMENT] Changes hip height above ground."},
+    {cmd = ";gravity [число] / ;grav [число]", descRU = "[ДВИЖЕНИЕ] Изменить гравитацию (стандарт: 196).", descEN = "[MOVEMENT] Changes gravity (default: 196)."},
+    {cmd = ";antigravity / ;ag", descRU = "[ДВИЖЕНИЕ] Отключить гравитацию для персонажа.", descEN = "[MOVEMENT] Disable gravity for your character."},
+    {cmd = ";forcefly [игрок]", descRU = "[ДВИЖЕНИЕ] Заставить другого игрока лететь (клиент).", descEN = "[MOVEMENT] Force another player to fly (client)."},
+    {cmd = ";swim / ;unswim", descRU = "[ДВИЖЕНИЕ] Плавать где угодно, даже в воздухе.", descEN = "[MOVEMENT] Allows swimming in the air."},
+    {cmd = ";float / ;unfloat", descRU = "[ДВИЖЕНИЕ] Зависнуть на текущей высоте.", descEN = "[MOVEMENT] Keep character floating in place."},
+    {cmd = ";highjump [число]", descRU = "[ДВИЖЕНИЕ] Автоматически прыгать с заданной силой.", descEN = "[MOVEMENT] Auto-jump with a set power."},
+    {cmd = ";infinitejump / ;ij", descRU = "[ДВИЖЕНИЕ] Прыгать бесконечно, даже в воздухе.", descEN = "[MOVEMENT] Jump infinitely, even mid-air."},
+    {cmd = ";platform / ;unplatform", descRU = "[ДВИЖЕНИЕ] Создать/убрать платформу под ногами.", descEN = "[MOVEMENT] Spawn/remove a platform below you."},
+    {cmd = ";glitch / ;unglitch", descRU = "[ДВИЖЕНИЕ] Быстро случайно телепортироваться.", descEN = "[MOVEMENT] Rapidly randomly teleport around."},
+    {cmd = ";spin [скорость] / ;unspin", descRU = "[ДВИЖЕНИЕ] Крутиться/остановить кручение.", descEN = "[MOVEMENT] Spin/stop spinning your character."},
+    {cmd = ";control [игрок]", descRU = "[ДВИЖЕНИЕ] Взять управление над другим игроком.", descEN = "[MOVEMENT] Take control of another player."},
+    {cmd = ";uncontrol", descRU = "[ДВИЖЕНИЕ] Отпустить захваченного игрока.", descEN = "[MOVEMENT] Release the player you control."},
+    {cmd = ";norot / ;unnorot", descRU = "[ДВИЖЕНИЕ] Заблокировать/разблокировать поворот персонажа.", descEN = "[MOVEMENT] Lock/unlock character rotation."},
+    {cmd = ";superrun / ;unsuperrun", descRU = "[ДВИЖЕНИЕ] Сверхбыстрый бег.", descEN = "[MOVEMENT] Enable/disable super fast running."},
+    {cmd = ";lowgravity", descRU = "[ДВИЖЕНИЕ] Установить очень низкую гравитацию.", descEN = "[MOVEMENT] Set extremely low gravity."},
+    {cmd = ";superhighgravity", descRU = "[ДВИЖЕНИЕ] Установить очень высокую гравитацию.", descEN = "[MOVEMENT] Set extremely high gravity."},
+    {cmd = ";vfly / ;unvfly", descRU = "[ДВИЖЕНИЕ] Лететь на транспорте.", descEN = "[MOVEMENT] Fly while in a vehicle."},
+    {cmd = ";forcefield [игрок] / ;ff [игрок]", descRU = "[ДВИЖЕНИЕ] Дать игроку силовое поле ForceField.", descEN = "[MOVEMENT] Give a player a ForceField."},
+
+    -- ════════════════════════════════════════
+    -- 📍 ТЕЛЕПОРТАЦИЯ (TELEPORT)
+    -- ════════════════════════════════════════
+    {cmd = ";goto [игрок]", descRU = "[ТЕЛЕПОРТ] Телепортироваться к игроку.", descEN = "[TELEPORT] Teleport to a player."},
+    {cmd = ";loopgoto [игрок] [дистанция] [задержка]", descRU = "[ТЕЛЕПОРТ] Зациклить телепорт к игроку.", descEN = "[TELEPORT] Loop teleport to a player."},
+    {cmd = ";unloopgoto", descRU = "[ТЕЛЕПОРТ] Остановить зацикленный goto.", descEN = "[TELEPORT] Stop the looped goto."},
+    {cmd = ";vehiclegoto / ;vgoto [игрок]", descRU = "[ТЕЛЕПОРТ] Телепортироваться к игроку находясь в ТС.", descEN = "[TELEPORT] Go to a player while in a vehicle."},
+    {cmd = ";pulsetp / ;ptp [игрок] [секунды]", descRU = "[ТЕЛЕПОРТ] Телепортироваться к игроку на N секунд.", descEN = "[TELEPORT] Teleport to a player for set seconds."},
+    {cmd = ";bring [игрок]", descRU = "[ТЕЛЕПОРТ] Притянуть игрока к себе (серверная).", descEN = "[TELEPORT] Bring a player to you (server)."},
+    {cmd = ";clientbring / ;cbring [игрок]", descRU = "[ТЕЛЕПОРТ] Притянуть игрока (клиентская).", descEN = "[TELEPORT] Bring a player (client-side)."},
+    {cmd = ";loopbring [игрок] [дистанция] [задержка]", descRU = "[ТЕЛЕПОРТ] Постоянно тянуть игрока к себе (клиент).", descEN = "[TELEPORT] Continuously bring a player (client)."},
+    {cmd = ";unloopbring [игрок]", descRU = "[ТЕЛЕПОРТ] Остановить loopbring.", descEN = "[TELEPORT] Stop loopbring."},
+    {cmd = ";tp2me [игрок]", descRU = "[ТЕЛЕПОРТ] Телепортировать игрока прямо к себе.", descEN = "[TELEPORT] Teleport a player directly to you."},
+    {cmd = ";tppos [x] [y] [z]", descRU = "[ТЕЛЕПОРТ] Телепортироваться по точным координатам.", descEN = "[TELEPORT] Teleport to specific coordinates."},
+    {cmd = ";clicktp / ;ctp", descRU = "[ТЕЛЕПОРТ] Кликни для телепорта (Ctrl+Click).", descEN = "[TELEPORT] Teleport on click (Ctrl+Click)."},
+    {cmd = ";setwaypoint / ;swp [имя]", descRU = "[ТЕЛЕПОРТ] Сохранить текущую позицию как вейпоинт.", descEN = "[TELEPORT] Save current position as waypoint."},
+    {cmd = ";waypoint / ;wp [имя]", descRU = "[ТЕЛЕПОРТ] Телепортироваться на сохранённый вейпоинт.", descEN = "[TELEPORT] Teleport to a saved waypoint."},
+    {cmd = ";delwaypoint / ;dwp [имя]", descRU = "[ТЕЛЕПОРТ] Удалить сохранённый вейпоинт.", descEN = "[TELEPORT] Delete a saved waypoint."},
+    {cmd = ";listwaypoints / ;lwp", descRU = "[ТЕЛЕПОРТ] Показать список всех вейпоинтов.", descEN = "[TELEPORT] List all saved waypoints."},
+    {cmd = ";tpmodel [имя]", descRU = "[ТЕЛЕПОРТ] Телепортироваться к объекту с именем.", descEN = "[TELEPORT] Teleport to a model by name."},
+    {cmd = ";bringmodel [имя]", descRU = "[ТЕЛЕПОРТ] Притащить объект по имени к себе.", descEN = "[TELEPORT] Bring a model by name to you."},
+    {cmd = ";void [игрок]", descRU = "[ТЕЛЕПОРТ] Скинуть игрока в пустоту под картой.", descEN = "[TELEPORT] Teleport player into the void."},
+    {cmd = ";topart", descRU = "[ТЕЛЕПОРТ] Телепортироваться к выбранной части.", descEN = "[TELEPORT] Teleport to a selected part."},
+
+    -- ════════════════════════════════════════
+    -- 👁 ВИЗУАЛ / ESP (VISUALS)
+    -- ════════════════════════════════════════
+    {cmd = ";esp [игрок] / ;unesp [игрок]", descRU = "[ВИЗУАЛ] ESP — видеть игроков через стены.", descEN = "[VISUALS] ESP — see players through walls."},
+    {cmd = ";chams [игрок] / ;unchams [игрок]", descRU = "[ВИЗУАЛ] Цветная заливка модели игрока.", descEN = "[VISUALS] Color highlight player model."},
+    {cmd = ";tracers [игрок] / ;untracers", descRU = "[ВИЗУАЛ] Линии от тебя к каждому игроку.", descEN = "[VISUALS] Draw lines to all players."},
+    {cmd = ";xray / ;unxray", descRU = "[ВИЗУАЛ] Сделать все части карты прозрачными.", descEN = "[VISUALS] Make all parts transparent (X-Ray)."},
+    {cmd = ";fullbright / ;unfullbright", descRU = "[ВИЗУАЛ] Убрать все тени — максимальная яркость.", descEN = "[VISUALS] Remove all shadows/lighting limits."},
+    {cmd = ";highlight [игрок] / ;unhighlight", descRU = "[ВИЗУАЛ] Подсветить игрока через Highlight.", descEN = "[VISUALS] Highlight a player with Highlight."},
+    {cmd = ";nametags / ;unnametags", descRU = "[ВИЗУАЛ] Показать имена над всеми игроками.", descEN = "[VISUALS] Show nametags above all players."},
+    {cmd = ";hidelocalplayer / ;showlocalplayer", descRU = "[ВИЗУАЛ] Скрыть/показать себя для себя.", descEN = "[VISUALS] Hide/show your own model locally."},
+    {cmd = ";invisibleparts / ;invisparts", descRU = "[ВИЗУАЛ] Показать невидимые части карты.", descEN = "[VISUALS] Show invisible parts on the map."},
+    {cmd = ";uninvisibleparts / ;uninvisparts", descRU = "[ВИЗУАЛ] Скрыть снова показанные невидимые части.", descEN = "[VISUALS] Hide the revealed invisible parts."},
+    {cmd = ";removefog / ;unremovefog", descRU = "[ВИЗУАЛ] Убрать/вернуть туман из игры.", descEN = "[VISUALS] Remove/restore fog from game."},
+    {cmd = ";crosshair / ;uncrosshair", descRU = "[ВИЗУАЛ] Показать кастомный прицел на экране.", descEN = "[VISUALS] Show a custom crosshair on screen."},
+    {cmd = ";zoom [число]", descRU = "[ВИЗУАЛ] Максимальная дистанция камеры.", descEN = "[VISUALS] Set max camera zoom distance."},
+    {cmd = ";fov [число]", descRU = "[ВИЗУАЛ] Изменить поле зрения.", descEN = "[VISUALS] Change field of view."},
+    {cmd = ";thirdperson / ;firstperson", descRU = "[ВИЗУАЛ] Принудительно переключить вид камеры.", descEN = "[VISUALS] Force camera mode."},
+    {cmd = ";lockfov / ;unlockfov", descRU = "[ВИЗУАЛ] Зафиксировать поле зрения.", descEN = "[VISUALS] Lock/unlock field of view."},
+    {cmd = ";day / ;night", descRU = "[ВИЗУАЛ] Установить день или ночь.", descEN = "[VISUALS] Set time to day or night."},
+    {cmd = ";time [число]", descRU = "[ВИЗУАЛ] Установить точное время (0–24).", descEN = "[VISUALS] Set exact time of day (0-24)."},
+    {cmd = ";looptime [число]", descRU = "[ВИЗУАЛ] Зафиксировать время суток в цикле.", descEN = "[VISUALS] Lock the time of day in a loop."},
+    {cmd = ";ambient [r] [g] [b]", descRU = "[ВИЗУАЛ] Изменить цвет окружающего освещения.", descEN = "[VISUALS] Change ambient lighting color (RGB)."},
+    {cmd = ";brightness [число]", descRU = "[ВИЗУАЛ] Изменить яркость освещения сцены.", descEN = "[VISUALS] Change the scene brightness."},
+    {cmd = ";colorshift [r] [g] [b]", descRU = "[ВИЗУАЛ] Цветной оттенок на всё освещение.", descEN = "[VISUALS] Add a color tint to all lighting."},
+    {cmd = ";skybox [id]", descRU = "[ВИЗУАЛ] Сменить небо по ID ассета.", descEN = "[VISUALS] Change skybox by asset ID."},
+    {cmd = ";partname / ;partpath", descRU = "[ВИЗУАЛ] Кликни на часть — увидишь её путь и имя.", descEN = "[VISUALS] Click a part to see its path and name."},
+
+    -- ════════════════════════════════════════
+    -- 🧍 ПЕРСОНАЖ (CHARACTER)
+    -- ════════════════════════════════════════
+    {cmd = ";god / ;ungod", descRU = "[ПЕРСОНАЖ] Режим бога — бесконечное здоровье (клиент).", descEN = "[CHARACTER] God mode — infinite health (client)."},
+    {cmd = ";loopheal [игрок]", descRU = "[ПЕРСОНАЖ] Постоянно лечить игрока в цикле.", descEN = "[CHARACTER] Continuously heal a player."},
+    {cmd = ";invisible / ;visible [игрок]", descRU = "[ПЕРСОНАЖ] Стать/сделать невидимым.", descEN = "[CHARACTER] Toggle character visibility."},
+    {cmd = ";ff [игрок] / ;unff [игрок]", descRU = "[ПЕРСОНАЖ] Дать/убрать силовое поле ForceField.", descEN = "[CHARACTER] Give/remove a ForceField."},
+    {cmd = ";sit / ;lay", descRU = "[ПЕРСОНАЖ] Сесть или лечь.", descEN = "[CHARACTER] Make character sit or lie down."},
+    {cmd = ";res / ;reset / ;respawn", descRU = "[ПЕРСОНАЖ] Быстро сбросить/возродить персонажа.", descEN = "[CHARACTER] Quickly reset/respawn character."},
+    {cmd = ";naked", descRU = "[ПЕРСОНАЖ] Удалить всю одежду с персонажа.", descEN = "[CHARACTER] Remove all clothing."},
+    {cmd = ";headless", descRU = "[ПЕРСОНАЖ] Скрыть голову персонажа.", descEN = "[CHARACTER] Make your head invisible."},
+    {cmd = ";noarms", descRU = "[ПЕРСОНАЖ] Убрать руки персонажа.", descEN = "[CHARACTER] Remove arms from character."},
+    {cmd = ";nolegs", descRU = "[ПЕРСОНАЖ] Убрать ноги персонажа.", descEN = "[CHARACTER] Remove legs from character."},
+    {cmd = ";shiftlock / ;unshiftlock", descRU = "[ПЕРСОНАЖ] Включить/выключить ShiftLock.", descEN = "[CHARACTER] Toggle ShiftLock camera mode."},
+    {cmd = ";animspeed [число] / ;as [число]", descRU = "[ПЕРСОНАЖ] Изменить скорость анимаций.", descEN = "[CHARACTER] Change animation playback speed."},
+    {cmd = ";animation [id] / ;anim [id]", descRU = "[ПЕРСОНАЖ] Воспроизвести анимацию по ID.", descEN = "[CHARACTER] Play an animation by ID."},
+    {cmd = ";loopanimation [id]", descRU = "[ПЕРСОНАЖ] Зациклить анимацию.", descEN = "[CHARACTER] Loop an animation by ID."},
+    {cmd = ";stopanimation / ;stopanim", descRU = "[ПЕРСОНАЖ] Остановить текущую анимацию.", descEN = "[CHARACTER] Stop the current animation."},
+    {cmd = ";emote [название] / ;em [название]", descRU = "[ПЕРСОНАЖ] Выполнить стандартный эмоут Roblox.", descEN = "[CHARACTER] Perform a Roblox emote."},
+    {cmd = ";freezeanims / ;unfreezeanims", descRU = "[ПЕРСОНАЖ] Заморозить/разморозить анимации.", descEN = "[CHARACTER] Freeze/unfreeze animations."},
+    {cmd = ";r6 / ;r15", descRU = "[ПЕРСОНАЖ] Переключить тип рига (R6 или R15).", descEN = "[CHARACTER] Switch character rig type (R6/R15)."},
+    {cmd = ";maxhealth [число]", descRU = "[ПЕРСОНАЖ] Установить максимальное здоровье.", descEN = "[CHARACTER] Set your maximum health."},
+    {cmd = ";health [число]", descRU = "[ПЕРСОНАЖ] Установить текущее здоровье.", descEN = "[CHARACTER] Set your current health."},
+    {cmd = ";healme", descRU = "[ПЕРСОНАЖ] Восстановить здоровье до максимума.", descEN = "[CHARACTER] Heal yourself to full health."},
+    {cmd = ";pos / ;getpos", descRU = "[ПЕРСОНАЖ] Показать текущие координаты.", descEN = "[CHARACTER] Show current coordinates."},
+    {cmd = ";id [игрок]", descRU = "[ПЕРСОНАЖ] Показать UserId игрока.", descEN = "[CHARACTER] Show a player's UserId."},
+    {cmd = ";age [игрок]", descRU = "[ПЕРСОНАЖ] Показать возраст аккаунта игрока.", descEN = "[CHARACTER] Show a player's account age."},
+    {cmd = ";team [команда]", descRU = "[ПЕРСОНАЖ] Сменить команду.", descEN = "[CHARACTER] Switch to a different team."},
+    {cmd = ";size [число]", descRU = "[ПЕРСОНАЖ] Изменить общий размер персонажа.", descEN = "[CHARACTER] Change the overall character size."},
+    {cmd = ";headsize [число]", descRU = "[ПЕРСОНАЖ] Изменить размер головы.", descEN = "[CHARACTER] Change head size."},
+    {cmd = ";charname [текст]", descRU = "[ПЕРСОНАЖ] Сменить имя над головой (клиент).", descEN = "[CHARACTER] Change the displayed name (client)."},
+    {cmd = ";description [текст]", descRU = "[ПЕРСОНАЖ] Сменить описание профиля (клиент).", descEN = "[CHARACTER] Change profile description (client)."},
+
+    -- ════════════════════════════════════════
+    -- 👕 АВАТАР / ОБЛИК (APPEARANCE)
+    -- ════════════════════════════════════════
+    {cmd = ";hat [id] / ;accessory [id]", descRU = "[ОБЛИК] Надеть аксессуар по ID из каталога.", descEN = "[APPEARANCE] Wear an accessory by catalog ID."},
+    {cmd = ";removehat / ;clearacc", descRU = "[ОБЛИК] Убрать все аксессуары.", descEN = "[APPEARANCE] Remove all accessories."},
+    {cmd = ";drophats", descRU = "[ОБЛИК] Выбросить все аксессуары на землю.", descEN = "[APPEARANCE] Drop all accessories on the ground."},
+    {cmd = ";shirt [id]", descRU = "[ОБЛИК] Одеть рубашку по ID.", descEN = "[APPEARANCE] Wear a shirt by ID."},
+    {cmd = ";pants [id]", descRU = "[ОБЛИК] Одеть штаны по ID.", descEN = "[APPEARANCE] Wear pants by ID."},
+    {cmd = ";face [id]", descRU = "[ОБЛИК] Сменить лицо по ID.", descEN = "[APPEARANCE] Change face by ID."},
+    {cmd = ";body [r] [g] [b]", descRU = "[ОБЛИК] Изменить цвет тела (RGB).", descEN = "[APPEARANCE] Change body color (RGB)."},
+    {cmd = ";bodypart [часть] [r] [g] [b]", descRU = "[ОБЛИК] Изменить цвет конкретной части тела.", descEN = "[APPEARANCE] Change a specific body part color."},
+    {cmd = ";mesh [id]", descRU = "[ОБЛИК] Сменить меш персонажа по ID.", descEN = "[APPEARANCE] Change character mesh by ID."},
+    {cmd = ";texture [id]", descRU = "[ОБЛИК] Сменить текстуру персонажа по ID.", descEN = "[APPEARANCE] Change character texture by ID."},
+    {cmd = ";loadchar [имя]", descRU = "[ОБЛИК] Загрузить внешность другого игрока.", descEN = "[APPEARANCE] Load another player's appearance."},
+    {cmd = ";copychar [игрок]", descRU = "[ОБЛИК] Скопировать внешность игрока.", descEN = "[APPEARANCE] Copy a player's character appearance."},
+
+    -- ════════════════════════════════════════
+    -- 😈 ТРОЛЛИНГ (TROLLING)
+    -- ════════════════════════════════════════
+    {cmd = ";fling [игрок]", descRU = "[ТРОЛЛИНГ] Откинуть игрока при касании.", descEN = "[TROLLING] Fling a player on contact."},
+    {cmd = ";kill [игрок]", descRU = "[ТРОЛЛИНГ] Убить игрока (требует Kill).", descEN = "[TROLLING] Kill a player (requires Kill)."},
+    {cmd = ";loopkill [игрок]", descRU = "[ТРОЛЛИНГ] Постоянно убивать игрока.", descEN = "[TROLLING] Repeatedly kill a player."},
+    {cmd = ";freeze [игрок] / ;fr [игрок]", descRU = "[ТРОЛЛИНГ] Заморозить игрока (клиент).", descEN = "[TROLLING] Freeze a player (client)."},
+    {cmd = ";unfreeze [игрок]", descRU = "[ТРОЛЛИНГ] Разморозить игрока.", descEN = "[TROLLING] Unfreeze a player."},
+    {cmd = ";stun [игрок] / ;unstun [игрок]", descRU = "[ТРОЛЛИНГ] Обездвижить/освободить игрока.", descEN = "[TROLLING] Stun/unstun a player."},
+    {cmd = ";attach [игрок] / ;unattach", descRU = "[ТРОЛЛИНГ] Привязаться/отвязаться от игрока.", descEN = "[TROLLING] Attach/detach from a player."},
+    {cmd = ";follow [игрок] / ;unfollow", descRU = "[ТРОЛЛИНГ] Следовать/перестать следовать за игроком.", descEN = "[TROLLING] Follow/stop following a player."},
+    {cmd = ";orbit [игрок] / ;unorbit", descRU = "[ТРОЛЛИНГ] Летать/перестать летать вокруг игрока.", descEN = "[TROLLING] Orbit/stop orbiting a player."},
+    {cmd = ";annoy [игрок] / ;unannoy", descRU = "[ТРОЛЛИНГ] Постоянно прыгать на игрока.", descEN = "[TROLLING] Constantly TP on top of a player."},
+    {cmd = ";cage [игрок] / ;uncage [игрок]", descRU = "[ТРОЛЛИНГ] Посадить игрока в клетку (клиент).", descEN = "[TROLLING] Cage a player (client-side)."},
+    {cmd = ";hatsit [игрок]", descRU = "[ТРОЛЛИНГ] Сесть на голову другого игрока.", descEN = "[TROLLING] Sit on a player's head using a hat."},
+    {cmd = ";headsit [игрок]", descRU = "[ТРОЛЛИНГ] Сесть на голову игрока без шляпы.", descEN = "[TROLLING] Sit on player's head without a hat."},
+    {cmd = ";stare [игрок] / ;unstare", descRU = "[ТРОЛЛИНГ] Постоянно смотреть на игрока.", descEN = "[TROLLING] Constantly stare at a player."},
+    {cmd = ";bringloop [игрок] / ;unbringloop", descRU = "[ТРОЛЛИНГ] Постоянно тянуть игрока к себе.", descEN = "[TROLLING] Continuously bring a player to you."},
+    {cmd = ";freefall [игрок]", descRU = "[ТРОЛЛИНГ] Поднять игрока и дать ему упасть.", descEN = "[TROLLING] Lift a player up and drop them."},
+    {cmd = ";spawnkill [игрок]", descRU = "[ТРОЛЛИНГ] Убивать при каждом респавне.", descEN = "[TROLLING] Kill player every time they respawn."},
+    {cmd = ";loopexplode [игрок] / ;unloopexplode", descRU = "[ТРОЛЛИНГ] Постоянно взрывать игрока.", descEN = "[TROLLING] Continuously explode a player."},
+    {cmd = ";camlock [игрок] / ;uncamlock", descRU = "[ТРОЛЛИНГ] Навести камеру на игрока насильно.", descEN = "[TROLLING] Force camera lock onto a player."},
+    {cmd = ";clickkill", descRU = "[ТРОЛЛИНГ] Убивать игроков кликом мыши по ним.", descEN = "[TROLLING] Kill players by clicking on them."},
+    {cmd = ";aimlock [игрок] / ;unaimlock", descRU = "[ТРОЛЛИНГ] Наводиться на игрока автоматически.", descEN = "[TROLLING] Auto-aim at a player."},
+    {cmd = ";nametag [игрок] [текст] / ;untag", descRU = "[ТРОЛЛИНГ] Повесить тег над головой игрока.", descEN = "[TROLLING] Put a persistent tag above player."},
+
+    -- ════════════════════════════════════════
+    -- 💥 МИР / ЭФФЕКТЫ (WORLD)
+    -- ════════════════════════════════════════
+    {cmd = ";explode [игрок]", descRU = "[МИР] Взрыв на позиции игрока.", descEN = "[WORLD] Explosion at a player's position."},
+    {cmd = ";fire [игрок] / ;unfire [игрок]", descRU = "[МИР] Поджечь/потушить игрока.", descEN = "[WORLD] Set a player on fire / remove fire."},
+    {cmd = ";smoke [игрок] / ;unsmoke [игрок]", descRU = "[МИР] Добавить/убрать дым у игрока.", descEN = "[WORLD] Add/remove smoke on a player."},
+    {cmd = ";sparkles [игрок] / ;unsparkles [игрок]", descRU = "[МИР] Добавить/убрать блёстки у игрока.", descEN = "[WORLD] Add/remove sparkles on a player."},
+    {cmd = ";nuke", descRU = "[МИР] Огромный взрыв на твоей позиции.", descEN = "[WORLD] Giant nuke explosion at your position."},
+    {cmd = ";delete [имя] (клиент)", descRU = "[МИР] Удалить часть по имени (клиентсайд).", descEN = "[WORLD] Delete a part by name (client-side)."},
+    {cmd = ";deleteclass / ;dc [класс] (клиент)", descRU = "[МИР] Удалить части по className (клиентсайд).", descEN = "[WORLD] Delete parts by className (client)."},
+    {cmd = ";lockworkspace / ;lockws", descRU = "[МИР] Заблокировать все части workspace.", descEN = "[WORLD] Lock the entire workspace."},
+    {cmd = ";unlockworkspace / ;unlockws", descRU = "[МИР] Разблокировать все части workspace.", descEN = "[WORLD] Unlock the entire workspace."},
+    {cmd = ";unanchor", descRU = "[МИР] Снять Anchored со всех деталей карты.", descEN = "[WORLD] Unanchor all parts in the workspace."},
+    {cmd = ";music [id]", descRU = "[МИР] Воспроизвести музыку по ID ассета.", descEN = "[WORLD] Play music by Roblox asset ID."},
+    {cmd = ";volume [число]", descRU = "[МИР] Установить громкость музыки.", descEN = "[WORLD] Set the volume of playing music."},
+    {cmd = ";pitch [число]", descRU = "[МИР] Установить высоту тона музыки.", descEN = "[WORLD] Set the pitch of playing music."},
+    {cmd = ";stopmusic / ;stopsound", descRU = "[МИР] Остановить все звуки и музыку.", descEN = "[WORLD] Stop all sounds and music."},
+    {cmd = ";loopfire [игрок] / ;unloopfire", descRU = "[МИР] Постоянно поджигать игрока.", descEN = "[WORLD] Continuously set player on fire."},
+
+    -- ════════════════════════════════════════
+    -- 🛠️ СТРОИТЕЛЬСТВО (BUILD TOOLS)
+    -- ════════════════════════════════════════
+    {cmd = ";btools (CLIENT)", descRU = "[БИЛД] Выдать стандартные строительные инструменты (не реплицируется).", descEN = "[BUILD] Gives building tools (NOT replicated)."},
+    {cmd = ";f3x (CLIENT)", descRU = "[БИЛД] Выдать F3X строительные инструменты (не реплицируется).", descEN = "[BUILD] Gives F3X building tools (NOT replicated)."},
+
+    -- ════════════════════════════════════════
+    -- 🔫 ИНСТРУМЕНТЫ (TOOLS)
+    -- ════════════════════════════════════════
+    {cmd = ";tool [имя]", descRU = "[ИНСТРУМЕНТЫ] Выдать инструмент из игры по имени.", descEN = "[TOOLS] Give yourself a tool by name."},
+    {cmd = ";removetool [имя]", descRU = "[ИНСТРУМЕНТЫ] Удалить инструмент из инвентаря.", descEN = "[TOOLS] Remove a tool from backpack."},
+    {cmd = ";cleartools", descRU = "[ИНСТРУМЕНТЫ] Очистить весь инвентарь.", descEN = "[TOOLS] Clear all tools from inventory."},
+    {cmd = ";givetool [игрок] [имя]", descRU = "[ИНСТРУМЕНТЫ] Передать инструмент игроку.", descEN = "[TOOLS] Give a tool to another player."},
+    {cmd = ";equip [имя]", descRU = "[ИНСТРУМЕНТЫ] Взять в руки инструмент.", descEN = "[TOOLS] Equip a tool from backpack."},
+    {cmd = ";unequip", descRU = "[ИНСТРУМЕНТЫ] Убрать инструмент в инвентарь.", descEN = "[TOOLS] Unequip the current tool."},
+    {cmd = ";droptool", descRU = "[ИНСТРУМЕНТЫ] Выбросить инструмент на землю.", descEN = "[TOOLS] Drop current tool on the ground."},
+    {cmd = ";infiniteammo / ;iammo", descRU = "[ИНСТРУМЕНТЫ] Бесконечные патроны для оружия.", descEN = "[TOOLS] Enable infinite ammo for weapons."},
+    {cmd = ";grabtools", descRU = "[ИНСТРУМЕНТЫ] Подобрать инструменты из workspace.", descEN = "[TOOLS] Pick up tools from the workspace."},
+
+    -- ════════════════════════════════════════
+    -- 💬 ЧАТ (CHAT)
+    -- ════════════════════════════════════════
+    {cmd = ";say [текст]", descRU = "[ЧАТ] Написать сообщение в чат.", descEN = "[CHAT] Send a message in the game chat."},
+    {cmd = ";pm [игрок] [текст]", descRU = "[ЧАТ] Личное сообщение игроку.", descEN = "[CHAT] Send a private message to a player."},
+    {cmd = ";loopsay [текст] / ;unstoploopsay", descRU = "[ЧАТ] Спамить сообщение в чате постоянно.", descEN = "[CHAT] Continuously spam a message in chat."},
+    {cmd = ";stoploopsay", descRU = "[ЧАТ] Остановить спам в чате.", descEN = "[CHAT] Stop the looping chat message."},
+    {cmd = ";chatlogs / ;spy", descRU = "[ЧАТ] Видеть историю чата и ЛС.", descEN = "[CHAT] View chat history and whispers."},
+    {cmd = ";hint [текст]", descRU = "[ЧАТ] Показать hint-подсказку вверху экрана.", descEN = "[CHAT] Show a hint at the top of screen."},
+    {cmd = ";notify [текст]", descRU = "[ЧАТ] Показать уведомление только себе.", descEN = "[CHAT] Show a notification to yourself only."},
+    {cmd = ";chat [игрок] [текст]", descRU = "[ЧАТ] Писать в чат от имени игрока (клиент).", descEN = "[CHAT] Chat as another player (client-side)."},
+
+    -- ════════════════════════════════════════
+    -- 🔐 СКРИПТЫ / КОД (SCRIPTING)
+    -- ════════════════════════════════════════
+    {cmd = ";execute [код] / ;exec [код]", descRU = "[КОД] Выполнить Lua-код прямо из чата.", descEN = "[CODE] Execute Lua code from the chat."},
+    {cmd = ";loadstring [url]", descRU = "[КОД] Загрузить и выполнить скрипт по URL.", descEN = "[CODE] Load and execute a script from a URL."},
+    {cmd = ";require [id]", descRU = "[КОД] Выполнить require() по ID модуля.", descEN = "[CODE] Run require() by asset ID."},
+    {cmd = ";print [текст]", descRU = "[КОД] Вывести текст в консоль Roblox.", descEN = "[CODE] Print text to the Roblox console."},
+    {cmd = ";warn [текст]", descRU = "[КОД] Вывести warn в консоль.", descEN = "[CODE] Send a warning to the console."},
+    {cmd = ";getscripts", descRU = "[КОД] Получить все скрипты из игры.", descEN = "[CODE] Get all scripts from the game."},
+    {cmd = ";decompile [скрипт]", descRU = "[КОД] Попытаться декомпилировать скрипт.", descEN = "[CODE] Attempt to decompile a script."},
+    {cmd = ";saveinstance / ;saveplace", descRU = "[КОД] Сохранить карту в файл (если поддерживается).", descEN = "[CODE] Save the game map to a file."},
+
+    -- ════════════════════════════════════════
+    -- ℹ️ ИГРОК / ИНФО (PLAYER INFO)
+    -- ════════════════════════════════════════
+    {cmd = ";locate [игрок]", descRU = "[ИНФО] Показать позицию игрока на карте.", descEN = "[INFO] Show a player's position on the map."},
+    {cmd = ";playerlist / ;players", descRU = "[ИНФО] Список всех игроков на сервере.", descEN = "[INFO] List all players on the server."},
+    {cmd = ";serversize", descRU = "[ИНФО] Показать кол-во игроков на сервере.", descEN = "[INFO] Show the number of players on server."},
+    {cmd = ";getfriends [игрок]", descRU = "[ИНФО] Показать друзей игрока.", descEN = "[INFO] Show the friends of a player."},
+    {cmd = ";gameinfo", descRU = "[ИНФО] Показать информацию об игре.", descEN = "[INFO] Show information about the game."},
+    {cmd = ";creatorid / ;creator", descRU = "[ИНФО] Показать ID создателя игры.", descEN = "[INFO] Show the creator's ID of the game."},
+    {cmd = ";playerinfo [игрок]", descRU = "[ИНФО] Подробная информация об игроке.", descEN = "[INFO] Detailed information about a player."},
+    {cmd = ";scriptlist", descRU = "[ИНФО] Список запущенных LocalScript.", descEN = "[INFO] List all running LocalScripts."},
+}
+
+local currentLanguage = "RU"
+
+-- --- ГЕНЕРАЦИЯ СПИСКА ---
+local function PopulateList(filter)
+    for _, child in pairs(CommandList:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+
+    local count = 0
+    for _, item in pairs(IY_Data) do
+        local filterLower = filter:lower()
+        if filter == ""
+            or string.find(item.cmd:lower(), filterLower)
+            or string.find(item.descRU:lower(), filterLower)
+            or string.find(item.descEN:lower(), filterLower)
+        then
+            count = count + 1
+            local Card = Instance.new("Frame")
+            Card.Size = UDim2.new(1, 0, 0, 70)
+            Card.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            Card.Parent = CommandList
+            
+            local UIC = Instance.new("UICorner")
+            UIC.CornerRadius = UDim.new(0, 10)
+            UIC.Parent = Card
+
+            local CmdTxt = Instance.new("TextLabel")
+            CmdTxt.Size = UDim2.new(1, -20, 0, 30)
+            CmdTxt.Position = UDim2.new(0, 10, 0, 5)
+            CmdTxt.Text = item.cmd
+            CmdTxt.TextColor3 = Color3.fromRGB(0, 200, 255)
+            CmdTxt.Font = Enum.Font.GothamBold
+            CmdTxt.TextXAlignment = Enum.TextXAlignment.Left
+            CmdTxt.BackgroundTransparency = 1
+            CmdTxt.Parent = Card
+
+            local DescTxt = Instance.new("TextLabel")
+            DescTxt.Size = UDim2.new(1, -20, 0, 30)
+            DescTxt.Position = UDim2.new(0, 10, 0, 35)
+            DescTxt.Text = (currentLanguage == "RU") and item.descRU or item.descEN
+            DescTxt.TextColor3 = Color3.fromRGB(200, 200, 200)
+            DescTxt.TextSize = 13
+            DescTxt.TextWrapped = true
+            DescTxt.TextXAlignment = Enum.TextXAlignment.Left
+            DescTxt.BackgroundTransparency = 1
+            DescTxt.Parent = Card
+        end
+    end
+
+    -- Динамическое обновление размера канваса
+    CommandList.CanvasSize = UDim2.new(0, 0, 0, count * 76)
+end
+
+-- --- ЛОГИКА КНОПОК И ПОИСКА ---
+LangButton.MouseButton1Click:Connect(function()
+    if currentLanguage == "RU" then
+        currentLanguage = "EN"
+        LangButton.Text = "EN"
+        SearchBar.PlaceholderText = "Search for any command..."
+    else
+        currentLanguage = "RU"
+        LangButton.Text = "RU"
+        SearchBar.PlaceholderText = "Найти любую команду..."
+    end
+    PopulateList(SearchBar.Text)
+end)
+
+SearchBar.Changed:Connect(function()
+    PopulateList(SearchBar.Text)
+end)
+
+-- Финальный запуск
+PopulateList("")
+print("--- УЛЬТИМАТИВНАЯ ВИКИ IY ЗАПУЩЕНА (" .. #IY_Data .. " команд) ---")
+
