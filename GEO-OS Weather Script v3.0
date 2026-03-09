@@ -1,0 +1,463 @@
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+
+local locations = {
+    ["🇷🇺 Russia"] = {"Moscow","Saint Petersburg","Novosibirsk","Yekaterinburg","Kazan","Rostov-on-Don","Krasnodar","Vladivostok","Sochi","Omsk"},
+    ["🇰🇿 Kazakhstan"] = {"Almaty","Astana","Shymkent","Karaganda","Aktobe","Atyrau","Pavlodar","Semey"},
+    ["🇺🇸 USA"] = {"New York","Los Angeles","Chicago","Miami","Houston","Las Vegas","Seattle","Dallas","Boston","Phoenix"},
+    ["🇬🇧 UK"] = {"London","Manchester","Birmingham","Liverpool","Edinburgh","Bristol","Leeds","Glasgow"},
+    ["🇩🇪 Germany"] = {"Berlin","Munich","Hamburg","Frankfurt","Cologne","Stuttgart","Dusseldorf","Dresden"},
+    ["🇫🇷 France"] = {"Paris","Lyon","Marseille","Nice","Bordeaux","Strasbourg","Toulouse"},
+    ["🇯🇵 Japan"] = {"Tokyo","Osaka","Kyoto","Hiroshima","Sapporo","Nagoya","Fukuoka"},
+    ["🇨🇳 China"] = {"Beijing","Shanghai","Shenzhen","Guangzhou","Chengdu","Wuhan","Xian"},
+    ["🇧🇷 Brazil"] = {"Sao Paulo","Rio de Janeiro","Brasilia","Salvador","Fortaleza","Manaus"},
+    ["🇦🇪 UAE"] = {"Dubai","Abu Dhabi","Sharjah","Ajman"},
+    ["🇹🇷 Turkey"] = {"Istanbul","Ankara","Izmir","Antalya","Bursa","Trabzon"},
+    ["🇮🇳 India"] = {"Mumbai","Delhi","Bangalore","Chennai","Kolkata","Hyderabad","Pune"},
+    ["🇮🇹 Italy"] = {"Rome","Milan","Naples","Turin","Florence","Venice","Bologna"},
+    ["🇪🇸 Spain"] = {"Madrid","Barcelona","Seville","Valencia","Bilbao","Malaga"},
+    ["🇦🇺 Australia"] = {"Sydney","Melbourne","Brisbane","Perth","Adelaide","Canberra"},
+}
+
+local lang = "EN"
+
+local translations = {
+    EN = {
+        title = "GEO-OS WEATHER",
+        time = "TIME", date = "DATE", city = "CITY",
+        temp = "TEMP", cond = "COND", back = "◀ BACK",
+        loading = "Loading", nodata = "---", none = "None",
+        auto = "AUTO UPDATE"
+    },
+    RU = {
+        title = "ГЕО-ОС ПОГОДА",
+        time = "ВРЕМЯ", date = "ДАТА", city = "ГОРОД",
+        temp = "ТЕМП", cond = "ПОГОДА", back = "◀ НАЗАД",
+        loading = "Загрузка", nodata = "---", none = "Нет",
+        auto = "АВТО ОБНОВЛ"
+    }
+}
+
+local weatherDescriptions = {
+    EN = {
+        [0]="Clear sky",[1]="Mainly clear",[2]="Partly cloudy",[3]="Overcast",
+        [45]="Foggy",[48]="Icy fog",[51]="Light drizzle",[53]="Drizzle",
+        [55]="Heavy drizzle",[61]="Light rain",[63]="Rain",[65]="Heavy rain",
+        [71]="Light snow",[73]="Snow",[75]="Heavy snow",[80]="Light showers",
+        [81]="Showers",[82]="Heavy showers",[95]="Thunderstorm",[99]="Hail storm"
+    },
+    RU = {
+        [0]="Ясно",[1]="Преимущ. ясно",[2]="Переменная обл.",[3]="Пасмурно",
+        [45]="Туман",[48]="Ледяной туман",[51]="Лёгкая морось",[53]="Морось",
+        [55]="Сильная морось",[61]="Лёгкий дождь",[63]="Дождь",[65]="Сильный дождь",
+        [71]="Лёгкий снег",[73]="Снег",[75]="Сильный снег",[80]="Ливень слабый",
+        [81]="Ливень",[82]="Сильный ливень",[95]="Гроза",[99]="Гроза с градом"
+    }
+}
+
+local weatherIcons = {
+    [0]="☀️",[1]="🌤️",[2]="⛅",[3]="☁️",
+    [45]="🌫️",[48]="🌫️",[51]="🌦️",[53]="🌦️",
+    [55]="🌧️",[61]="🌧️",[63]="🌧️",[65]="🌧️",
+    [71]="❄️",[73]="🌨️",[75]="❄️",[80]="🌦️",
+    [81]="⛈️",[82]="⛈️",[95]="⛈️",[99]="⛈️"
+}
+
+local currentCity = "None"
+local currentTemp = "---"
+local currentWeatherCode = nil
+local isLoading = false
+local isVisible = true
+local autoUpdateInterval = 300
+local lastUpdateTime = 0
+local lastSelectedCity = nil
+
+-- ═══ HTTP для Delta Mobile ═══
+local function httpGet(url)
+    local ok, res = pcall(function()
+        return http_request({ Url = url, Method = "GET" })
+    end)
+    if ok and res and res.Body and res.Body ~= "" then return res.Body end
+
+    local ok2, res2 = pcall(function()
+        return request({ Url = url, Method = "GET" })
+    end)
+    if ok2 and res2 and res2.Body and res2.Body ~= "" then return res2.Body end
+
+    local ok3, res3 = pcall(function()
+        return http.request({ Url = url, Method = "GET" })
+    end)
+    if ok3 and res3 and res3.Body and res3.Body ~= "" then return res3.Body end
+
+    error("HTTP failed")
+end
+
+-- ═══ UI ═══
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GeoOS_Pro"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 310, 0, 240)
+mainFrame.Position = UDim2.new(0, 24, 0, 24)
+mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
+mainFrame.BackgroundTransparency = 0.05
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
+
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Color = Color3.fromRGB(255, 140, 0)
+stroke.Thickness = 1.2
+stroke.Transparency = 0.4
+
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1, 0, 0, 32)
+topBar.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+topBar.BackgroundTransparency = 0.1
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 14)
+
+local topBarFix = Instance.new("Frame", topBar)
+topBarFix.Size = UDim2.new(1, 0, 0.5, 0)
+topBarFix.Position = UDim2.new(0, 0, 0.5, 0)
+topBarFix.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+topBarFix.BackgroundTransparency = 0.1
+topBarFix.BorderSizePixel = 0
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -90, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "⚡ GEO-OS WEATHER"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 13
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = topBar
+
+-- Кнопка RU/EN
+local langBtn = Instance.new("TextButton")
+langBtn.Size = UDim2.new(0, 40, 0, 22)
+langBtn.Position = UDim2.new(1, -88, 0.5, -11)
+langBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+langBtn.TextColor3 = Color3.fromRGB(255, 200, 80)
+langBtn.Text = "🌐EN"
+langBtn.Font = Enum.Font.GothamBold
+langBtn.TextSize = 11
+langBtn.BorderSizePixel = 0
+langBtn.Parent = topBar
+Instance.new("UICorner", langBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", langBtn).Color = Color3.fromRGB(255, 200, 80)
+
+-- ═══ SHOW/HIDE кнопка ═══
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 40, 0, 22)
+toggleBtn.Position = UDim2.new(1, -44, 0.5, -11)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Text = ""
+toggleBtn.Parent = topBar
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 6)
+
+local toggleStroke = Instance.new("UIStroke", toggleBtn)
+toggleStroke.Color = Color3.fromRGB(0, 200, 255)
+
+local eyeLabel = Instance.new("TextLabel")
+eyeLabel.Size = UDim2.new(1, 0, 1, 0)
+eyeLabel.BackgroundTransparency = 1
+eyeLabel.Text = "👁️"
+eyeLabel.TextSize = 15
+eyeLabel.Font = Enum.Font.GothamBold
+eyeLabel.Parent = toggleBtn
+
+-- Пульсирующая точка
+local pulseDot = Instance.new("Frame")
+pulseDot.Size = UDim2.new(0, 7, 0, 7)
+pulseDot.Position = UDim2.new(1, -8, 0, 1)
+pulseDot.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
+pulseDot.BorderSizePixel = 0
+pulseDot.ZIndex = 5
+pulseDot.Parent = toggleBtn
+Instance.new("UICorner", pulseDot).CornerRadius = UDim.new(1, 0)
+
+-- Контент
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, 0, 1, -32)
+contentFrame.Position = UDim2.new(0, 0, 0, 32)
+contentFrame.BackgroundTransparency = 1
+contentFrame.ClipsDescendants = true
+contentFrame.Parent = mainFrame
+
+local display = Instance.new("TextLabel")
+display.Size = UDim2.new(1, -20, 0, 108)
+display.Position = UDim2.new(0, 10, 0, 8)
+display.BackgroundTransparency = 1
+display.TextColor3 = Color3.fromRGB(255, 255, 255)
+display.TextSize = 13
+display.Font = Enum.Font.Code
+display.TextXAlignment = Enum.TextXAlignment.Left
+display.RichText = true
+display.Parent = contentFrame
+
+local div = Instance.new("Frame")
+div.Size = UDim2.new(1, -20, 0, 1)
+div.Position = UDim2.new(0, 10, 0, 116)
+div.BackgroundColor3 = Color3.fromRGB(255, 130, 0)
+div.BackgroundTransparency = 0.5
+div.BorderSizePixel = 0
+div.Parent = contentFrame
+
+local autoLabel = Instance.new("TextLabel")
+autoLabel.Size = UDim2.new(1, -20, 0, 13)
+autoLabel.Position = UDim2.new(0, 10, 0, 118)
+autoLabel.BackgroundTransparency = 1
+autoLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
+autoLabel.TextSize = 10
+autoLabel.Font = Enum.Font.Code
+autoLabel.TextXAlignment = Enum.TextXAlignment.Right
+autoLabel.RichText = true
+autoLabel.Parent = contentFrame
+
+local menu = Instance.new("ScrollingFrame")
+menu.Size = UDim2.new(1, -20, 0, 72)
+menu.Position = UDim2.new(0, 10, 0, 133)
+menu.BackgroundTransparency = 0.95
+menu.CanvasSize = UDim2.new(0, 0, 2, 0)
+menu.ScrollBarThickness = 3
+menu.ScrollBarImageColor3 = Color3.fromRGB(255, 130, 0)
+menu.BorderSizePixel = 0
+menu.Parent = contentFrame
+Instance.new("UIListLayout", menu).Padding = UDim.new(0, 3)
+
+-- ═══ ЛОГИКА ═══
+local function T(key)
+    return translations[lang][key] or key
+end
+
+local function updateWeather(cityName)
+    if not cityName then return end
+    isLoading = true
+    currentTemp = T("loading") .. "..."
+    currentCity = cityName
+    currentWeatherCode = nil
+    lastSelectedCity = cityName
+    lastUpdateTime = tick()
+
+    task.spawn(function()
+        local ok, err = pcall(function()
+            local geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name="
+                .. HttpService:UrlEncode(cityName) .. "&count=1&format=json"
+            local geoData = HttpService:JSONDecode(httpGet(geoUrl))
+            if not geoData.results or #geoData.results == 0 then error("City not found") end
+            local res = geoData.results[1]
+            local wUrl = string.format(
+                "https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current_weather=true",
+                res.latitude, res.longitude
+            )
+            local wData = HttpService:JSONDecode(httpGet(wUrl))
+            local cw = wData.current_weather
+            currentCity = res.name
+            currentTemp = string.format("%+.1f°C", cw.temperature)
+            currentWeatherCode = cw.weathercode
+        end)
+        if not ok then currentTemp = "Error" end
+        isLoading = false
+    end)
+end
+
+local function clearMenu()
+    for _, c in pairs(menu:GetChildren()) do
+        if c:IsA("TextButton") then c:Destroy() end
+    end
+end
+
+local function makeBtn(text, bg, textColor)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 0, 24)
+    btn.BackgroundColor3 = bg
+    btn.TextColor3 = textColor or Color3.fromRGB(220, 220, 220)
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.BorderSizePixel = 0
+    btn.Parent = menu
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {
+            BackgroundColor3 = Color3.new(
+                math.min(bg.R + 0.12, 1),
+                math.min(bg.G + 0.12, 1),
+                math.min(bg.B + 0.12, 1)
+            )
+        }):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), { BackgroundColor3 = bg }):Play()
+    end)
+    return btn
+end
+
+local showCountries, showCities
+
+showCountries = function()
+    clearMenu()
+    local sorted = {}
+    for k in pairs(locations) do table.insert(sorted, k) end
+    table.sort(sorted)
+    for _, country in ipairs(sorted) do
+        local btn = makeBtn("  " .. country, Color3.fromRGB(25, 25, 42))
+        btn.MouseButton1Click:Connect(function() showCities(country) end)
+    end
+    menu.CanvasSize = UDim2.new(0, 0, 0, #menu:GetChildren() * 27)
+end
+
+showCities = function(country)
+    clearMenu()
+    local back = makeBtn("  " .. T("back"), Color3.fromRGB(70, 15, 15), Color3.fromRGB(255, 110, 110))
+    back.MouseButton1Click:Connect(showCountries)
+    for _, city in ipairs(locations[country]) do
+        local btn = makeBtn("    • " .. city, Color3.fromRGB(12, 40, 18), Color3.fromRGB(140, 255, 140))
+        btn.MouseButton1Click:Connect(function() updateWeather(city) end)
+    end
+    menu.CanvasSize = UDim2.new(0, 0, 0, #menu:GetChildren() * 27)
+end
+
+-- ═══ SHOW/HIDE ═══
+local function toggleVisibility()
+    isVisible = not isVisible
+    eyeLabel.Text = isVisible and "👁️" or "🙈"
+    toggleStroke.Color = isVisible and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(255, 80, 80)
+    TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = isVisible and UDim2.new(0, 310, 0, 240) or UDim2.new(0, 310, 0, 32)
+    }):Play()
+end
+
+toggleBtn.MouseButton1Click:Connect(toggleVisibility)
+
+-- ═══ ЯЗЫК ═══
+langBtn.MouseButton1Click:Connect(function()
+    lang = lang == "EN" and "RU" or "EN"
+    langBtn.Text = "🌐" .. lang
+    titleLabel.Text = "⚡ " .. T("title")
+    showCountries()
+end)
+
+-- ═══ ПУЛЬС ═══
+task.spawn(function()
+    while true do
+        TweenService:Create(pulseDot, TweenInfo.new(0.7), {
+            BackgroundTransparency = 0.85,
+            Size = UDim2.new(0, 5, 0, 5),
+            Position = UDim2.new(1, -7, 0, 2)
+        }):Play()
+        task.wait(0.7)
+        TweenService:Create(pulseDot, TweenInfo.new(0.7), {
+            BackgroundTransparency = 0,
+            Size = UDim2.new(0, 7, 0, 7),
+            Position = UDim2.new(1, -8, 0, 1)
+        }):Play()
+        task.wait(0.7)
+    end
+end)
+-- ═══ DRAG (перетаскивание) ═══
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+topBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+topBar.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement 
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+topBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- ═══ СТАРТ ═══
+showCountries()
+
+
+-- ═══ ГЛАВНЫЙ ЦИКЛ ═══
+RunService.RenderStepped:Connect(function()
+    local now = os.date("*t")
+    local t = translations[lang]
+
+    if lastSelectedCity and not isLoading then
+        local elapsed = tick() - lastUpdateTime
+        local remaining = math.max(0, autoUpdateInterval - elapsed)
+        autoLabel.Text = string.format(
+            "<font color='#FFA500'>%s:</font> <font color='#888888'>%d:%02d</font>",
+            t.auto, math.floor(remaining / 60), remaining % 60
+        )
+        if elapsed >= autoUpdateInterval then
+            updateWeather(lastSelectedCity)
+        end
+    else
+        autoLabel.Text = ""
+    end
+
+    local dots = isLoading and string.rep(".", math.floor(tick() * 2) % 4) or ""
+    local icon = currentWeatherCode and (weatherIcons[currentWeatherCode] or "🌡️") or "🌡️"
+    local condText = ""
+    if currentWeatherCode ~= nil then
+        local desc = (weatherDescriptions[lang] or weatherDescriptions["EN"])[currentWeatherCode]
+        condText = string.format(
+            "\n<font color='#88CCFF'>%s:</font> %s %s",
+            t.cond, icon, desc or ("Code "..currentWeatherCode)
+        )
+    end
+
+    display.Text = string.format(
+        "<b><font color='#FFA500'>[ %s ]</font></b>\n"
+        .."<font color='#888'>%s:</font> <b>%02d:%02d:%02d</b>  "
+        .."<font color='#888'>%s:</font> <b>%02d.%02d.%04d</b>\n"
+        .."<font color='#FFA500'>%s:</font> %s\n"
+        .."<font color='#FFA500'>%s:</font> %s%s"
+        .."%s",
+        t.title,
+        t.time, now.hour, now.min, now.sec,
+        t.date, now.day, now.month, now.year,
+        t.city, currentCity,
+        t.temp, currentTemp, dots,
+        condText
+    )
+end)
