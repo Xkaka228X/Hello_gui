@@ -1,463 +1,330 @@
-local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-
-local locations = {
-    ["🇷🇺 Russia"] = {"Moscow","Saint Petersburg","Novosibirsk","Yekaterinburg","Kazan","Rostov-on-Don","Krasnodar","Vladivostok","Sochi","Omsk"},
-    ["🇰🇿 Kazakhstan"] = {"Almaty","Astana","Shymkent","Karaganda","Aktobe","Atyrau","Pavlodar","Semey"},
-    ["🇺🇸 USA"] = {"New York","Los Angeles","Chicago","Miami","Houston","Las Vegas","Seattle","Dallas","Boston","Phoenix"},
-    ["🇬🇧 UK"] = {"London","Manchester","Birmingham","Liverpool","Edinburgh","Bristol","Leeds","Glasgow"},
-    ["🇩🇪 Germany"] = {"Berlin","Munich","Hamburg","Frankfurt","Cologne","Stuttgart","Dusseldorf","Dresden"},
-    ["🇫🇷 France"] = {"Paris","Lyon","Marseille","Nice","Bordeaux","Strasbourg","Toulouse"},
-    ["🇯🇵 Japan"] = {"Tokyo","Osaka","Kyoto","Hiroshima","Sapporo","Nagoya","Fukuoka"},
-    ["🇨🇳 China"] = {"Beijing","Shanghai","Shenzhen","Guangzhou","Chengdu","Wuhan","Xian"},
-    ["🇧🇷 Brazil"] = {"Sao Paulo","Rio de Janeiro","Brasilia","Salvador","Fortaleza","Manaus"},
-    ["🇦🇪 UAE"] = {"Dubai","Abu Dhabi","Sharjah","Ajman"},
-    ["🇹🇷 Turkey"] = {"Istanbul","Ankara","Izmir","Antalya","Bursa","Trabzon"},
-    ["🇮🇳 India"] = {"Mumbai","Delhi","Bangalore","Chennai","Kolkata","Hyderabad","Pune"},
-    ["🇮🇹 Italy"] = {"Rome","Milan","Naples","Turin","Florence","Venice","Bologna"},
-    ["🇪🇸 Spain"] = {"Madrid","Barcelona","Seville","Valencia","Bilbao","Malaga"},
-    ["🇦🇺 Australia"] = {"Sydney","Melbourne","Brisbane","Perth","Adelaide","Canberra"},
+-- // GEO-OS WEATHER // Protected //
+local _lll111IIl=table.concat
+local _Il1Il11II=loadstring or load
+local _I111llIlI={
+    "bG9jYWwgQ29yZUd1aSA9IGdhbWU6R2V0U2VydmljZSgiQ29yZUd1aSIpCmxvY2FsIFJ1blNlcnZp",
+    "Y2UgPSBnYW1lOkdldFNlcnZpY2UoIlJ1blNlcnZpY2UiKQpsb2NhbCBIdHRwU2VydmljZSA9IGdh",
+    "bWU6R2V0U2VydmljZSgiSHR0cFNlcnZpY2UiKQpsb2NhbCBUd2VlblNlcnZpY2UgPSBnYW1lOkdl",
+    "dFNlcnZpY2UoIlR3ZWVuU2VydmljZSIpCgpsb2NhbCBsb2NhdGlvbnMgPSB7CiAgICBbIvCfh7fw",
+    "n4e6IFJ1c3NpYSJdID0geyJNb3Njb3ciLCJTYWludCBQZXRlcnNidXJnIiwiTm92b3NpYmlyc2si",
+    "LCJZZWthdGVyaW5idXJnIiwiS2F6YW4iLCJSb3N0b3Ytb24tRG9uIiwiS3Jhc25vZGFyIiwiVmxh",
+    "ZGl2b3N0b2siLCJTb2NoaSIsIk9tc2sifSwKICAgIFsi8J+HsPCfh78gS2F6YWtoc3RhbiJdID0g",
+    "eyJBbG1hdHkiLCJBc3RhbmEiLCJTaHlta2VudCIsIkthcmFnYW5kYSIsIkFrdG9iZSIsIkF0eXJh",
+    "dSIsIlBhdmxvZGFyIiwiU2VtZXkifSwKICAgIFsi8J+HuvCfh7ggVVNBIl0gPSB7Ik5ldyBZb3Jr",
+    "IiwiTG9zIEFuZ2VsZXMiLCJDaGljYWdvIiwiTWlhbWkiLCJIb3VzdG9uIiwiTGFzIFZlZ2FzIiwi",
+    "U2VhdHRsZSIsIkRhbGxhcyIsIkJvc3RvbiIsIlBob2VuaXgifSwKICAgIFsi8J+HrPCfh6cgVUsi",
+    "XSA9IHsiTG9uZG9uIiwiTWFuY2hlc3RlciIsIkJpcm1pbmdoYW0iLCJMaXZlcnBvb2wiLCJFZGlu",
+    "YnVyZ2giLCJCcmlzdG9sIiwiTGVlZHMiLCJHbGFzZ293In0sCiAgICBbIvCfh6nwn4eqIEdlcm1h",
+    "bnkiXSA9IHsiQmVybGluIiwiTXVuaWNoIiwiSGFtYnVyZyIsIkZyYW5rZnVydCIsIkNvbG9nbmUi",
+    "LCJTdHV0dGdhcnQiLCJEdXNzZWxkb3JmIiwiRHJlc2RlbiJ9LAogICAgWyLwn4er8J+HtyBGcmFu",
+    "Y2UiXSA9IHsiUGFyaXMiLCJMeW9uIiwiTWFyc2VpbGxlIiwiTmljZSIsIkJvcmRlYXV4IiwiU3Ry",
+    "YXNib3VyZyIsIlRvdWxvdXNlIn0sCiAgICBbIvCfh6/wn4e1IEphcGFuIl0gPSB7IlRva3lvIiwi",
+    "T3Nha2EiLCJLeW90byIsIkhpcm9zaGltYSIsIlNhcHBvcm8iLCJOYWdveWEiLCJGdWt1b2thIn0s",
+    "CiAgICBbIvCfh6jwn4ezIENoaW5hIl0gPSB7IkJlaWppbmciLCJTaGFuZ2hhaSIsIlNoZW56aGVu",
+    "IiwiR3Vhbmd6aG91IiwiQ2hlbmdkdSIsIld1aGFuIiwiWGlhbiJ9LAogICAgWyLwn4en8J+HtyBC",
+    "cmF6aWwiXSA9IHsiU2FvIFBhdWxvIiwiUmlvIGRlIEphbmVpcm8iLCJCcmFzaWxpYSIsIlNhbHZh",
+    "ZG9yIiwiRm9ydGFsZXphIiwiTWFuYXVzIn0sCiAgICBbIvCfh6bwn4eqIFVBRSJdID0geyJEdWJh",
+    "aSIsIkFidSBEaGFiaSIsIlNoYXJqYWgiLCJBam1hbiJ9LAogICAgWyLwn4e58J+HtyBUdXJrZXki",
+    "XSA9IHsiSXN0YW5idWwiLCJBbmthcmEiLCJJem1pciIsIkFudGFseWEiLCJCdXJzYSIsIlRyYWJ6",
+    "b24ifSwKICAgIFsi8J+HrvCfh7MgSW5kaWEiXSA9IHsiTXVtYmFpIiwiRGVsaGkiLCJCYW5nYWxv",
+    "cmUiLCJDaGVubmFpIiwiS29sa2F0YSIsIkh5ZGVyYWJhZCIsIlB1bmUifSwKICAgIFsi8J+HrvCf",
+    "h7kgSXRhbHkiXSA9IHsiUm9tZSIsIk1pbGFuIiwiTmFwbGVzIiwiVHVyaW4iLCJGbG9yZW5jZSIs",
+    "IlZlbmljZSIsIkJvbG9nbmEifSwKICAgIFsi8J+HqvCfh7ggU3BhaW4iXSA9IHsiTWFkcmlkIiwi",
+    "QmFyY2Vsb25hIiwiU2V2aWxsZSIsIlZhbGVuY2lhIiwiQmlsYmFvIiwiTWFsYWdhIn0sCiAgICBb",
+    "IvCfh6bwn4e6IEF1c3RyYWxpYSJdID0geyJTeWRuZXkiLCJNZWxib3VybmUiLCJCcmlzYmFuZSIs",
+    "IlBlcnRoIiwiQWRlbGFpZGUiLCJDYW5iZXJyYSJ9LAp9Cgpsb2NhbCBsYW5nID0gIkVOIgoKbG9j",
+    "YWwgdHJhbnNsYXRpb25zID0gewogICAgRU4gPSB7CiAgICAgICAgdGl0bGUgPSAiR0VPLU9TIFdF",
+    "QVRIRVIiLAogICAgICAgIHRpbWUgPSAiVElNRSIsIGRhdGUgPSAiREFURSIsIGNpdHkgPSAiQ0lU",
+    "WSIsCiAgICAgICAgdGVtcCA9ICJURU1QIiwgY29uZCA9ICJDT05EIiwgYmFjayA9ICLil4AgQkFD",
+    "SyIsCiAgICAgICAgbG9hZGluZyA9ICJMb2FkaW5nIiwgbm9kYXRhID0gIi0tLSIsIG5vbmUgPSAi",
+    "Tm9uZSIsCiAgICAgICAgYXV0byA9ICJBVVRPIFVQREFURSIKICAgIH0sCiAgICBSVSA9IHsKICAg",
+    "ICAgICB0aXRsZSA9ICLQk9CV0J4t0J7QoSDQn9Ce0JPQntCU0JAiLAogICAgICAgIHRpbWUgPSAi",
+    "0JLQoNCV0JzQryIsIGRhdGUgPSAi0JTQkNCi0JAiLCBjaXR5ID0gItCT0J7QoNCe0JQiLAogICAg",
+    "ICAgIHRlbXAgPSAi0KLQldCc0J8iLCBjb25kID0gItCf0J7Qk9Ce0JTQkCIsIGJhY2sgPSAi4peA",
+    "INCd0JDQl9CQ0JQiLAogICAgICAgIGxvYWRpbmcgPSAi0JfQsNCz0YDRg9C30LrQsCIsIG5vZGF0",
+    "YSA9ICItLS0iLCBub25lID0gItCd0LXRgiIsCiAgICAgICAgYXV0byA9ICLQkNCS0KLQniDQntCR",
+    "0J3QntCS0JsiCiAgICB9Cn0KCmxvY2FsIHdlYXRoZXJEZXNjcmlwdGlvbnMgPSB7CiAgICBFTiA9",
+    "IHsKICAgICAgICBbMF09IkNsZWFyIHNreSIsWzFdPSJNYWlubHkgY2xlYXIiLFsyXT0iUGFydGx5",
+    "IGNsb3VkeSIsWzNdPSJPdmVyY2FzdCIsCiAgICAgICAgWzQ1XT0iRm9nZ3kiLFs0OF09IkljeSBm",
+    "b2ciLFs1MV09IkxpZ2h0IGRyaXp6bGUiLFs1M109IkRyaXp6bGUiLAogICAgICAgIFs1NV09Ikhl",
+    "YXZ5IGRyaXp6bGUiLFs2MV09IkxpZ2h0IHJhaW4iLFs2M109IlJhaW4iLFs2NV09IkhlYXZ5IHJh",
+    "aW4iLAogICAgICAgIFs3MV09IkxpZ2h0IHNub3ciLFs3M109IlNub3ciLFs3NV09IkhlYXZ5IHNu",
+    "b3ciLFs4MF09IkxpZ2h0IHNob3dlcnMiLAogICAgICAgIFs4MV09IlNob3dlcnMiLFs4Ml09Ikhl",
+    "YXZ5IHNob3dlcnMiLFs5NV09IlRodW5kZXJzdG9ybSIsWzk5XT0iSGFpbCBzdG9ybSIKICAgIH0s",
+    "CiAgICBSVSA9IHsKICAgICAgICBbMF09ItCv0YHQvdC+IixbMV09ItCf0YDQtdC40LzRg9GJLiDR",
+    "j9GB0L3QviIsWzJdPSLQn9C10YDQtdC80LXQvdC90LDRjyDQvtCx0LsuIixbM109ItCf0LDRgdC8",
+    "0YPRgNC90L4iLAogICAgICAgIFs0NV09ItCi0YPQvNCw0L0iLFs0OF09ItCb0LXQtNGP0L3QvtC5",
+    "INGC0YPQvNCw0L0iLFs1MV09ItCb0ZHQs9C60LDRjyDQvNC+0YDQvtGB0YwiLFs1M109ItCc0L7R",
+    "gNC+0YHRjCIsCiAgICAgICAgWzU1XT0i0KHQuNC70YzQvdCw0Y8g0LzQvtGA0L7RgdGMIixbNjFd",
+    "PSLQm9GR0LPQutC40Lkg0LTQvtC20LTRjCIsWzYzXT0i0JTQvtC20LTRjCIsWzY1XT0i0KHQuNC7",
+    "0YzQvdGL0Lkg0LTQvtC20LTRjCIsCiAgICAgICAgWzcxXT0i0JvRkdCz0LrQuNC5INGB0L3QtdCz",
+    "IixbNzNdPSLQodC90LXQsyIsWzc1XT0i0KHQuNC70YzQvdGL0Lkg0YHQvdC10LMiLFs4MF09ItCb",
+    "0LjQstC10L3RjCDRgdC70LDQsdGL0LkiLAogICAgICAgIFs4MV09ItCb0LjQstC10L3RjCIsWzgy",
+    "XT0i0KHQuNC70YzQvdGL0Lkg0LvQuNCy0LXQvdGMIixbOTVdPSLQk9GA0L7Qt9CwIixbOTldPSLQ",
+    "k9GA0L7Qt9CwINGBINCz0YDQsNC00L7QvCIKICAgIH0KfQoKbG9jYWwgd2VhdGhlckljb25zID0g",
+    "ewogICAgWzBdPSLimIDvuI8iLFsxXT0i8J+MpO+4jyIsWzJdPSLim4UiLFszXT0i4piB77iPIiwK",
+    "ICAgIFs0NV09IvCfjKvvuI8iLFs0OF09IvCfjKvvuI8iLFs1MV09IvCfjKbvuI8iLFs1M109IvCf",
+    "jKbvuI8iLAogICAgWzU1XT0i8J+Mp++4jyIsWzYxXT0i8J+Mp++4jyIsWzYzXT0i8J+Mp++4jyIs",
+    "WzY1XT0i8J+Mp++4jyIsCiAgICBbNzFdPSLinYTvuI8iLFs3M109IvCfjKjvuI8iLFs3NV09IuKd",
+    "hO+4jyIsWzgwXT0i8J+Mpu+4jyIsCiAgICBbODFdPSLim4jvuI8iLFs4Ml09IuKbiO+4jyIsWzk1",
+    "XT0i4puI77iPIixbOTldPSLim4jvuI8iCn0KCmxvY2FsIGN1cnJlbnRDaXR5ID0gIk5vbmUiCmxv",
+    "Y2FsIGN1cnJlbnRUZW1wID0gIi0tLSIKbG9jYWwgY3VycmVudFdlYXRoZXJDb2RlID0gbmlsCmxv",
+    "Y2FsIGlzTG9hZGluZyA9IGZhbHNlCmxvY2FsIGlzVmlzaWJsZSA9IHRydWUKbG9jYWwgYXV0b1Vw",
+    "ZGF0ZUludGVydmFsID0gMzAwCmxvY2FsIGxhc3RVcGRhdGVUaW1lID0gMApsb2NhbCBsYXN0U2Vs",
+    "ZWN0ZWRDaXR5ID0gbmlsCgotLSDilZDilZDilZAgSFRUUCDQtNC70Y8gRGVsdGEgTW9iaWxlIOKV",
+    "kOKVkOKVkApsb2NhbCBmdW5jdGlvbiBodHRwR2V0KHVybCkKICAgIGxvY2FsIG9rLCByZXMgPSBw",
+    "Y2FsbChmdW5jdGlvbigpCiAgICAgICAgcmV0dXJuIGh0dHBfcmVxdWVzdCh7IFVybCA9IHVybCwg",
+    "TWV0aG9kID0gIkdFVCIgfSkKICAgIGVuZCkKICAgIGlmIG9rIGFuZCByZXMgYW5kIHJlcy5Cb2R5",
+    "IGFuZCByZXMuQm9keSB+PSAiIiB0aGVuIHJldHVybiByZXMuQm9keSBlbmQKCiAgICBsb2NhbCBv",
+    "azIsIHJlczIgPSBwY2FsbChmdW5jdGlvbigpCiAgICAgICAgcmV0dXJuIHJlcXVlc3QoeyBVcmwg",
+    "PSB1cmwsIE1ldGhvZCA9ICJHRVQiIH0pCiAgICBlbmQpCiAgICBpZiBvazIgYW5kIHJlczIgYW5k",
+    "IHJlczIuQm9keSBhbmQgcmVzMi5Cb2R5IH49ICIiIHRoZW4gcmV0dXJuIHJlczIuQm9keSBlbmQK",
+    "CiAgICBsb2NhbCBvazMsIHJlczMgPSBwY2FsbChmdW5jdGlvbigpCiAgICAgICAgcmV0dXJuIGh0",
+    "dHAucmVxdWVzdCh7IFVybCA9IHVybCwgTWV0aG9kID0gIkdFVCIgfSkKICAgIGVuZCkKICAgIGlm",
+    "IG9rMyBhbmQgcmVzMyBhbmQgcmVzMy5Cb2R5IGFuZCByZXMzLkJvZHkgfj0gIiIgdGhlbiByZXR1",
+    "cm4gcmVzMy5Cb2R5IGVuZAoKICAgIGVycm9yKCJIVFRQIGZhaWxlZCIpCmVuZAoKLS0g4pWQ4pWQ",
+    "4pWQIFVJIOKVkOKVkOKVkApsb2NhbCBzY3JlZW5HdWkgPSBJbnN0YW5jZS5uZXcoIlNjcmVlbkd1",
+    "aSIpCnNjcmVlbkd1aS5OYW1lID0gIkdlb09TX1BybyIKc2NyZWVuR3VpLlJlc2V0T25TcGF3biA9",
+    "IGZhbHNlCnNjcmVlbkd1aS5QYXJlbnQgPSBDb3JlR3VpOkZpbmRGaXJzdENoaWxkKCJSb2Jsb3hH",
+    "dWkiKSBvciBDb3JlR3VpCgpsb2NhbCBtYWluRnJhbWUgPSBJbnN0YW5jZS5uZXcoIkZyYW1lIikK",
+    "bWFpbkZyYW1lLlNpemUgPSBVRGltMi5uZXcoMCwgMzEwLCAwLCAyNDApCm1haW5GcmFtZS5Qb3Np",
+    "dGlvbiA9IFVEaW0yLm5ldygwLCAyNCwgMCwgMjQpCm1haW5GcmFtZS5CYWNrZ3JvdW5kQ29sb3Iz",
+    "ID0gQ29sb3IzLmZyb21SR0IoOCwgOCwgMTQpCm1haW5GcmFtZS5CYWNrZ3JvdW5kVHJhbnNwYXJl",
+    "bmN5ID0gMC4wNQptYWluRnJhbWUuQm9yZGVyU2l6ZVBpeGVsID0gMAptYWluRnJhbWUuUGFyZW50",
+    "ID0gc2NyZWVuR3VpCkluc3RhbmNlLm5ldygiVUlDb3JuZXIiLCBtYWluRnJhbWUpLkNvcm5lclJh",
+    "ZGl1cyA9IFVEaW0ubmV3KDAsIDE0KQoKbG9jYWwgc3Ryb2tlID0gSW5zdGFuY2UubmV3KCJVSVN0",
+    "cm9rZSIsIG1haW5GcmFtZSkKc3Ryb2tlLkNvbG9yID0gQ29sb3IzLmZyb21SR0IoMjU1LCAxNDAs",
+    "IDApCnN0cm9rZS5UaGlja25lc3MgPSAxLjIKc3Ryb2tlLlRyYW5zcGFyZW5jeSA9IDAuNAoKbG9j",
+    "YWwgdG9wQmFyID0gSW5zdGFuY2UubmV3KCJGcmFtZSIpCnRvcEJhci5TaXplID0gVURpbTIubmV3",
+    "KDEsIDAsIDAsIDMyKQp0b3BCYXIuQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDIw",
+    "MCwgMTAwLCAwKQp0b3BCYXIuQmFja2dyb3VuZFRyYW5zcGFyZW5jeSA9IDAuMQp0b3BCYXIuQm9y",
+    "ZGVyU2l6ZVBpeGVsID0gMAp0b3BCYXIuUGFyZW50ID0gbWFpbkZyYW1lCkluc3RhbmNlLm5ldygi",
+    "VUlDb3JuZXIiLCB0b3BCYXIpLkNvcm5lclJhZGl1cyA9IFVEaW0ubmV3KDAsIDE0KQoKbG9jYWwg",
+    "dG9wQmFyRml4ID0gSW5zdGFuY2UubmV3KCJGcmFtZSIsIHRvcEJhcikKdG9wQmFyRml4LlNpemUg",
+    "PSBVRGltMi5uZXcoMSwgMCwgMC41LCAwKQp0b3BCYXJGaXguUG9zaXRpb24gPSBVRGltMi5uZXco",
+    "MCwgMCwgMC41LCAwKQp0b3BCYXJGaXguQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdC",
+    "KDIwMCwgMTAwLCAwKQp0b3BCYXJGaXguQmFja2dyb3VuZFRyYW5zcGFyZW5jeSA9IDAuMQp0b3BC",
+    "YXJGaXguQm9yZGVyU2l6ZVBpeGVsID0gMAoKbG9jYWwgdGl0bGVMYWJlbCA9IEluc3RhbmNlLm5l",
+    "dygiVGV4dExhYmVsIikKdGl0bGVMYWJlbC5TaXplID0gVURpbTIubmV3KDEsIC05MCwgMSwgMCkK",
+    "dGl0bGVMYWJlbC5Qb3NpdGlvbiA9IFVEaW0yLm5ldygwLCAxMCwgMCwgMCkKdGl0bGVMYWJlbC5C",
+    "YWNrZ3JvdW5kVHJhbnNwYXJlbmN5ID0gMQp0aXRsZUxhYmVsLlRleHQgPSAi4pqhIEdFTy1PUyBX",
+    "RUFUSEVSIgp0aXRsZUxhYmVsLlRleHRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigyNTUsIDI1NSwg",
+    "MjU1KQp0aXRsZUxhYmVsLlRleHRTaXplID0gMTMKdGl0bGVMYWJlbC5Gb250ID0gRW51bS5Gb250",
+    "LkdvdGhhbUJvbGQKdGl0bGVMYWJlbC5UZXh0WEFsaWdubWVudCA9IEVudW0uVGV4dFhBbGlnbm1l",
+    "bnQuTGVmdAp0aXRsZUxhYmVsLlBhcmVudCA9IHRvcEJhcgoKLS0g0JrQvdC+0L/QutCwIFJVL0VO",
+    "CmxvY2FsIGxhbmdCdG4gPSBJbnN0YW5jZS5uZXcoIlRleHRCdXR0b24iKQpsYW5nQnRuLlNpemUg",
+    "PSBVRGltMi5uZXcoMCwgNDAsIDAsIDIyKQpsYW5nQnRuLlBvc2l0aW9uID0gVURpbTIubmV3KDEs",
+    "IC04OCwgMC41LCAtMTEpCmxhbmdCdG4uQmFja2dyb3VuZENvbG9yMyA9IENvbG9yMy5mcm9tUkdC",
+    "KDIwLCAyMCwgNDApCmxhbmdCdG4uVGV4dENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDI1NSwgMjAw",
+    "LCA4MCkKbGFuZ0J0bi5UZXh0ID0gIvCfjJBFTiIKbGFuZ0J0bi5Gb250ID0gRW51bS5Gb250Lkdv",
+    "dGhhbUJvbGQKbGFuZ0J0bi5UZXh0U2l6ZSA9IDExCmxhbmdCdG4uQm9yZGVyU2l6ZVBpeGVsID0g",
+    "MApsYW5nQnRuLlBhcmVudCA9IHRvcEJhcgpJbnN0YW5jZS5uZXcoIlVJQ29ybmVyIiwgbGFuZ0J0",
+    "bikuQ29ybmVyUmFkaXVzID0gVURpbS5uZXcoMCwgNikKSW5zdGFuY2UubmV3KCJVSVN0cm9rZSIs",
+    "IGxhbmdCdG4pLkNvbG9yID0gQ29sb3IzLmZyb21SR0IoMjU1LCAyMDAsIDgwKQoKLS0g4pWQ4pWQ",
+    "4pWQIFNIT1cvSElERSDQutC90L7Qv9C60LAg4pWQ4pWQ4pWQCmxvY2FsIHRvZ2dsZUJ0biA9IElu",
+    "c3RhbmNlLm5ldygiVGV4dEJ1dHRvbiIpCnRvZ2dsZUJ0bi5TaXplID0gVURpbTIubmV3KDAsIDQw",
+    "LCAwLCAyMikKdG9nZ2xlQnRuLlBvc2l0aW9uID0gVURpbTIubmV3KDEsIC00NCwgMC41LCAtMTEp",
+    "CnRvZ2dsZUJ0bi5CYWNrZ3JvdW5kQ29sb3IzID0gQ29sb3IzLmZyb21SR0IoMjAsIDIwLCA0MCkK",
+    "dG9nZ2xlQnRuLkJvcmRlclNpemVQaXhlbCA9IDAKdG9nZ2xlQnRuLlRleHQgPSAiIgp0b2dnbGVC",
+    "dG4uUGFyZW50ID0gdG9wQmFyCkluc3RhbmNlLm5ldygiVUlDb3JuZXIiLCB0b2dnbGVCdG4pLkNv",
+    "cm5lclJhZGl1cyA9IFVEaW0ubmV3KDAsIDYpCgpsb2NhbCB0b2dnbGVTdHJva2UgPSBJbnN0YW5j",
+    "ZS5uZXcoIlVJU3Ryb2tlIiwgdG9nZ2xlQnRuKQp0b2dnbGVTdHJva2UuQ29sb3IgPSBDb2xvcjMu",
+    "ZnJvbVJHQigwLCAyMDAsIDI1NSkKCmxvY2FsIGV5ZUxhYmVsID0gSW5zdGFuY2UubmV3KCJUZXh0",
+    "TGFiZWwiKQpleWVMYWJlbC5TaXplID0gVURpbTIubmV3KDEsIDAsIDEsIDApCmV5ZUxhYmVsLkJh",
+    "Y2tncm91bmRUcmFuc3BhcmVuY3kgPSAxCmV5ZUxhYmVsLlRleHQgPSAi8J+Rge+4jyIKZXllTGFi",
+    "ZWwuVGV4dFNpemUgPSAxNQpleWVMYWJlbC5Gb250ID0gRW51bS5Gb250LkdvdGhhbUJvbGQKZXll",
+    "TGFiZWwuUGFyZW50ID0gdG9nZ2xlQnRuCgotLSDQn9GD0LvRjNGB0LjRgNGD0Y7RidCw0Y8g0YLQ",
+    "vtGH0LrQsApsb2NhbCBwdWxzZURvdCA9IEluc3RhbmNlLm5ldygiRnJhbWUiKQpwdWxzZURvdC5T",
+    "aXplID0gVURpbTIubmV3KDAsIDcsIDAsIDcpCnB1bHNlRG90LlBvc2l0aW9uID0gVURpbTIubmV3",
+    "KDEsIC04LCAwLCAxKQpwdWxzZURvdC5CYWNrZ3JvdW5kQ29sb3IzID0gQ29sb3IzLmZyb21SR0Io",
+    "MCwgMjU1LCAxMjApCnB1bHNlRG90LkJvcmRlclNpemVQaXhlbCA9IDAKcHVsc2VEb3QuWkluZGV4",
+    "ID0gNQpwdWxzZURvdC5QYXJlbnQgPSB0b2dnbGVCdG4KSW5zdGFuY2UubmV3KCJVSUNvcm5lciIs",
+    "IHB1bHNlRG90KS5Db3JuZXJSYWRpdXMgPSBVRGltLm5ldygxLCAwKQoKLS0g0JrQvtC90YLQtdC9",
+    "0YIKbG9jYWwgY29udGVudEZyYW1lID0gSW5zdGFuY2UubmV3KCJGcmFtZSIpCmNvbnRlbnRGcmFt",
+    "ZS5TaXplID0gVURpbTIubmV3KDEsIDAsIDEsIC0zMikKY29udGVudEZyYW1lLlBvc2l0aW9uID0g",
+    "VURpbTIubmV3KDAsIDAsIDAsIDMyKQpjb250ZW50RnJhbWUuQmFja2dyb3VuZFRyYW5zcGFyZW5j",
+    "eSA9IDEKY29udGVudEZyYW1lLkNsaXBzRGVzY2VuZGFudHMgPSB0cnVlCmNvbnRlbnRGcmFtZS5Q",
+    "YXJlbnQgPSBtYWluRnJhbWUKCmxvY2FsIGRpc3BsYXkgPSBJbnN0YW5jZS5uZXcoIlRleHRMYWJl",
+    "bCIpCmRpc3BsYXkuU2l6ZSA9IFVEaW0yLm5ldygxLCAtMjAsIDAsIDEwOCkKZGlzcGxheS5Qb3Np",
+    "dGlvbiA9IFVEaW0yLm5ldygwLCAxMCwgMCwgOCkKZGlzcGxheS5CYWNrZ3JvdW5kVHJhbnNwYXJl",
+    "bmN5ID0gMQpkaXNwbGF5LlRleHRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigyNTUsIDI1NSwgMjU1",
+    "KQpkaXNwbGF5LlRleHRTaXplID0gMTMKZGlzcGxheS5Gb250ID0gRW51bS5Gb250LkNvZGUKZGlz",
+    "cGxheS5UZXh0WEFsaWdubWVudCA9IEVudW0uVGV4dFhBbGlnbm1lbnQuTGVmdApkaXNwbGF5LlJp",
+    "Y2hUZXh0ID0gdHJ1ZQpkaXNwbGF5LlBhcmVudCA9IGNvbnRlbnRGcmFtZQoKbG9jYWwgZGl2ID0g",
+    "SW5zdGFuY2UubmV3KCJGcmFtZSIpCmRpdi5TaXplID0gVURpbTIubmV3KDEsIC0yMCwgMCwgMSkK",
+    "ZGl2LlBvc2l0aW9uID0gVURpbTIubmV3KDAsIDEwLCAwLCAxMTYpCmRpdi5CYWNrZ3JvdW5kQ29s",
+    "b3IzID0gQ29sb3IzLmZyb21SR0IoMjU1LCAxMzAsIDApCmRpdi5CYWNrZ3JvdW5kVHJhbnNwYXJl",
+    "bmN5ID0gMC41CmRpdi5Cb3JkZXJTaXplUGl4ZWwgPSAwCmRpdi5QYXJlbnQgPSBjb250ZW50RnJh",
+    "bWUKCmxvY2FsIGF1dG9MYWJlbCA9IEluc3RhbmNlLm5ldygiVGV4dExhYmVsIikKYXV0b0xhYmVs",
+    "LlNpemUgPSBVRGltMi5uZXcoMSwgLTIwLCAwLCAxMykKYXV0b0xhYmVsLlBvc2l0aW9uID0gVURp",
+    "bTIubmV3KDAsIDEwLCAwLCAxMTgpCmF1dG9MYWJlbC5CYWNrZ3JvdW5kVHJhbnNwYXJlbmN5ID0g",
+    "MQphdXRvTGFiZWwuVGV4dENvbG9yMyA9IENvbG9yMy5mcm9tUkdCKDEyMCwgMTIwLCAxMjApCmF1",
+    "dG9MYWJlbC5UZXh0U2l6ZSA9IDEwCmF1dG9MYWJlbC5Gb250ID0gRW51bS5Gb250LkNvZGUKYXV0",
+    "b0xhYmVsLlRleHRYQWxpZ25tZW50ID0gRW51bS5UZXh0WEFsaWdubWVudC5SaWdodAphdXRvTGFi",
+    "ZWwuUmljaFRleHQgPSB0cnVlCmF1dG9MYWJlbC5QYXJlbnQgPSBjb250ZW50RnJhbWUKCmxvY2Fs",
+    "IG1lbnUgPSBJbnN0YW5jZS5uZXcoIlNjcm9sbGluZ0ZyYW1lIikKbWVudS5TaXplID0gVURpbTIu",
+    "bmV3KDEsIC0yMCwgMCwgNzIpCm1lbnUuUG9zaXRpb24gPSBVRGltMi5uZXcoMCwgMTAsIDAsIDEz",
+    "MykKbWVudS5CYWNrZ3JvdW5kVHJhbnNwYXJlbmN5ID0gMC45NQptZW51LkNhbnZhc1NpemUgPSBV",
+    "RGltMi5uZXcoMCwgMCwgMiwgMCkKbWVudS5TY3JvbGxCYXJUaGlja25lc3MgPSAzCm1lbnUuU2Ny",
+    "b2xsQmFySW1hZ2VDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigyNTUsIDEzMCwgMCkKbWVudS5Cb3Jk",
+    "ZXJTaXplUGl4ZWwgPSAwCm1lbnUuUGFyZW50ID0gY29udGVudEZyYW1lCkluc3RhbmNlLm5ldygi",
+    "VUlMaXN0TGF5b3V0IiwgbWVudSkuUGFkZGluZyA9IFVEaW0ubmV3KDAsIDMpCgotLSDilZDilZDi",
+    "lZAg0JvQntCT0JjQmtCQIOKVkOKVkOKVkApsb2NhbCBmdW5jdGlvbiBUKGtleSkKICAgIHJldHVy",
+    "biB0cmFuc2xhdGlvbnNbbGFuZ11ba2V5XSBvciBrZXkKZW5kCgpsb2NhbCBmdW5jdGlvbiB1cGRh",
+    "dGVXZWF0aGVyKGNpdHlOYW1lKQogICAgaWYgbm90IGNpdHlOYW1lIHRoZW4gcmV0dXJuIGVuZAog",
+    "ICAgaXNMb2FkaW5nID0gdHJ1ZQogICAgY3VycmVudFRlbXAgPSBUKCJsb2FkaW5nIikgLi4gIi4u",
+    "LiIKICAgIGN1cnJlbnRDaXR5ID0gY2l0eU5hbWUKICAgIGN1cnJlbnRXZWF0aGVyQ29kZSA9IG5p",
+    "bAogICAgbGFzdFNlbGVjdGVkQ2l0eSA9IGNpdHlOYW1lCiAgICBsYXN0VXBkYXRlVGltZSA9IHRp",
+    "Y2soKQoKICAgIHRhc2suc3Bhd24oZnVuY3Rpb24oKQogICAgICAgIGxvY2FsIG9rLCBlcnIgPSBw",
+    "Y2FsbChmdW5jdGlvbigpCiAgICAgICAgICAgIGxvY2FsIGdlb1VybCA9ICJodHRwczovL2dlb2Nv",
+    "ZGluZy1hcGkub3Blbi1tZXRlby5jb20vdjEvc2VhcmNoP25hbWU9IgogICAgICAgICAgICAgICAg",
+    "Li4gSHR0cFNlcnZpY2U6VXJsRW5jb2RlKGNpdHlOYW1lKSAuLiAiJmNvdW50PTEmZm9ybWF0PWpz",
+    "b24iCiAgICAgICAgICAgIGxvY2FsIGdlb0RhdGEgPSBIdHRwU2VydmljZTpKU09ORGVjb2RlKGh0",
+    "dHBHZXQoZ2VvVXJsKSkKICAgICAgICAgICAgaWYgbm90IGdlb0RhdGEucmVzdWx0cyBvciAjZ2Vv",
+    "RGF0YS5yZXN1bHRzID09IDAgdGhlbiBlcnJvcigiQ2l0eSBub3QgZm91bmQiKSBlbmQKICAgICAg",
+    "ICAgICAgbG9jYWwgcmVzID0gZ2VvRGF0YS5yZXN1bHRzWzFdCiAgICAgICAgICAgIGxvY2FsIHdV",
+    "cmwgPSBzdHJpbmcuZm9ybWF0KAogICAgICAgICAgICAgICAgImh0dHBzOi8vYXBpLm9wZW4tbWV0",
+    "ZW8uY29tL3YxL2ZvcmVjYXN0P2xhdGl0dWRlPSVmJmxvbmdpdHVkZT0lZiZjdXJyZW50X3dlYXRo",
+    "ZXI9dHJ1ZSIsCiAgICAgICAgICAgICAgICByZXMubGF0aXR1ZGUsIHJlcy5sb25naXR1ZGUKICAg",
+    "ICAgICAgICAgKQogICAgICAgICAgICBsb2NhbCB3RGF0YSA9IEh0dHBTZXJ2aWNlOkpTT05EZWNv",
+    "ZGUoaHR0cEdldCh3VXJsKSkKICAgICAgICAgICAgbG9jYWwgY3cgPSB3RGF0YS5jdXJyZW50X3dl",
+    "YXRoZXIKICAgICAgICAgICAgY3VycmVudENpdHkgPSByZXMubmFtZQogICAgICAgICAgICBjdXJy",
+    "ZW50VGVtcCA9IHN0cmluZy5mb3JtYXQoIiUrLjFmwrBDIiwgY3cudGVtcGVyYXR1cmUpCiAgICAg",
+    "ICAgICAgIGN1cnJlbnRXZWF0aGVyQ29kZSA9IGN3LndlYXRoZXJjb2RlCiAgICAgICAgZW5kKQog",
+    "ICAgICAgIGlmIG5vdCBvayB0aGVuIGN1cnJlbnRUZW1wID0gIkVycm9yIiBlbmQKICAgICAgICBp",
+    "c0xvYWRpbmcgPSBmYWxzZQogICAgZW5kKQplbmQKCmxvY2FsIGZ1bmN0aW9uIGNsZWFyTWVudSgp",
+    "CiAgICBmb3IgXywgYyBpbiBwYWlycyhtZW51OkdldENoaWxkcmVuKCkpIGRvCiAgICAgICAgaWYg",
+    "YzpJc0EoIlRleHRCdXR0b24iKSB0aGVuIGM6RGVzdHJveSgpIGVuZAogICAgZW5kCmVuZAoKbG9j",
+    "YWwgZnVuY3Rpb24gbWFrZUJ0bih0ZXh0LCBiZywgdGV4dENvbG9yKQogICAgbG9jYWwgYnRuID0g",
+    "SW5zdGFuY2UubmV3KCJUZXh0QnV0dG9uIikKICAgIGJ0bi5TaXplID0gVURpbTIubmV3KDEsIC02",
+    "LCAwLCAyNCkKICAgIGJ0bi5CYWNrZ3JvdW5kQ29sb3IzID0gYmcKICAgIGJ0bi5UZXh0Q29sb3Iz",
+    "ID0gdGV4dENvbG9yIG9yIENvbG9yMy5mcm9tUkdCKDIyMCwgMjIwLCAyMjApCiAgICBidG4uVGV4",
+    "dCA9IHRleHQKICAgIGJ0bi5Gb250ID0gRW51bS5Gb250LkdvdGhhbUJvbGQKICAgIGJ0bi5UZXh0",
+    "U2l6ZSA9IDEyCiAgICBidG4uVGV4dFhBbGlnbm1lbnQgPSBFbnVtLlRleHRYQWxpZ25tZW50Lkxl",
+    "ZnQKICAgIGJ0bi5Cb3JkZXJTaXplUGl4ZWwgPSAwCiAgICBidG4uUGFyZW50ID0gbWVudQogICAg",
+    "SW5zdGFuY2UubmV3KCJVSUNvcm5lciIsIGJ0bikuQ29ybmVyUmFkaXVzID0gVURpbS5uZXcoMCwg",
+    "NikKICAgIGJ0bi5Nb3VzZUVudGVyOkNvbm5lY3QoZnVuY3Rpb24oKQogICAgICAgIFR3ZWVuU2Vy",
+    "dmljZTpDcmVhdGUoYnRuLCBUd2VlbkluZm8ubmV3KDAuMSksIHsKICAgICAgICAgICAgQmFja2dy",
+    "b3VuZENvbG9yMyA9IENvbG9yMy5uZXcoCiAgICAgICAgICAgICAgICBtYXRoLm1pbihiZy5SICsg",
+    "MC4xMiwgMSksCiAgICAgICAgICAgICAgICBtYXRoLm1pbihiZy5HICsgMC4xMiwgMSksCiAgICAg",
+    "ICAgICAgICAgICBtYXRoLm1pbihiZy5CICsgMC4xMiwgMSkKICAgICAgICAgICAgKQogICAgICAg",
+    "IH0pOlBsYXkoKQogICAgZW5kKQogICAgYnRuLk1vdXNlTGVhdmU6Q29ubmVjdChmdW5jdGlvbigp",
+    "CiAgICAgICAgVHdlZW5TZXJ2aWNlOkNyZWF0ZShidG4sIFR3ZWVuSW5mby5uZXcoMC4xKSwgeyBC",
+    "YWNrZ3JvdW5kQ29sb3IzID0gYmcgfSk6UGxheSgpCiAgICBlbmQpCiAgICByZXR1cm4gYnRuCmVu",
+    "ZAoKbG9jYWwgc2hvd0NvdW50cmllcywgc2hvd0NpdGllcwoKc2hvd0NvdW50cmllcyA9IGZ1bmN0",
+    "aW9uKCkKICAgIGNsZWFyTWVudSgpCiAgICBsb2NhbCBzb3J0ZWQgPSB7fQogICAgZm9yIGsgaW4g",
+    "cGFpcnMobG9jYXRpb25zKSBkbyB0YWJsZS5pbnNlcnQoc29ydGVkLCBrKSBlbmQKICAgIHRhYmxl",
+    "LnNvcnQoc29ydGVkKQogICAgZm9yIF8sIGNvdW50cnkgaW4gaXBhaXJzKHNvcnRlZCkgZG8KICAg",
+    "ICAgICBsb2NhbCBidG4gPSBtYWtlQnRuKCIgICIgLi4gY291bnRyeSwgQ29sb3IzLmZyb21SR0Io",
+    "MjUsIDI1LCA0MikpCiAgICAgICAgYnRuLk1vdXNlQnV0dG9uMUNsaWNrOkNvbm5lY3QoZnVuY3Rp",
+    "b24oKSBzaG93Q2l0aWVzKGNvdW50cnkpIGVuZCkKICAgIGVuZAogICAgbWVudS5DYW52YXNTaXpl",
+    "ID0gVURpbTIubmV3KDAsIDAsIDAsICNtZW51OkdldENoaWxkcmVuKCkgKiAyNykKZW5kCgpzaG93",
+    "Q2l0aWVzID0gZnVuY3Rpb24oY291bnRyeSkKICAgIGNsZWFyTWVudSgpCiAgICBsb2NhbCBiYWNr",
+    "ID0gbWFrZUJ0bigiICAiIC4uIFQoImJhY2siKSwgQ29sb3IzLmZyb21SR0IoNzAsIDE1LCAxNSks",
+    "IENvbG9yMy5mcm9tUkdCKDI1NSwgMTEwLCAxMTApKQogICAgYmFjay5Nb3VzZUJ1dHRvbjFDbGlj",
+    "azpDb25uZWN0KHNob3dDb3VudHJpZXMpCiAgICBmb3IgXywgY2l0eSBpbiBpcGFpcnMobG9jYXRp",
+    "b25zW2NvdW50cnldKSBkbwogICAgICAgIGxvY2FsIGJ0biA9IG1ha2VCdG4oIiAgICDigKIgIiAu",
+    "LiBjaXR5LCBDb2xvcjMuZnJvbVJHQigxMiwgNDAsIDE4KSwgQ29sb3IzLmZyb21SR0IoMTQwLCAy",
+    "NTUsIDE0MCkpCiAgICAgICAgYnRuLk1vdXNlQnV0dG9uMUNsaWNrOkNvbm5lY3QoZnVuY3Rpb24o",
+    "KSB1cGRhdGVXZWF0aGVyKGNpdHkpIGVuZCkKICAgIGVuZAogICAgbWVudS5DYW52YXNTaXplID0g",
+    "VURpbTIubmV3KDAsIDAsIDAsICNtZW51OkdldENoaWxkcmVuKCkgKiAyNykKZW5kCgotLSDilZDi",
+    "lZDilZAgU0hPVy9ISURFIOKVkOKVkOKVkApsb2NhbCBmdW5jdGlvbiB0b2dnbGVWaXNpYmlsaXR5",
+    "KCkKICAgIGlzVmlzaWJsZSA9IG5vdCBpc1Zpc2libGUKICAgIGV5ZUxhYmVsLlRleHQgPSBpc1Zp",
+    "c2libGUgYW5kICLwn5GB77iPIiBvciAi8J+ZiCIKICAgIHRvZ2dsZVN0cm9rZS5Db2xvciA9IGlz",
+    "VmlzaWJsZSBhbmQgQ29sb3IzLmZyb21SR0IoMCwgMjAwLCAyNTUpIG9yIENvbG9yMy5mcm9tUkdC",
+    "KDI1NSwgODAsIDgwKQogICAgVHdlZW5TZXJ2aWNlOkNyZWF0ZShtYWluRnJhbWUsIFR3ZWVuSW5m",
+    "by5uZXcoMC40LCBFbnVtLkVhc2luZ1N0eWxlLkJhY2ssIEVudW0uRWFzaW5nRGlyZWN0aW9uLk91",
+    "dCksIHsKICAgICAgICBTaXplID0gaXNWaXNpYmxlIGFuZCBVRGltMi5uZXcoMCwgMzEwLCAwLCAy",
+    "NDApIG9yIFVEaW0yLm5ldygwLCAzMTAsIDAsIDMyKQogICAgfSk6UGxheSgpCmVuZAoKdG9nZ2xl",
+    "QnRuLk1vdXNlQnV0dG9uMUNsaWNrOkNvbm5lY3QodG9nZ2xlVmlzaWJpbGl0eSkKCi0tIOKVkOKV",
+    "kOKVkCDQr9CX0KvQmiDilZDilZDilZAKbGFuZ0J0bi5Nb3VzZUJ1dHRvbjFDbGljazpDb25uZWN0",
+     "KGZ1bmN0aW9uKCkKICAgIGxhbmcgPSBsYW5nID09ICJFTiIgYW5kICJSVSIgb3IgIkVOIgogICAg",
+    "bGFuZ0J0bi5UZXh0ID0gIvCfjJAiIC4uIGxhbmcKICAgIHRpdGxlTGFiZWwuVGV4dCA9ICLimqEg",
+    "IiAuLiBUKCJ0aXRsZSIpCiAgICBzaG93Q291bnRyaWVzKCkKZW5kKQoKLS0g4pWQ4pWQ4pWQINCf",
+    "0KPQm9Cs0KEg4pWQ4pWQ4pWQCnRhc2suc3Bhd24oZnVuY3Rpb24oKQogICAgd2hpbGUgdHJ1ZSBk",
+    "bwogICAgICAgIFR3ZWVuU2VydmljZTpDcmVhdGUocHVsc2VEb3QsIFR3ZWVuSW5mby5uZXcoMC43",
+    "KSwgewogICAgICAgICAgICBCYWNrZ3JvdW5kVHJhbnNwYXJlbmN5ID0gMC44NSwKICAgICAgICAg",
+    "ICAgU2l6ZSA9IFVEaW0yLm5ldygwLCA1LCAwLCA1KSwKICAgICAgICAgICAgUG9zaXRpb24gPSBV",
+    "RGltMi5uZXcoMSwgLTcsIDAsIDIpCiAgICAgICAgfSk6UGxheSgpCiAgICAgICAgdGFzay53YWl0",
+    "KDAuNykKICAgICAgICBUd2VlblNlcnZpY2U6Q3JlYXRlKHB1bHNlRG90LCBUd2VlbkluZm8ubmV3",
+    "KDAuNyksIHsKICAgICAgICAgICAgQmFja2dyb3VuZFRyYW5zcGFyZW5jeSA9IDAsCiAgICAgICAg",
+    "ICAgIFNpemUgPSBVRGltMi5uZXcoMCwgNywgMCwgNyksCiAgICAgICAgICAgIFBvc2l0aW9uID0g",
+    "VURpbTIubmV3KDEsIC04LCAwLCAxKQogICAgICAgIH0pOlBsYXkoKQogICAgICAgIHRhc2sud2Fp",
+    "dCgwLjcpCiAgICBlbmQKZW5kKQotLSDilZDilZDilZAgRFJBRyAo0L/QtdGA0LXRgtCw0YHQutC4",
+    "0LLQsNC90LjQtSkg4pWQ4pWQ4pWQCmxvY2FsIGRyYWdnaW5nID0gZmFsc2UKbG9jYWwgZHJhZ1N0",
+    "YXJ0ID0gbmlsCmxvY2FsIHN0YXJ0UG9zID0gbmlsCgp0b3BCYXIuSW5wdXRCZWdhbjpDb25uZWN0",
+    "KGZ1bmN0aW9uKGlucHV0KQogICAgaWYgaW5wdXQuVXNlcklucHV0VHlwZSA9PSBFbnVtLlVzZXJJ",
+    "bnB1dFR5cGUuTW91c2VCdXR0b24xIAogICAgb3IgaW5wdXQuVXNlcklucHV0VHlwZSA9PSBFbnVt",
+    "LlVzZXJJbnB1dFR5cGUuVG91Y2ggdGhlbgogICAgICAgIGRyYWdnaW5nID0gdHJ1ZQogICAgICAg",
+    "IGRyYWdTdGFydCA9IGlucHV0LlBvc2l0aW9uCiAgICAgICAgc3RhcnRQb3MgPSBtYWluRnJhbWUu",
+    "UG9zaXRpb24KICAgIGVuZAplbmQpCgp0b3BCYXIuSW5wdXRDaGFuZ2VkOkNvbm5lY3QoZnVuY3Rp",
+    "b24oaW5wdXQpCiAgICBpZiBkcmFnZ2luZyBhbmQgKGlucHV0LlVzZXJJbnB1dFR5cGUgPT0gRW51",
+    "bS5Vc2VySW5wdXRUeXBlLk1vdXNlTW92ZW1lbnQgCiAgICBvciBpbnB1dC5Vc2VySW5wdXRUeXBl",
+    "ID09IEVudW0uVXNlcklucHV0VHlwZS5Ub3VjaCkgdGhlbgogICAgICAgIGxvY2FsIGRlbHRhID0g",
+    "aW5wdXQuUG9zaXRpb24gLSBkcmFnU3RhcnQKICAgICAgICBtYWluRnJhbWUuUG9zaXRpb24gPSBV",
+    "RGltMi5uZXcoCiAgICAgICAgICAgIHN0YXJ0UG9zLlguU2NhbGUsCiAgICAgICAgICAgIHN0YXJ0",
+    "UG9zLlguT2Zmc2V0ICsgZGVsdGEuWCwKICAgICAgICAgICAgc3RhcnRQb3MuWS5TY2FsZSwKICAg",
+    "ICAgICAgICAgc3RhcnRQb3MuWS5PZmZzZXQgKyBkZWx0YS5ZCiAgICAgICAgKQogICAgZW5kCmVu",
+    "ZCkKCnRvcEJhci5JbnB1dEVuZGVkOkNvbm5lY3QoZnVuY3Rpb24oaW5wdXQpCiAgICBpZiBpbnB1",
+    "dC5Vc2VySW5wdXRUeXBlID09IEVudW0uVXNlcklucHV0VHlwZS5Nb3VzZUJ1dHRvbjEgCiAgICBv",
+    "ciBpbnB1dC5Vc2VySW5wdXRUeXBlID09IEVudW0uVXNlcklucHV0VHlwZS5Ub3VjaCB0aGVuCiAg",
+    "ICAgICAgZHJhZ2dpbmcgPSBmYWxzZQogICAgZW5kCmVuZCkKCmdhbWU6R2V0U2VydmljZSgiVXNl",
+    "cklucHV0U2VydmljZSIpLklucHV0Q2hhbmdlZDpDb25uZWN0KGZ1bmN0aW9uKGlucHV0KQogICAg",
+    "aWYgZHJhZ2dpbmcgYW5kIChpbnB1dC5Vc2VySW5wdXRUeXBlID09IEVudW0uVXNlcklucHV0VHlw",
+    "ZS5Nb3VzZU1vdmVtZW50CiAgICBvciBpbnB1dC5Vc2VySW5wdXRUeXBlID09IEVudW0uVXNlcklu",
+    "cHV0VHlwZS5Ub3VjaCkgdGhlbgogICAgICAgIGxvY2FsIGRlbHRhID0gaW5wdXQuUG9zaXRpb24g",
+    "LSBkcmFnU3RhcnQKICAgICAgICBtYWluRnJhbWUuUG9zaXRpb24gPSBVRGltMi5uZXcoCiAgICAg",
+    "ICAgICAgIHN0YXJ0UG9zLlguU2NhbGUsCiAgICAgICAgICAgIHN0YXJ0UG9zLlguT2Zmc2V0ICsg",
+    "ZGVsdGEuWCwKICAgICAgICAgICAgc3RhcnRQb3MuWS5TY2FsZSwKICAgICAgICAgICAgc3RhcnRQ",
+    "b3MuWS5PZmZzZXQgKyBkZWx0YS5ZCiAgICAgICAgKQogICAgZW5kCmVuZCkKCi0tIOKVkOKVkOKV",
+    "kCDQodCi0JDQoNCiIOKVkOKVkOKVkApzaG93Q291bnRyaWVzKCkKCgotLSDilZDilZDilZAg0JPQ",
+    "m9CQ0JLQndCr0Jkg0KbQmNCa0Jsg4pWQ4pWQ4pWQClJ1blNlcnZpY2UuUmVuZGVyU3RlcHBlZDpD",
+    "b25uZWN0KGZ1bmN0aW9uKCkKICAgIGxvY2FsIG5vdyA9IG9zLmRhdGUoIip0IikKICAgIGxvY2Fs",
+    "IHQgPSB0cmFuc2xhdGlvbnNbbGFuZ10KCiAgICBpZiBsYXN0U2VsZWN0ZWRDaXR5IGFuZCBub3Qg",
+    "aXNMb2FkaW5nIHRoZW4KICAgICAgICBsb2NhbCBlbGFwc2VkID0gdGljaygpIC0gbGFzdFVwZGF0",
+    "ZVRpbWUKICAgICAgICBsb2NhbCByZW1haW5pbmcgPSBtYXRoLm1heCgwLCBhdXRvVXBkYXRlSW50",
+    "ZXJ2YWwgLSBlbGFwc2VkKQogICAgICAgIGF1dG9MYWJlbC5UZXh0ID0gc3RyaW5nLmZvcm1hdCgK",
+    "ICAgICAgICAgICAgIjxmb250IGNvbG9yPScjRkZBNTAwJz4lczo8L2ZvbnQ+IDxmb250IGNvbG9y",
+    "PScjODg4ODg4Jz4lZDolMDJkPC9mb250PiIsCiAgICAgICAgICAgIHQuYXV0bywgbWF0aC5mbG9v",
+    "cihyZW1haW5pbmcgLyA2MCksIHJlbWFpbmluZyAlIDYwCiAgICAgICAgKQogICAgICAgIGlmIGVs",
+    "YXBzZWQgPj0gYXV0b1VwZGF0ZUludGVydmFsIHRoZW4KICAgICAgICAgICAgdXBkYXRlV2VhdGhl",
+    "cihsYXN0U2VsZWN0ZWRDaXR5KQogICAgICAgIGVuZAogICAgZWxzZQogICAgICAgIGF1dG9MYWJl",
+    "bC5UZXh0ID0gIiIKICAgIGVuZAoKICAgIGxvY2FsIGRvdHMgPSBpc0xvYWRpbmcgYW5kIHN0cmlu",
+    "Zy5yZXAoIi4iLCBtYXRoLmZsb29yKHRpY2soKSAqIDIpICUgNCkgb3IgIiIKICAgIGxvY2FsIGlj",
+    "b24gPSBjdXJyZW50V2VhdGhlckNvZGUgYW5kICh3ZWF0aGVySWNvbnNbY3VycmVudFdlYXRoZXJD",
+    "b2RlXSBvciAi8J+Moe+4jyIpIG9yICLwn4yh77iPIgogICAgbG9jYWwgY29uZFRleHQgPSAiIgog",
+    "ICAgaWYgY3VycmVudFdlYXRoZXJDb2RlIH49IG5pbCB0aGVuCiAgICAgICAgbG9jYWwgZGVzYyA9",
+    "ICh3ZWF0aGVyRGVzY3JpcHRpb25zW2xhbmddIG9yIHdlYXRoZXJEZXNjcmlwdGlvbnNbIkVOIl0p",
+    "W2N1cnJlbnRXZWF0aGVyQ29kZV0KICAgICAgICBjb25kVGV4dCA9IHN0cmluZy5mb3JtYXQoCiAg",
+    "ICAgICAgICAgICJcbjxmb250IGNvbG9yPScjODhDQ0ZGJz4lczo8L2ZvbnQ+ICVzICVzIiwKICAg",
+    "ICAgICAgICAgdC5jb25kLCBpY29uLCBkZXNjIG9yICgiQ29kZSAiLi5jdXJyZW50V2VhdGhlckNv",
+    "ZGUpCiAgICAgICAgKQogICAgZW5kCgogICAgZGlzcGxheS5UZXh0ID0gc3RyaW5nLmZvcm1hdCgK",
+    "ICAgICAgICAiPGI+PGZvbnQgY29sb3I9JyNGRkE1MDAnPlsgJXMgXTwvZm9udD48L2I+XG4iCiAg",
+    "ICAgICAgLi4iPGZvbnQgY29sb3I9JyM4ODgnPiVzOjwvZm9udD4gPGI+JTAyZDolMDJkOiUwMmQ8",
+    "L2I+ICAiCiAgICAgICAgLi4iPGZvbnQgY29sb3I9JyM4ODgnPiVzOjwvZm9udD4gPGI+JTAyZC4l",
+    "MDJkLiUwNGQ8L2I+XG4iCiAgICAgICAgLi4iPGZvbnQgY29sb3I9JyNGRkE1MDAnPiVzOjwvZm9u",
+    "dD4gJXNcbiIKICAgICAgICAuLiI8Zm9udCBjb2xvcj0nI0ZGQTUwMCc+JXM6PC9mb250PiAlcyVz",
+    "IgogICAgICAgIC4uIiVzIiwKICAgICAgICB0LnRpdGxlLAogICAgICAgIHQudGltZSwgbm93Lmhv",
+    "dXIsIG5vdy5taW4sIG5vdy5zZWMsCiAgICAgICAgdC5kYXRlLCBub3cuZGF5LCBub3cubW9udGgs",
+    "IG5vdy55ZWFyLAogICAgICAgIHQuY2l0eSwgY3VycmVudENpdHksCiAgICAgICAgdC50ZW1wLCBj",
+    "dXJyZW50VGVtcCwgZG90cywKICAgICAgICBjb25kVGV4dAogICAgKQplbmQp",
 }
-
-local lang = "EN"
-
-local translations = {
-    EN = {
-        title = "GEO-OS WEATHER",
-        time = "TIME", date = "DATE", city = "CITY",
-        temp = "TEMP", cond = "COND", back = "◀ BACK",
-        loading = "Loading", nodata = "---", none = "None",
-        auto = "AUTO UPDATE"
-    },
-    RU = {
-        title = "ГЕО-ОС ПОГОДА",
-        time = "ВРЕМЯ", date = "ДАТА", city = "ГОРОД",
-        temp = "ТЕМП", cond = "ПОГОДА", back = "◀ НАЗАД",
-        loading = "Загрузка", nodata = "---", none = "Нет",
-        auto = "АВТО ОБНОВЛ"
-    }
-}
-
-local weatherDescriptions = {
-    EN = {
-        [0]="Clear sky",[1]="Mainly clear",[2]="Partly cloudy",[3]="Overcast",
-        [45]="Foggy",[48]="Icy fog",[51]="Light drizzle",[53]="Drizzle",
-        [55]="Heavy drizzle",[61]="Light rain",[63]="Rain",[65]="Heavy rain",
-        [71]="Light snow",[73]="Snow",[75]="Heavy snow",[80]="Light showers",
-        [81]="Showers",[82]="Heavy showers",[95]="Thunderstorm",[99]="Hail storm"
-    },
-    RU = {
-        [0]="Ясно",[1]="Преимущ. ясно",[2]="Переменная обл.",[3]="Пасмурно",
-        [45]="Туман",[48]="Ледяной туман",[51]="Лёгкая морось",[53]="Морось",
-        [55]="Сильная морось",[61]="Лёгкий дождь",[63]="Дождь",[65]="Сильный дождь",
-        [71]="Лёгкий снег",[73]="Снег",[75]="Сильный снег",[80]="Ливень слабый",
-        [81]="Ливень",[82]="Сильный ливень",[95]="Гроза",[99]="Гроза с градом"
-    }
-}
-
-local weatherIcons = {
-    [0]="☀️",[1]="🌤️",[2]="⛅",[3]="☁️",
-    [45]="🌫️",[48]="🌫️",[51]="🌦️",[53]="🌦️",
-    [55]="🌧️",[61]="🌧️",[63]="🌧️",[65]="🌧️",
-    [71]="❄️",[73]="🌨️",[75]="❄️",[80]="🌦️",
-    [81]="⛈️",[82]="⛈️",[95]="⛈️",[99]="⛈️"
-}
-
-local currentCity = "None"
-local currentTemp = "---"
-local currentWeatherCode = nil
-local isLoading = false
-local isVisible = true
-local autoUpdateInterval = 300
-local lastUpdateTime = 0
-local lastSelectedCity = nil
-
--- ═══ HTTP для Delta Mobile ═══
-local function httpGet(url)
-    local ok, res = pcall(function()
-        return http_request({ Url = url, Method = "GET" })
-    end)
-    if ok and res and res.Body and res.Body ~= "" then return res.Body end
-
-    local ok2, res2 = pcall(function()
-        return request({ Url = url, Method = "GET" })
-    end)
-    if ok2 and res2 and res2.Body and res2.Body ~= "" then return res2.Body end
-
-    local ok3, res3 = pcall(function()
-        return http.request({ Url = url, Method = "GET" })
-    end)
-    if ok3 and res3 and res3.Body and res3.Body ~= "" then return res3.Body end
-
-    error("HTTP failed")
-end
-
--- ═══ UI ═══
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "GeoOS_Pro"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
-
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 310, 0, 240)
-mainFrame.Position = UDim2.new(0, 24, 0, 24)
-mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
-mainFrame.BackgroundTransparency = 0.05
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
-
-local stroke = Instance.new("UIStroke", mainFrame)
-stroke.Color = Color3.fromRGB(255, 140, 0)
-stroke.Thickness = 1.2
-stroke.Transparency = 0.4
-
-local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1, 0, 0, 32)
-topBar.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
-topBar.BackgroundTransparency = 0.1
-topBar.BorderSizePixel = 0
-topBar.Parent = mainFrame
-Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 14)
-
-local topBarFix = Instance.new("Frame", topBar)
-topBarFix.Size = UDim2.new(1, 0, 0.5, 0)
-topBarFix.Position = UDim2.new(0, 0, 0.5, 0)
-topBarFix.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
-topBarFix.BackgroundTransparency = 0.1
-topBarFix.BorderSizePixel = 0
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -90, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "⚡ GEO-OS WEATHER"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 13
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = topBar
-
--- Кнопка RU/EN
-local langBtn = Instance.new("TextButton")
-langBtn.Size = UDim2.new(0, 40, 0, 22)
-langBtn.Position = UDim2.new(1, -88, 0.5, -11)
-langBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-langBtn.TextColor3 = Color3.fromRGB(255, 200, 80)
-langBtn.Text = "🌐EN"
-langBtn.Font = Enum.Font.GothamBold
-langBtn.TextSize = 11
-langBtn.BorderSizePixel = 0
-langBtn.Parent = topBar
-Instance.new("UICorner", langBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UIStroke", langBtn).Color = Color3.fromRGB(255, 200, 80)
-
--- ═══ SHOW/HIDE кнопка ═══
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0, 40, 0, 22)
-toggleBtn.Position = UDim2.new(1, -44, 0.5, -11)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-toggleBtn.BorderSizePixel = 0
-toggleBtn.Text = ""
-toggleBtn.Parent = topBar
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 6)
-
-local toggleStroke = Instance.new("UIStroke", toggleBtn)
-toggleStroke.Color = Color3.fromRGB(0, 200, 255)
-
-local eyeLabel = Instance.new("TextLabel")
-eyeLabel.Size = UDim2.new(1, 0, 1, 0)
-eyeLabel.BackgroundTransparency = 1
-eyeLabel.Text = "👁️"
-eyeLabel.TextSize = 15
-eyeLabel.Font = Enum.Font.GothamBold
-eyeLabel.Parent = toggleBtn
-
--- Пульсирующая точка
-local pulseDot = Instance.new("Frame")
-pulseDot.Size = UDim2.new(0, 7, 0, 7)
-pulseDot.Position = UDim2.new(1, -8, 0, 1)
-pulseDot.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
-pulseDot.BorderSizePixel = 0
-pulseDot.ZIndex = 5
-pulseDot.Parent = toggleBtn
-Instance.new("UICorner", pulseDot).CornerRadius = UDim.new(1, 0)
-
--- Контент
-local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, 0, 1, -32)
-contentFrame.Position = UDim2.new(0, 0, 0, 32)
-contentFrame.BackgroundTransparency = 1
-contentFrame.ClipsDescendants = true
-contentFrame.Parent = mainFrame
-
-local display = Instance.new("TextLabel")
-display.Size = UDim2.new(1, -20, 0, 108)
-display.Position = UDim2.new(0, 10, 0, 8)
-display.BackgroundTransparency = 1
-display.TextColor3 = Color3.fromRGB(255, 255, 255)
-display.TextSize = 13
-display.Font = Enum.Font.Code
-display.TextXAlignment = Enum.TextXAlignment.Left
-display.RichText = true
-display.Parent = contentFrame
-
-local div = Instance.new("Frame")
-div.Size = UDim2.new(1, -20, 0, 1)
-div.Position = UDim2.new(0, 10, 0, 116)
-div.BackgroundColor3 = Color3.fromRGB(255, 130, 0)
-div.BackgroundTransparency = 0.5
-div.BorderSizePixel = 0
-div.Parent = contentFrame
-
-local autoLabel = Instance.new("TextLabel")
-autoLabel.Size = UDim2.new(1, -20, 0, 13)
-autoLabel.Position = UDim2.new(0, 10, 0, 118)
-autoLabel.BackgroundTransparency = 1
-autoLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
-autoLabel.TextSize = 10
-autoLabel.Font = Enum.Font.Code
-autoLabel.TextXAlignment = Enum.TextXAlignment.Right
-autoLabel.RichText = true
-autoLabel.Parent = contentFrame
-
-local menu = Instance.new("ScrollingFrame")
-menu.Size = UDim2.new(1, -20, 0, 72)
-menu.Position = UDim2.new(0, 10, 0, 133)
-menu.BackgroundTransparency = 0.95
-menu.CanvasSize = UDim2.new(0, 0, 2, 0)
-menu.ScrollBarThickness = 3
-menu.ScrollBarImageColor3 = Color3.fromRGB(255, 130, 0)
-menu.BorderSizePixel = 0
-menu.Parent = contentFrame
-Instance.new("UIListLayout", menu).Padding = UDim.new(0, 3)
-
--- ═══ ЛОГИКА ═══
-local function T(key)
-    return translations[lang][key] or key
-end
-
-local function updateWeather(cityName)
-    if not cityName then return end
-    isLoading = true
-    currentTemp = T("loading") .. "..."
-    currentCity = cityName
-    currentWeatherCode = nil
-    lastSelectedCity = cityName
-    lastUpdateTime = tick()
-
-    task.spawn(function()
-        local ok, err = pcall(function()
-            local geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name="
-                .. HttpService:UrlEncode(cityName) .. "&count=1&format=json"
-            local geoData = HttpService:JSONDecode(httpGet(geoUrl))
-            if not geoData.results or #geoData.results == 0 then error("City not found") end
-            local res = geoData.results[1]
-            local wUrl = string.format(
-                "https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current_weather=true",
-                res.latitude, res.longitude
-            )
-            local wData = HttpService:JSONDecode(httpGet(wUrl))
-            local cw = wData.current_weather
-            currentCity = res.name
-            currentTemp = string.format("%+.1f°C", cw.temperature)
-            currentWeatherCode = cw.weathercode
-        end)
-        if not ok then currentTemp = "Error" end
-        isLoading = false
-    end)
-end
-
-local function clearMenu()
-    for _, c in pairs(menu:GetChildren()) do
-        if c:IsA("TextButton") then c:Destroy() end
-    end
-end
-
-local function makeBtn(text, bg, textColor)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -6, 0, 24)
-    btn.BackgroundColor3 = bg
-    btn.TextColor3 = textColor or Color3.fromRGB(220, 220, 220)
-    btn.Text = text
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.BorderSizePixel = 0
-    btn.Parent = menu
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.1), {
-            BackgroundColor3 = Color3.new(
-                math.min(bg.R + 0.12, 1),
-                math.min(bg.G + 0.12, 1),
-                math.min(bg.B + 0.12, 1)
-            )
-        }):Play()
-    end)
-    btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.1), { BackgroundColor3 = bg }):Play()
-    end)
-    return btn
-end
-
-local showCountries, showCities
-
-showCountries = function()
-    clearMenu()
-    local sorted = {}
-    for k in pairs(locations) do table.insert(sorted, k) end
-    table.sort(sorted)
-    for _, country in ipairs(sorted) do
-        local btn = makeBtn("  " .. country, Color3.fromRGB(25, 25, 42))
-        btn.MouseButton1Click:Connect(function() showCities(country) end)
-    end
-    menu.CanvasSize = UDim2.new(0, 0, 0, #menu:GetChildren() * 27)
-end
-
-showCities = function(country)
-    clearMenu()
-    local back = makeBtn("  " .. T("back"), Color3.fromRGB(70, 15, 15), Color3.fromRGB(255, 110, 110))
-    back.MouseButton1Click:Connect(showCountries)
-    for _, city in ipairs(locations[country]) do
-        local btn = makeBtn("    • " .. city, Color3.fromRGB(12, 40, 18), Color3.fromRGB(140, 255, 140))
-        btn.MouseButton1Click:Connect(function() updateWeather(city) end)
-    end
-    menu.CanvasSize = UDim2.new(0, 0, 0, #menu:GetChildren() * 27)
-end
-
--- ═══ SHOW/HIDE ═══
-local function toggleVisibility()
-    isVisible = not isVisible
-    eyeLabel.Text = isVisible and "👁️" or "🙈"
-    toggleStroke.Color = isVisible and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(255, 80, 80)
-    TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = isVisible and UDim2.new(0, 310, 0, 240) or UDim2.new(0, 310, 0, 32)
-    }):Play()
-end
-
-toggleBtn.MouseButton1Click:Connect(toggleVisibility)
-
--- ═══ ЯЗЫК ═══
-langBtn.MouseButton1Click:Connect(function()
-    lang = lang == "EN" and "RU" or "EN"
-    langBtn.Text = "🌐" .. lang
-    titleLabel.Text = "⚡ " .. T("title")
-    showCountries()
-end)
-
--- ═══ ПУЛЬС ═══
-task.spawn(function()
-    while true do
-        TweenService:Create(pulseDot, TweenInfo.new(0.7), {
-            BackgroundTransparency = 0.85,
-            Size = UDim2.new(0, 5, 0, 5),
-            Position = UDim2.new(1, -7, 0, 2)
-        }):Play()
-        task.wait(0.7)
-        TweenService:Create(pulseDot, TweenInfo.new(0.7), {
-            BackgroundTransparency = 0,
-            Size = UDim2.new(0, 7, 0, 7),
-            Position = UDim2.new(1, -8, 0, 1)
-        }):Play()
-        task.wait(0.7)
-    end
-end)
--- ═══ DRAG (перетаскивание) ═══
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
-topBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-    end
-end)
-
-topBar.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement 
-    or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
-topBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
-    or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
--- ═══ СТАРТ ═══
-showCountries()
-
-
--- ═══ ГЛАВНЫЙ ЦИКЛ ═══
-RunService.RenderStepped:Connect(function()
-    local now = os.date("*t")
-    local t = translations[lang]
-
-    if lastSelectedCity and not isLoading then
-        local elapsed = tick() - lastUpdateTime
-        local remaining = math.max(0, autoUpdateInterval - elapsed)
-        autoLabel.Text = string.format(
-            "<font color='#FFA500'>%s:</font> <font color='#888888'>%d:%02d</font>",
-            t.auto, math.floor(remaining / 60), remaining % 60
-        )
-        if elapsed >= autoUpdateInterval then
-            updateWeather(lastSelectedCity)
+local function _b64d(data)
+    local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    data = data:gsub('[^' .. b .. '=]', '')
+    return (data:gsub('.', function(x)
+        if x == '=' then return '' end
+        local r, f = '', (b:find(x) - 1)
+        for i = 6, 1, -1 do
+            r = r .. (math.floor(f % (2^i)) >= math.floor(2^(i-1)) and '1' or '0')
         end
-    else
-        autoLabel.Text = ""
-    end
-
-    local dots = isLoading and string.rep(".", math.floor(tick() * 2) % 4) or ""
-    local icon = currentWeatherCode and (weatherIcons[currentWeatherCode] or "🌡️") or "🌡️"
-    local condText = ""
-    if currentWeatherCode ~= nil then
-        local desc = (weatherDescriptions[lang] or weatherDescriptions["EN"])[currentWeatherCode]
-        condText = string.format(
-            "\n<font color='#88CCFF'>%s:</font> %s %s",
-            t.cond, icon, desc or ("Code "..currentWeatherCode)
-        )
-    end
-
-    display.Text = string.format(
-        "<b><font color='#FFA500'>[ %s ]</font></b>\n"
-        .."<font color='#888'>%s:</font> <b>%02d:%02d:%02d</b>  "
-        .."<font color='#888'>%s:</font> <b>%02d.%02d.%04d</b>\n"
-        .."<font color='#FFA500'>%s:</font> %s\n"
-        .."<font color='#FFA500'>%s:</font> %s%s"
-        .."%s",
-        t.title,
-        t.time, now.hour, now.min, now.sec,
-        t.date, now.day, now.month, now.year,
-        t.city, currentCity,
-        t.temp, currentTemp, dots,
-        condText
-    )
-end)
+        return r
+    end):gsub('%d%d%d%d%d%d%d%d', function(x)
+        if #x ~= 8 then return '' end
+        local c = 0
+        for i = 1, 8 do c = c + (x:sub(i,i) == '1' and 2^(8-i) or 0) end
+        return string.char(c)
+    end))
+end
+local _s=_b64d(_lll111IIl(_I111llIlI))
+;(_Il1Il11II(_s))()
