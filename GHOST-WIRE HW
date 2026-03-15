@@ -1,1 +1,302 @@
-do local Players=game:GetService("Players");local ReplicatedStorage=game:GetService("ReplicatedStorage");local TextChatService=game:GetService("TextChatService");local UserInputService=game:GetService("UserInputService");local LocalPlayer=Players.LocalPlayer;local CFG={KEY="SECRET_PHRASE_2026",TAG="Data:",OWNER_ID=5335639005,TESTER_ID=10670926686,W_ID=4393082564,G_MARK="1",P_MARK="2",S_MARK="3",SYLLABLES={"ba","ko","mi","ne","lu","ra","si","to","ve","za","po","fi","du","ge","ha","ji"}};local Contacts={Global={messages={},unread=0}};local CurrentChat="Global";local Badges={};local function encode(data) local res="";for i=1, #data do local b=data:sub(i,i):byte();local high=math.floor(b/16 ) + 1 ;local low=(b%16) + 1 ;res=res   .. CFG.SYLLABLES[high]   .. CFG.SYLLABLES[low] ;end return res;end local function decode(data) local res={};local lookup={};for i,v in ipairs(CFG.SYLLABLES) do lookup[v]=i-1 ;end for i=1, #data,4 do local s1,s2=data:sub(i,i + 1 ),data:sub(i + 2 ,i + 3 );local h,l=lookup[s1],lookup[s2];if (h and l) then table.insert(res,string.char((h * 16) + l ));end end return table.concat(res);end local function crypt(text,key,mode) local out={};for i=1, #text do local b=text:sub(i,i):byte();local k=key:sub(((i-1)% #key) + 1 ,((i-1)% #key) + 1 ):byte();table.insert(out,string.char(bit32.bxor(b,k)));end local roleFlag="0";if (LocalPlayer.UserId==CFG.OWNER_ID) then roleFlag="1";elseif (LocalPlayer.UserId==CFG.TESTER_ID) then roleFlag="2";elseif (LocalPlayer.UserId==CFG.W_ID) then roleFlag="3";end return mode   .. roleFlag   .. encode(table.concat(out)) ;end local function decrypt(raw,key) local mode=raw:sub(1,1);local role=raw:sub(2,2);local decoded=decode(raw:sub(3));local out={};for i=1, #decoded do local b=decoded:sub(i,i):byte();local k=key:sub(((i-1)% #key) + 1 ,((i-1)% #key) + 1 ):byte();table.insert(out,string.char(bit32.bxor(b,k)));end return mode,table.concat(out),role;end local Gui=Instance.new("ScreenGui",game:GetService("CoreGui"));local Main=Instance.new("Frame",Gui);local ToggleBtn=Instance.new("TextButton",Gui);ToggleBtn.Size=UDim2.new(0,35,0,35);ToggleBtn.Position=UDim2.new(0,10,0.5, -17);ToggleBtn.BackgroundColor3=Color3.fromRGB(30,30,30);ToggleBtn.Text="в—Ђ";ToggleBtn.TextColor3=Color3.new(1,1,1);Instance.new("UICorner",ToggleBtn).CornerRadius=UDim.new(1,0);Main.Size=UDim2.new(0,450,0,300);Main.Position=UDim2.new(0,55,0.5, -150);Main.BackgroundColor3=Color3.fromRGB(20,20,20);Main.Draggable=true;Main.Active=true;Instance.new("UICorner",Main);local SideBar=Instance.new("ScrollingFrame",Main);SideBar.Size=UDim2.new(0.3, -10,1, -20);SideBar.Position=UDim2.new(0,5,0,10);SideBar.BackgroundTransparency=1;SideBar.ScrollBarThickness=2;local SideList=Instance.new("UIListLayout",SideBar);SideList.Padding=UDim.new(0,4);local ChatArea=Instance.new("ScrollingFrame",Main);ChatArea.Size=UDim2.new(0.7, -15,0.85, -50);ChatArea.Position=UDim2.new(0.3,5,0,10);ChatArea.BackgroundColor3=Color3.fromRGB(30,30,30);Instance.new("UICorner",ChatArea);local UIListChat=Instance.new("UIListLayout",ChatArea);local Input=Instance.new("TextBox",Main);Input.Size=UDim2.new(0.7, -15,0,35);Input.Position=UDim2.new(0.3,5,1, -45);Input.BackgroundColor3=Color3.fromRGB(45,45,45);Input.PlaceholderText="РџРёС€Рё С‚СѓС‚...";Input.Text="";Input.TextColor3=Color3.new(1,1,1);Instance.new("UICorner",Input);local ChatTitle=Instance.new("TextLabel",Main);ChatTitle.Size=UDim2.new(0.7, -15,0,20);ChatTitle.Position=UDim2.new(0.3,5,0, -15);ChatTitle.BackgroundTransparency=1;ChatTitle.Text="GHOST-WIRE HW | Global";ChatTitle.TextColor3=Color3.fromRGB(0,170,255);ChatTitle.TextSize=14;ChatTitle.Font=Enum.Font.SourceSansBold;ChatTitle.TextXAlignment=Enum.TextXAlignment.Left;local function playNotify() local s=Instance.new("Sound",game:GetService("SoundService"));s.SoundId="rbxassetid://4590662766";s.Volume=0.5;s:Play();game:GetService("Debris"):AddItem(s,2);end local function updateView() for _,v in pairs(ChatArea:GetChildren()) do if v:IsA("TextLabel") then v:Destroy();end end ChatTitle.Text="GHOST-WIRE HW | "   .. CurrentChat ;local data=Contacts[CurrentChat];if  not data then return;end data.unread=0;local btn=SideBar:FindFirstChild(CurrentChat);if btn then local prefix="";if (Badges[btn.Name]=="1") then prefix="в­ђ ";elseif (Badges[btn.Name]=="2") then prefix="рџ›  ";elseif (Badges[btn.Name]=="3") then prefix="Wрџ”Ґ ";end btn.Text=prefix   .. btn.Name ;btn.BackgroundColor3=((CurrentChat==btn.Name) and Color3.fromRGB(80,80,100)) or Color3.fromRGB(50,50,50) ;end for _,msg in pairs(data.messages) do local lbl=Instance.new("TextLabel",ChatArea);lbl.Size=UDim2.new(1, -10,0,0);lbl.AutomaticSize=Enum.AutomaticSize.Y;lbl.BackgroundTransparency=1;if (msg.role=="1") then lbl.TextColor3=Color3.fromRGB(255,215,0);lbl.Text=" [в­ђ AUTHOR "   .. msg.sender   .. "]: "   .. msg.text ;lbl.Font=Enum.Font.SourceSansBold;elseif (msg.role=="2") then lbl.TextColor3=Color3.fromRGB(0,255,255);lbl.Text=" [рџ›  TESTER "   .. msg.sender   .. "]: "   .. msg.text ;lbl.Font=Enum.Font.SourceSansBold;elseif (msg.role=="3") then lbl.TextColor3=Color3.fromRGB(255,100,0);lbl.Text=" [Wрџ”Ґ "   .. msg.sender   .. "]: "   .. msg.text ;lbl.Font=Enum.Font.SourceSansBold;else lbl.TextColor3=(msg.mine and Color3.fromRGB(0,170,255)) or Color3.new(1,1,1) ;lbl.Text=" ["   .. msg.sender   .. "]: "   .. msg.text ;lbl.Font=Enum.Font.SourceSans;end lbl.TextXAlignment=Enum.TextXAlignment.Left;lbl.TextWrapped=true;lbl.TextSize=16;end ChatArea.CanvasSize=UDim2.new(0,0,0,UIListChat.AbsoluteContentSize.Y + 10 );ChatArea.CanvasPosition=Vector2.new(0,math.max(0,UIListChat.AbsoluteContentSize.Y-ChatArea.AbsoluteWindowSize.Y ));end local function addContact(name,role) if (role~="0") then Badges[name]=role;end if SideBar:FindFirstChild(name) then return;end if  not Contacts[name] then Contacts[name]={messages={},unread=0};end local btn=Instance.new("TextButton",SideBar);btn.Name=name;btn.Size=UDim2.new(1, -5,0,30);btn.BackgroundColor3=((CurrentChat==name) and Color3.fromRGB(80,80,100)) or Color3.fromRGB(50,50,50) ;local prefix="";if (role=="1") then prefix="в­ђ ";btn.TextColor3=Color3.fromRGB(255,215,0);elseif (role=="2") then prefix="рџ›  ";btn.TextColor3=Color3.fromRGB(0,255,255);elseif (role=="3") then prefix="Wрџ”Ґ ";btn.TextColor3=Color3.fromRGB(255,100,0);else btn.TextColor3=Color3.new(1,1,1);end btn.Text=prefix   .. name ;Instance.new("UICorner",btn);btn.MouseButton1Click:Connect(function() CurrentChat=name;updateView();for _,v in pairs(SideBar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3=((v.Name==name) and Color3.fromRGB(80,80,100)) or Color3.fromRGB(50,50,50) ;end end end);end addContact("Global","0");local function notifyContact(name) if (CurrentChat==name) then return;end local data=Contacts[name];if data then data.unread=data.unread + 1 ;local btn=SideBar:FindFirstChild(name);if btn then local prefix="";if (Badges[name]=="1") then prefix="в­ђ ";elseif (Badges[name]=="2") then prefix="рџ›  ";elseif (Badges[name]=="3") then prefix="Wрџ”Ґ ";end btn.Text=prefix   .. name   .. " ["   .. data.unread   .. "]" ;btn.BackgroundColor3=Color3.fromRGB(150,50,50);end playNotify();end end local function send(text,mode) local endp=ReplicatedStorage:FindFirstChild("SayMessageRequest",true) or ((TextChatService.ChatVersion==Enum.ChatVersion.TextChatService) and TextChatService.TextChannels.RBXGeneral) ;if  not endp then return;end local payload="";local myRole="0";if (LocalPlayer.UserId==CFG.OWNER_ID) then myRole="1";elseif (LocalPlayer.UserId==CFG.TESTER_ID) then myRole="2";elseif (LocalPlayer.UserId==CFG.W_ID) then myRole="3";end if (mode=="SYNC") then payload=CFG.TAG   .. CFG.S_MARK   .. myRole   .. encode(text) ;elseif (CurrentChat=="Global") then payload=CFG.TAG   .. crypt(text,CFG.KEY,CFG.G_MARK) ;table.insert(Contacts['Global'].messages,{sender=LocalPlayer.Name,text=text,mine=true,role=myRole});else payload=CFG.TAG   .. crypt(CurrentChat   .. "|"   .. text ,CFG.KEY,CFG.P_MARK) ;table.insert(Contacts[CurrentChat].messages,{sender=LocalPlayer.Name,text=text,mine=true,role=myRole});end if (endp.ClassName=="RemoteEvent") then endp:FireServer(payload,"All");else endp:SendAsync(payload);end updateView();end local function onIn(msg,sender) if ((sender==LocalPlayer.Name) or  not msg:find(CFG.TAG)) then return;end local raw=msg:split(CFG.TAG)[2];if  not raw then return;end local smode=raw:sub(1,1);if (smode==CFG.S_MARK) then local role=raw:sub(2,2);local syncData=decode(raw:sub(3));addContact(sender,role);if (syncData=="INIT") then send("ACK","SYNC");end return;end local ok,mode,dec,role=pcall(function() return decrypt(raw,CFG.KEY);end);if  not ok then return;end if (mode==CFG.G_MARK) then table.insert(Contacts['Global'].messages,{sender=sender,text=dec,mine=false,role=role});if (CurrentChat=="Global") then updateView();else notifyContact("Global");end elseif (mode==CFG.P_MARK) then local target,val=dec:match("([^|]+)|(.+)");if (target==LocalPlayer.Name) then if  not Contacts[sender] then addContact(sender,role);end table.insert(Contacts[sender].messages,{sender=sender,text=val,mine=false,role=role});if (CurrentChat==sender) then updateView();else notifyContact(sender);end end end end if (TextChatService.ChatVersion==Enum.ChatVersion.TextChatService) then TextChatService.MessageReceived:Connect(function(p) if p.TextSource then onIn(p.Text,p.TextSource.Name);end end);end local oldEv=ReplicatedStorage:FindFirstChild("OnMessageDoneFiltering",true);if oldEv then oldEv.OnClientEvent:Connect(function(d) onIn(d.Message,d.FromSpeaker);end);end Input.FocusLost:Connect(function(e) if (e and (Input.Text~="")) then send(Input.Text);Input.Text="";end end);ToggleBtn.MouseButton1Click:Connect(function() Main.Visible= not Main.Visible;ToggleBtn.Text=(Main.Visible and "в—Ђ") or "в–¶" ;end);task.spawn(function() task.wait(2);send("INIT","SYNC");end); end
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local CFG = {
+    KEY = "SECRET_PHRASE_2026",
+    TAG = "Data:", 
+    OWNER_ID = 5335639005,  -- Твой ID (AUTHOR)
+    TESTER_ID = 10670926686, -- ID Тестера
+    W_ID = 4393082564,      -- ID для привилегии W🔥
+    G_MARK = "1", 
+    P_MARK = "2", 
+    S_MARK = "3",
+    SYLLABLES = {"ba", "ko", "mi", "ne", "lu", "ra", "si", "to", "ve", "za", "po", "fi", "du", "ge", "ha", "ji"}
+}
+
+local Contacts = {["Global"] = {messages = {}, unread = 0}}
+local CurrentChat = "Global"
+local Badges = {} 
+
+-- [ ENGINE ] --
+local function encode(data)
+    local res = ""
+    for i = 1, #data do
+        local b = data:sub(i, i):byte()
+        local high = math.floor(b / 16) + 1
+        local low = (b % 16) + 1
+        res = res .. CFG.SYLLABLES[high] .. CFG.SYLLABLES[low]
+    end
+    return res
+end
+
+local function decode(data)
+    local res = {}
+    local lookup = {}
+    for i, v in ipairs(CFG.SYLLABLES) do lookup[v] = i - 1 end
+    for i = 1, #data, 4 do
+        local s1, s2 = data:sub(i, i+1), data:sub(i+2, i+3)
+        local h, l = lookup[s1], lookup[s2]
+        if h and l then table.insert(res, string.char(h * 16 + l)) end
+    end
+    return table.concat(res)
+end
+
+local function crypt(text, key, mode)
+    local out = {}
+    for i = 1, #text do
+        local b = text:sub(i, i):byte()
+        local k = key:sub((i - 1) % #key + 1, (i - 1) % #key + 1):byte()
+        table.insert(out, string.char(bit32.bxor(b, k)))
+    end
+    
+    local roleFlag = "0"
+    if LocalPlayer.UserId == CFG.OWNER_ID then roleFlag = "1"
+    elseif LocalPlayer.UserId == CFG.TESTER_ID then roleFlag = "2"
+    elseif LocalPlayer.UserId == CFG.W_ID then roleFlag = "3" end
+    
+    return mode .. roleFlag .. encode(table.concat(out))
+end
+
+local function decrypt(raw, key)
+    local mode = raw:sub(1, 1)
+    local role = raw:sub(2, 2)
+    local decoded = decode(raw:sub(3))
+    local out = {}
+    for i = 1, #decoded do
+        local b = decoded:sub(i, i):byte()
+        local k = key:sub((i - 1) % #key + 1, (i - 1) % #key + 1):byte()
+        table.insert(out, string.char(bit32.bxor(b, k)))
+    end
+    return mode, table.concat(out), role
+end
+
+-- [ UI ] --
+local Gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local Main = Instance.new("Frame", Gui)
+local ToggleBtn = Instance.new("TextButton", Gui)
+
+ToggleBtn.Size = UDim2.new(0, 35, 0, 35)
+ToggleBtn.Position = UDim2.new(0, 10, 0.5, -17)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.Text = "◀"
+ToggleBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+
+Main.Size = UDim2.new(0, 450, 0, 300)
+Main.Position = UDim2.new(0, 55, 0.5, -150)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.Draggable = true
+Main.Active = true
+Instance.new("UICorner", Main)
+
+local SideBar = Instance.new("ScrollingFrame", Main)
+SideBar.Size = UDim2.new(0.3, -10, 1, -20)
+SideBar.Position = UDim2.new(0, 5, 0, 10)
+SideBar.BackgroundTransparency = 1
+SideBar.ScrollBarThickness = 2
+local SideList = Instance.new("UIListLayout", SideBar)
+SideList.Padding = UDim.new(0, 4)
+
+local ChatArea = Instance.new("ScrollingFrame", Main)
+ChatArea.Size = UDim2.new(0.7, -15, 0.85, -50)
+ChatArea.Position = UDim2.new(0.3, 5, 0, 10)
+ChatArea.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new("UICorner", ChatArea)
+local UIListChat = Instance.new("UIListLayout", ChatArea)
+
+local Input = Instance.new("TextBox", Main)
+Input.Size = UDim2.new(0.7, -15, 0, 35)
+Input.Position = UDim2.new(0.3, 5, 1, -45)
+Input.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Input.PlaceholderText = "Пиши тут..."
+Input.Text = ""
+Input.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", Input)
+
+local ChatTitle = Instance.new("TextLabel", Main)
+ChatTitle.Size = UDim2.new(0.7, -15, 0, 20)
+ChatTitle.Position = UDim2.new(0.3, 5, 0, -15)
+ChatTitle.BackgroundTransparency = 1
+ChatTitle.Text = "GHOST-WIRE HW | Global"
+ChatTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
+ChatTitle.TextSize = 14
+ChatTitle.Font = Enum.Font.SourceSansBold
+ChatTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+-- [ LOGIC ] --
+local function playNotify()
+    local s = Instance.new("Sound", game:GetService("SoundService"))
+    s.SoundId = "rbxassetid://4590662766"
+    s.Volume = 0.5
+    s:Play()
+    game:GetService("Debris"):AddItem(s, 2)
+end
+
+local function updateView()
+    for _, v in pairs(ChatArea:GetChildren()) do if v:IsA("TextLabel") then v:Destroy() end end
+    ChatTitle.Text = "GHOST-WIRE HW | " .. CurrentChat
+    
+    local data = Contacts[CurrentChat]
+    if not data then return end
+    
+    data.unread = 0
+    local btn = SideBar:FindFirstChild(CurrentChat)
+    if btn then 
+        local prefix = ""
+        if Badges[btn.Name] == "1" then prefix = "⭐ "
+        elseif Badges[btn.Name] == "2" then prefix = "🛠 "
+        elseif Badges[btn.Name] == "3" then prefix = "W🔥 " end
+        btn.Text = prefix .. btn.Name
+        btn.BackgroundColor3 = (CurrentChat == btn.Name) and Color3.fromRGB(80, 80, 100) or Color3.fromRGB(50,50,50)
+    end
+
+    for _, msg in pairs(data.messages) do
+        local lbl = Instance.new("TextLabel", ChatArea)
+        lbl.Size = UDim2.new(1, -10, 0, 0)
+        lbl.AutomaticSize = Enum.AutomaticSize.Y
+        lbl.BackgroundTransparency = 1
+        
+        if msg.role == "1" then 
+            lbl.TextColor3 = Color3.fromRGB(255, 215, 0) 
+            lbl.Text = " [⭐ AUTHOR " .. msg.sender .. "]: " .. msg.text
+            lbl.Font = Enum.Font.SourceSansBold
+        elseif msg.role == "2" then 
+            lbl.TextColor3 = Color3.fromRGB(0, 255, 255) 
+            lbl.Text = " [🛠 TESTER " .. msg.sender .. "]: " .. msg.text
+            lbl.Font = Enum.Font.SourceSansBold
+        elseif msg.role == "3" then 
+            lbl.TextColor3 = Color3.fromRGB(255, 100, 0) 
+            lbl.Text = " [W🔥 " .. msg.sender .. "]: " .. msg.text
+            lbl.Font = Enum.Font.SourceSansBold
+        else
+            lbl.TextColor3 = msg.mine and Color3.fromRGB(0, 170, 255) or Color3.new(1,1,1)
+            lbl.Text = " [" .. msg.sender .. "]: " .. msg.text
+            lbl.Font = Enum.Font.SourceSans
+        end
+        
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.TextWrapped = true
+        lbl.TextSize = 16
+    end
+    ChatArea.CanvasSize = UDim2.new(0, 0, 0, UIListChat.AbsoluteContentSize.Y + 10)
+    ChatArea.CanvasPosition = Vector2.new(0, math.max(0, UIListChat.AbsoluteContentSize.Y - ChatArea.AbsoluteWindowSize.Y))
+end
+
+local function addContact(name, role)
+    if role ~= "0" then Badges[name] = role end
+    if SideBar:FindFirstChild(name) then return end
+    if not Contacts[name] then Contacts[name] = {messages = {}, unread = 0} end
+    
+    local btn = Instance.new("TextButton", SideBar)
+    btn.Name = name
+    btn.Size = UDim2.new(1, -5, 0, 30)
+    btn.BackgroundColor3 = (CurrentChat == name) and Color3.fromRGB(80, 80, 100) or Color3.fromRGB(50,50,50)
+    
+    local prefix = ""
+    if role == "1" then prefix = "⭐ " btn.TextColor3 = Color3.fromRGB(255, 215, 0)
+    elseif role == "2" then prefix = "🛠 " btn.TextColor3 = Color3.fromRGB(0, 255, 255)
+    elseif role == "3" then prefix = "W🔥 " btn.TextColor3 = Color3.fromRGB(255, 100, 0)
+    else btn.TextColor3 = Color3.new(1,1,1) end
+    
+    btn.Text = prefix .. name
+    Instance.new("UICorner", btn)
+    
+    btn.MouseButton1Click:Connect(function() 
+        CurrentChat = name 
+        updateView() 
+        for _, v in pairs(SideBar:GetChildren()) do
+            if v:IsA("TextButton") then 
+                v.BackgroundColor3 = (v.Name == name) and Color3.fromRGB(80, 80, 100) or Color3.fromRGB(50,50,50)
+            end
+        end
+    end)
+end
+
+addContact("Global", "0")
+
+local function notifyContact(name)
+    if CurrentChat == name then return end
+    local data = Contacts[name]
+    if data then
+        data.unread = data.unread + 1
+        local btn = SideBar:FindFirstChild(name)
+        if btn then
+            local prefix = ""
+            if Badges[name] == "1" then prefix = "⭐ "
+            elseif Badges[name] == "2" then prefix = "🛠 "
+            elseif Badges[name] == "3" then prefix = "W🔥 " end
+            btn.Text = prefix .. name .. " [" .. data.unread .. "]"
+            btn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+        end
+        playNotify()
+    end
+end
+
+local function send(text, mode)
+    local endp = ReplicatedStorage:FindFirstChild("SayMessageRequest", true) or 
+                 (TextChatService.ChatVersion == Enum.ChatVersion.TextChatService and TextChatService.TextChannels.RBXGeneral)
+    if not endp then return end
+
+    local payload = ""
+    local myRole = "0"
+    if LocalPlayer.UserId == CFG.OWNER_ID then myRole = "1"
+    elseif LocalPlayer.UserId == CFG.TESTER_ID then myRole = "2"
+    elseif LocalPlayer.UserId == CFG.W_ID then myRole = "3" end
+
+    if mode == "SYNC" then
+        payload = CFG.TAG .. CFG.S_MARK .. myRole .. encode(text)
+    elseif CurrentChat == "Global" then
+        payload = CFG.TAG .. crypt(text, CFG.KEY, CFG.G_MARK)
+        table.insert(Contacts["Global"].messages, {sender = LocalPlayer.Name, text = text, mine = true, role = myRole})
+    else
+        payload = CFG.TAG .. crypt(CurrentChat .. "|" .. text, CFG.KEY, CFG.P_MARK)
+        table.insert(Contacts[CurrentChat].messages, {sender = LocalPlayer.Name, text = text, mine = true, role = myRole})
+    end
+    
+    if endp.ClassName == "RemoteEvent" then endp:FireServer(payload, "All") else endp:SendAsync(payload) end
+    updateView()
+end
+
+local function onIn(msg, sender)
+    if sender == LocalPlayer.Name or not msg:find(CFG.TAG) then return end
+    local raw = msg:split(CFG.TAG)[2]
+    if not raw then return end
+    local smode = raw:sub(1, 1)
+    
+    if smode == CFG.S_MARK then
+        local role = raw:sub(2, 2)
+        local syncData = decode(raw:sub(3))
+        addContact(sender, role)
+        if syncData == "INIT" then send("ACK", "SYNC") end
+        return
+    end
+
+    local ok, mode, dec, role = pcall(function() return decrypt(raw, CFG.KEY) end)
+    if not ok then return end
+
+    if mode == CFG.G_MARK then
+        table.insert(Contacts["Global"].messages, {sender = sender, text = dec, mine = false, role = role})
+        if CurrentChat == "Global" then updateView() else notifyContact("Global") end
+    elseif mode == CFG.P_MARK then
+        local target, val = dec:match("([^|]+)|(.+)")
+        if target == LocalPlayer.Name then
+            if not Contacts[sender] then addContact(sender, role) end
+            table.insert(Contacts[sender].messages, {sender = sender, text = val, mine = false, role = role})
+            if CurrentChat == sender then updateView() else notifyContact(sender) end
+        end
+    end
+end
+
+if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+    TextChatService.MessageReceived:Connect(function(p) if p.TextSource then onIn(p.Text, p.TextSource.Name) end end)
+end
+local oldEv = ReplicatedStorage:FindFirstChild("OnMessageDoneFiltering", true)
+if oldEv then oldEv.OnClientEvent:Connect(function(d) onIn(d.Message, d.FromSpeaker) end) end
+
+Input.FocusLost:Connect(function(e) if e and Input.Text ~= "" then send(Input.Text) Input.Text = "" end end)
+ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible ToggleBtn.Text = Main.Visible and "◀" or "▶" end)
+
+task.spawn(function() task.wait(2) send("INIT", "SYNC") end)
