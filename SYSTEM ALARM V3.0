@@ -1,0 +1,175 @@
+-- PERFECTED SYSTEM LOCKDOWN UI (V6 - FINAL)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local pgui = player:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
+
+-- Configuration
+local targetHour, targetMin = 12, 0
+local currentSnooze, snoozeCount, maxSnoozes = 60, 0, 7
+local isAlarmSet, isLocked = false, false
+
+-- Assets
+local alarmSound = Instance.new("Sound", workspace)
+alarmSound.SoundId = "rbxassetid://138097048"
+alarmSound.Volume = 8
+alarmSound.Looped = true
+
+local blur = Instance.new("BlurEffect", game.Lighting)
+blur.Size = 0
+blur.Enabled = false
+
+-- UI Elements
+local main = Instance.new("ScreenGui", pgui)
+main.Name = "OS_Kernel_Lock"
+main.IgnoreGuiInset = true
+main.ResetOnSpawn = false
+
+-- Setup Frame
+local setup = Instance.new("Frame", main)
+setup.Size = UDim2.new(0, 320, 0, 300)
+setup.Position = UDim2.new(0.5, -160, 0.5, -150)
+setup.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+setup.BorderSizePixel = 0
+setup.Active, setup.Draggable = true, true
+
+local function createText(parent, size, pos, txt, color, fontSize)
+    local l = Instance.new("TextLabel", parent)
+    l.Size, l.Position = size, pos
+    l.Text, l.TextColor3 = txt, color
+    l.Font, l.TextSize = Enum.Font.Code, fontSize or 20
+    l.BackgroundTransparency = 1
+    return l
+end
+
+local title = createText(setup, UDim2.new(1,0,0,30), UDim2.new(0,0,0,5), "CORE_SYSTEM_SCHEDULER", Color3.new(1,1,1), 14)
+local timeDisp = createText(setup, UDim2.new(1,0,0,60), UDim2.new(0,0,0.15,0), "12:00", Color3.new(1,0,0), 55)
+local status = createText(setup, UDim2.new(1,0,0,20), UDim2.new(0,0,0.4,0), "STATUS: STANDBY", Color3.new(0.4,0.4,0.4), 14)
+
+local function btn(p, t, c)
+    local b = Instance.new("TextButton", setup)
+    b.Size, b.Position = UDim2.new(0, 55, 0, 45), p
+    b.Text, b.BackgroundColor3 = t, Color3.fromRGB(30, 30, 35)
+    b.TextColor3, b.Font, b.TextSize = Color3.new(1,1,1), Enum.Font.Code, 20
+    b.BorderSizePixel = 0
+    b.MouseButton1Click:Connect(c)
+end
+
+btn(UDim2.new(0.15, 0, 0.05, 0), "+", function() targetHour = (targetHour + 1) % 24 timeDisp.Text = string.format("%02d:%02d", targetHour, targetMin) end)
+btn(UDim2.new(0.15, 0, 0.45, 0), "-", function() targetHour = (targetHour - 1) % 24 if targetHour < 0 then targetHour = 23 end timeDisp.Text = string.format("%02d:%02d", targetHour, targetMin) end)
+btn(UDim2.new(0.65, 0, 0.05, 0), "+", function() targetMin = (targetMin + 1) % 60 timeDisp.Text = string.format("%02d:%02d", targetHour, targetMin) end)
+btn(UDim2.new(0.65, 0, 0.45, 0), "-", function() targetMin = (targetMin - 1) % 60 if targetMin < 0 then targetMin = 59 end timeDisp.Text = string.format("%02d:%02d", targetHour, targetMin) end)
+
+local reason = Instance.new("TextBox", setup)
+reason.Size, reason.Position = UDim2.new(0.8, 0, 0, 40), UDim2.new(0.1, 0, 0.65, 0)
+reason.PlaceholderText, reason.Text = "ENTRY_REASON", ""
+reason.BackgroundColor3, reason.TextColor3 = Color3.new(0.05, 0.05, 0.05), Color3.new(1, 1, 1)
+reason.Font, reason.BorderSizePixel = Enum.Font.Code, 0
+
+local start = Instance.new("TextButton", setup)
+start.Size, start.Position = UDim2.new(0.8, 0, 0, 45), UDim2.new(0.1, 0, 0.85, 0)
+start.Text, start.BackgroundColor3 = "INITIALIZE PROTOCOL", Color3.new(0.5, 0, 0)
+start.TextColor3, start.Font = Color3.new(1,1,1), Enum.Font.Code
+
+-- Lockdown UI
+local overlay = Instance.new("Frame", main)
+overlay.Size, overlay.Visible, overlay.ZIndex = UDim2.new(1, 0, 1, 0), false, 500
+overlay.BackgroundColor3 = Color3.new(0,0,0)
+
+local alert = createText(overlay, UDim2.new(1,0,0.4,0), UDim2.new(0,0,0.1,0), "CRITICAL_FAILURE", Color3.new(1,1,1), 40)
+alert.ZIndex = 501
+
+local snz = Instance.new("TextButton", overlay)
+snz.Size, snz.Position = UDim2.new(0.5, 0, 0, 80), UDim2.new(0.25, 0, 0.6, 0)
+snz.BackgroundColor3, snz.TextColor3, snz.ZIndex = Color3.new(0.7, 0, 0), Color3.new(1,1,1), 505
+snz.Font, snz.TextSize = Enum.Font.Code, 25
+
+-- Functions
+local function getRemaining()
+    local n = os.date("*t")
+    local d = (targetHour * 3600 + targetMin * 60) - (n.hour * 3600 + n.min * 60 + n.sec)
+    if d <= 0 then d = d + 86400 end
+    return d
+end
+
+local function applyLock(state)
+    isLocked = not state
+    overlay.Visible = isLocked
+    blur.Enabled = isLocked
+    local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+    if hum then hum.WalkSpeed = state and 16 or 0 hum.JumpPower = state and 50 or 0 end
+    
+    if isLocked then
+        alarmSound:Play()
+        alert.Text = "SYSTEM_HALTED\nREASON: " .. reason.Text:upper()
+        task.spawn(function()
+            local intensity = (snoozeCount + 1) * 2
+            while isLocked do
+                camera.CFrame *= CFrame.Angles(math.rad(math.random(-intensity, intensity)), math.rad(math.random(-intensity, intensity)), 0)
+                overlay.BackgroundColor3 = (tick() % 0.2 < 0.1) and Color3.new(0.3,0,0) or Color3.new(0,0,0)
+                blur.Size = math.random(10, 30)
+                task.wait()
+            end
+        end)
+    else
+        alarmSound:Stop()
+        blur.Size = 0
+    end
+end
+
+local function headTag(col)
+    local char = player.Character or player.CharacterAdded:Wait()
+    local bb = Instance.new("BillboardGui", char:WaitForChild("Head"))
+    bb.Size, bb.AlwaysOnTop, bb.ExtentsOffset = UDim2.new(0, 200, 0, 50), true, Vector3.new(0, 3, 0)
+    local tl = createText(bb, UDim2.new(1,0,1,0), UDim2.new(0,0,0,0), "", col, 25)
+    return bb, tl
+end
+
+-- Events
+start.MouseButton1Click:Connect(function()
+    setup.Visible = false
+    isAlarmSet = true
+    status.Text = "STATUS: ACTIVE"
+    local bb, tl = headTag(Color3.new(0, 1, 0))
+    
+    task.spawn(function()
+        while isAlarmSet do
+            local d = getRemaining()
+            local f = string.format("%02d:%02d:%02d", math.floor(d/3600), math.floor((d%3600)/60), d%60)
+            tl.Text = "SEC_TO_LOCK: " .. f
+            if d <= 1 then
+                isAlarmSet = false
+                bb:Destroy()
+                snz.Text = "SNOOZE (" .. currentSnooze .. "s)"
+                applyLock(false)
+                break
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+snz.MouseButton1Click:Connect(function()
+    if snoozeCount >= maxSnoozes then return end
+    snoozeCount += 1
+    local t = currentSnooze
+    currentSnooze = math.round(currentSnooze / 2)
+    applyLock(true)
+    
+    local bb, tl = headTag(Color3.new(0, 0.6, 1))
+    task.spawn(function()
+        while t > 0 do
+            local sText = "REST_TIME: " .. t .. "s"
+            tl.Text = sText
+            snz.Text = sText
+            task.wait(1)
+            t -= 1
+        end
+        bb:Destroy()
+        snz.Text = (snoozeCount < maxSnoozes) and "SNOOZE (" .. currentSnooze .. "s)" or "LOCK_PERMANENT"
+        applyLock(false)
+    end)
+end)
+
