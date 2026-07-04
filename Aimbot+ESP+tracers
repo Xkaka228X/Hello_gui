@@ -1,203 +1,194 @@
--- [[ 0. БЕЗОПАСНАЯ ЗАГРУЗКА ]]
-if _G.LoadedTracer then
-    if _G.MenuGUI then _G.MenuGUI:Destroy() end
-    if _G.ClearDrawings then _G.ClearDrawings() end
+if _G.ext_loaded then
+    if _G.ui_main then _G.ui_main:Destroy() end
+    if _G.unload_esp then _G.unload_esp() end
 end
-_G.LoadedTracer = true
+_G.ext_loaded = true
 
--- [[ 1. СЕРВИСЫ И ПЕРЕМЕННЫЕ ]]
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
+local plrs = game:GetService("Players")
+local r_service = game:GetService("RunService")
+local u_input = game:GetService("UserInputService")
+local c_gui = game:GetService("CoreGui")
+local l_plr = plrs.LocalPlayer
+local cam = workspace.CurrentCamera
 
-local Config = {
-    Aim = true,
-    ESP = true,
-    Tracers = true,
-    FOV = 150,
-    Speed = 0.3,
-    Part = "Head",
-    MaxDist = 1000,
-    Running = true -- Флаг работы скрипта
+local state = {
+    aim = true,
+    esp = true,
+    tracers = true,
+    fov = 150,
+    speed = 0.3,
+    part = "Head",
+    max_dist = 1000,
+    active = true
 }
 
-local DrawingStore = {}
-local FOV_Circle = Drawing.new("Circle")
+local cache = {}
+local fov_ring = Drawing.new("Circle")
 
--- [[ 2. ГРАФИЧЕСКИЙ ИНТЕРФЕЙС (UI) ]]
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ExternalV6_UI"
-ScreenGui.Parent = CoreGui
-_G.MenuGUI = ScreenGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "hx_wnd"
+gui.Parent = c_gui
+_G.ui_main = gui
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "Main"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.BorderColor3 = Color3.fromRGB(180, 0, 0)
-MainFrame.BorderSizePixel = 1
-MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
-MainFrame.Size = UDim2.new(0, 190, 0, 270)
-MainFrame.Active = true
-MainFrame.Draggable = true
+local main = Instance.new("Frame")
+main.Name = "client_panel"
+main.Parent = gui
+main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+main.BorderColor3 = Color3.fromRGB(180, 0, 0)
+main.BorderSizePixel = 1
+main.Position = UDim2.new(0.05, 0, 0.25, 0)
+main.Size = UDim2.new(0, 190, 0, 270)
+main.Active = true
+main.Draggable = true
 
-local Header = Instance.new("Frame", MainFrame)
-Header.Size = UDim2.new(1, 0, 0, 30)
-Header.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-Header.BorderSizePixel = 0
+local topbar = Instance.new("Frame", main)
+topbar.Size = UDim2.new(1, 0, 0, 30)
+topbar.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+topbar.BorderSizePixel = 0
 
-local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(0.8, 0, 1, 0)
-Title.Position = UDim2.new(0.05, 0, 0, 0)
-Title.Text = "EXTERNAL V6"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.Code
-Title.TextSize = 12
-Title.TextXAlignment = Enum.TextXAlignment.Left
+local label = Instance.new("TextLabel", topbar)
+label.Size = UDim2.new(0.8, 0, 1, 0)
+label.Position = UDim2.new(0.05, 0, 0, 0)
+label.Text = "EXTERNAL V6"
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.Font = Enum.Font.Code
+label.TextSize = 12
+label.TextXAlignment = Enum.TextXAlignment.Left
 
--- КНОПКА ЗАКРЫТИЯ [X]
-local CloseBtn = Instance.new("TextButton", Header)
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -30, 0, 0)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
-CloseBtn.BorderSizePixel = 0
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.Code
-CloseBtn.TextSize = 14
+local close = Instance.new("TextButton", topbar)
+close.Size = UDim2.new(0, 30, 0, 30)
+close.Position = UDim2.new(1, -30, 0, 0)
+close.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+close.BorderSizePixel = 0
+close.Text = "X"
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+close.Font = Enum.Font.Code
+close.TextSize = 14
 
--- Очистка при закрытии
-_G.ClearDrawings = function()
-    Config.Running = false
-    for _, obj in pairs(DrawingStore) do
-        if obj.Line then obj.Line:Remove() end
-        if obj.Box then obj.Box:Remove() end
+_G.unload_esp = function()
+    state.active = false
+    for _, item in pairs(cache) do
+        if item.line then item.line:Remove() end
+        if item.box then item.box:Remove() end
     end
-    DrawingStore = {}
-    if FOV_Circle then FOV_Circle:Remove() end
+    table.clear(cache)
+    if fov_ring then fov_ring:Remove() end
 end
 
-CloseBtn.MouseButton1Click:Connect(function()
-    _G.ClearDrawings()
-    ScreenGui:Destroy()
-    _G.LoadedTracer = nil
+close.MouseButton1Click:Connect(function()
+    _G.unload_esp()
+    gui:Destroy()
+    _G.ext_loaded = nil
 end)
 
--- Создание кнопок переключения
-local function CreateButton(text, yPos, configKey)
-    local Btn = Instance.new("TextButton", MainFrame)
-    Btn.Size = UDim2.new(0.9, 0, 0, 30)
-    Btn.Position = UDim2.new(0.05, 0, 0, yPos)
-    Btn.BackgroundColor3 = Config[configKey] and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(20, 20, 20)
-    Btn.Text = text .. (Config[configKey] and ": ON" or ": OFF")
-    Btn.TextColor3 = Config[configKey] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-    Btn.Font = Enum.Font.Code
-    Btn.BorderSizePixel = 1
-    Btn.BorderColor3 = Color3.fromRGB(60, 60, 60)
+local function make_toggle(name, offset, key)
+    local btn = Instance.new("TextButton", main)
+    btn.Size = UDim2.new(0.9, 0, 0, 30)
+    btn.Position = UDim2.new(0.05, 0, 0, offset)
+    btn.BackgroundColor3 = state[key] and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(20, 20, 20)
+    btn.Text = name .. (state[key] and ": ON" or ": OFF")
+    btn.TextColor3 = state[key] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    btn.Font = Enum.Font.Code
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = Color3.fromRGB(60, 60, 60)
 
-    Btn.MouseButton1Click:Connect(function()
-        Config[configKey] = not Config[configKey]
-        Btn.Text = text .. (Config[configKey] and ": ON" or ": OFF")
-        Btn.TextColor3 = Config[configKey] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    btn.MouseButton1Click:Connect(function()
+        state[key] = not state[key]
+        btn.Text = name .. (state[key] and ": ON" or ": OFF")
+        btn.TextColor3 = state[key] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
     end)
 end
 
-CreateButton("AIMBOT", 45, "Aim")
-CreateButton("ESP BOX", 85, "ESP")
-CreateButton("TRACERS", 125, "Tracers")
+make_toggle("AIMBOT", 45, "aim")
+make_toggle("ESP BOX", 85, "esp")
+make_toggle("TRACERS", 125, "tracers")
 
--- Создание слайдеров
-local function CreateSlider(text, yPos, min, max, default, callback)
-    local Label = Instance.new("TextLabel", MainFrame)
-    Label.Size = UDim2.new(1, 0, 0, 15)
-    Label.Position = UDim2.new(0, 0, 0, yPos)
-    Label.BackgroundTransparency = 1
-    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
-    Label.Text = text .. ": " .. default
-    Label.Font = Enum.Font.Code
-    Label.TextSize = 11
+local function make_slider(name, offset, min, max, val, fn)
+    local txt = Instance.new("TextLabel", main)
+    txt.Size = UDim2.new(1, 0, 0, 15)
+    txt.Position = UDim2.new(0, 0, 0, offset)
+    txt.BackgroundTransparency = 1
+    txt.TextColor3 = Color3.fromRGB(200, 200, 200)
+    txt.Text = name .. ": " .. val
+    txt.Font = Enum.Font.Code
+    txt.TextSize = 11
 
-    local Back = Instance.new("Frame", MainFrame)
-    Back.Size = UDim2.new(0.8, 0, 0, 6)
-    Back.Position = UDim2.new(0.1, 0, 0, yPos + 20)
-    Back.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Back.BorderSizePixel = 0
+    local bar = Instance.new("Frame", main)
+    bar.Size = UDim2.new(0.8, 0, 0, 6)
+    bar.Position = UDim2.new(0.1, 0, 0, offset + 20)
+    bar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    bar.BorderSizePixel = 0
 
-    local Fill = Instance.new("Frame", Back)
-    local startPct = math.clamp((default - min) / (max - min), 0, 1)
-    Fill.Size = UDim2.new(startPct, 0, 1, 0)
-    Fill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    Fill.BorderSizePixel = 0
+    local fill = Instance.new("Frame", bar)
+    local pct = math.clamp((val - min) / (max - min), 0, 1)
+    fill.Size = UDim2.new(pct, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    fill.BorderSizePixel = 0
 
-    local Trigger = Instance.new("TextButton", Back)
-    Trigger.Size = UDim2.new(1, 0, 1, 0)
-    Trigger.BackgroundTransparency = 1
-    Trigger.Text = ""
+    local clicker = Instance.new("TextButton", bar)
+    clicker.Size = UDim2.new(1, 0, 1, 0)
+    clicker.BackgroundTransparency = 1
+    clicker.Text = ""
 
-    local dragging = false
-    Trigger.MouseButton1Down:Connect(function() dragging = true end)
-    UserInputService.InputEnded:Connect(function(input)
+    local hold = false
+    clicker.MouseButton1Down:Connect(function() hold = true end)
+    u_input.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
+            hold = false
         end
     end)
 
-    RunService.RenderStepped:Connect(function()
-        if dragging and Config.Running then
-            local mouseX = UserInputService:GetMouseLocation().X
-            local rel = math.clamp((mouseX - Back.AbsolutePosition.X) / Back.AbsoluteSize.X, 0, 1)
-            local val = min + (rel * (max - min))
-            Fill.Size = UDim2.new(rel, 0, 1, 0)
-            local displayVal = (max > 10) and math.floor(val) or (math.floor(val * 100) / 100)
-            Label.Text = text .. ": " .. displayVal
-            callback(val)
+    r_service.RenderStepped:Connect(function()
+        if hold and state.active then
+            local mx = u_input:GetMouseLocation().X
+            local delta = math.clamp((mx - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+            local current = min + (delta * (max - min))
+            fill.Size = UDim2.new(delta, 0, 1, 0)
+            local rounded = (max > 10) and math.floor(current) or (math.floor(current * 100) / 100)
+            txt.Text = name .. ": " .. rounded
+            fn(current)
         end
     end)
 end
 
-CreateSlider("AIM SPEED", 170, 0.01, 1.0, Config.Speed, function(v) Config.Speed = v end)
-CreateSlider("FOV SIZE", 215, 50, 600, Config.FOV, function(v) Config.FOV = v end)
+make_slider("AIM SPEED", 170, 0.01, 1.0, state.speed, function(v) state.speed = v end)
+make_slider("FOV SIZE", 215, 50, 600, state.fov, function(v) state.fov = v end)
 
--- [[ 3. ЛОГИКА РИСОВАНИЯ ]]
-FOV_Circle.Visible = true
-FOV_Circle.Thickness = 1.5
-FOV_Circle.Color = Color3.fromRGB(255, 0, 0)
-FOV_Circle.Filled = false
+fov_ring.Visible = true
+fov_ring.Thickness = 1.5
+fov_ring.Color = Color3.fromRGB(255, 0, 0)
+fov_ring.Filled = false
 
-local function AddVisuals(player)
-    if DrawingStore[player] then return end
-    DrawingStore[player] = {Line = Drawing.new("Line"), Box = Drawing.new("Square")}
-    DrawingStore[player].Line.Thickness = 1.5
-    DrawingStore[player].Box.Thickness = 1.5
-    DrawingStore[player].Box.Filled = false
+local function init_draw(p)
+    if cache[p] then return end
+    cache[p] = {line = Drawing.new("Line"), box = Drawing.new("Square")}
+    cache[p].line.Thickness = 1.5
+    cache[p].box.Thickness = 1.5
+    cache[p].box.Filled = false
 end
 
--- [[ 4. МАТЕМАТИКА ]]
-local function GetScreenPos(pos)
-    local screen, vis = Camera:WorldToViewportPoint(pos)
-    if vis then return Vector2.new(screen.X, screen.Y), true end
-    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    local rel = (Vector2.new(screen.X, screen.Y) - center)
-    if rel.Magnitude == 0 then return center, false end
-    local k = math.min((center.X - 20) / math.abs(rel.X), (center.Y - 20) / math.abs(rel.Y))
-    return (screen.Z < 0) and (center - (rel * k)) or (center + (rel * k)), false
+local function get_screen_data(pos)
+    local screen, visible = cam:WorldToViewportPoint(pos)
+    if visible then return Vector2.new(screen.X, screen.Y), true end
+    local mid = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
+    local diff = (Vector2.new(screen.X, screen.Y) - mid)
+    if diff.Magnitude == 0 then return mid, false end
+    local scale = math.min((mid.X - 20) / math.abs(diff.X), (mid.Y - 20) / math.abs(diff.Y))
+    return (screen.Z < 0) and (mid - (diff * scale)) or (mid + (diff * scale)), false
 end
 
-local function GetClosestTarget()
-    local target, minMag = nil, Config.FOV
-    local mouse = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character then
-            local hum = p.Character:FindFirstChild("Humanoid")
-            local part = p.Character:FindFirstChild(Config.Part)
-            if hum and part and hum.Health > 0 then
-                local screen, vis = Camera:WorldToViewportPoint(part.Position)
-                if vis then
-                    local mag = (Vector2.new(screen.X, screen.Y) - mouse).Magnitude
-                    if mag < minMag then minMag = mag; target = part end
+local function find_best_target()
+    local target, near = nil, state.fov
+    local mid = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
+    for _, p in pairs(plrs:GetPlayers()) do
+        if p ~= l_plr and p.Character then
+            local root = p.Character:FindFirstChild("Humanoid")
+            local hit = p.Character:FindFirstChild(state.part)
+            if root and hit and root.Health > 0 then
+                local screen, visible = cam:WorldToViewportPoint(hit.Position)
+                if visible then
+                    local dist = (Vector2.new(screen.X, screen.Y) - mid).Magnitude
+                    if dist < near then near = dist; target = hit end
                 end
             end
         end
@@ -205,52 +196,53 @@ local function GetClosestTarget()
     return target
 end
 
--- [[ 5. ЦИКЛ ]]
-local Connection
-Connection = RunService.RenderStepped:Connect(function()
-    if not Config.Running then 
-        Connection:Disconnect()
+local loop
+loop = r_service.RenderStepped:Connect(function()
+    if not state.active then 
+        loop:Disconnect()
         return 
     end
 
-    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    FOV_Circle.Position = center
-    FOV_Circle.Radius = Config.FOV
-    FOV_Circle.Visible = Config.Aim
+    local mid = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
+    fov_ring.Position = mid
+    fov_ring.Radius = state.fov
+    fov_ring.Visible = state.aim
 
-    if Config.Aim then
-        local t = GetClosestTarget()
-        if t then Camera.CFrame = Camera.CFrame:Lerp(CFrame.lookAt(Camera.CFrame.Position, t.Position), Config.Speed) end
+    if state.aim then
+        local lock = find_best_target()
+        if lock then cam.CFrame = cam.CFrame:Lerp(CFrame.lookAt(cam.CFrame.Position, lock.Position), state.speed) end
     end
 
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer then
-            if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-                AddVisuals(p)
-                local v = DrawingStore[p]
-                local root = p.Character.HumanoidRootPart
-                local screenPos, onScreen = GetScreenPos(root.Position)
-                local dist = (Camera.CFrame.Position - root.Position).Magnitude
-                local col = Color3.fromHSV(math.clamp(dist / Config.MaxDist, 0, 0.33), 1, 1)
+    for _, p in pairs(plrs:GetPlayers()) do
+        if p ~= l_plr then
+            local char = p.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
+                init_draw(p)
+                local data = cache[p]
+                local root = char.HumanoidRootPart
+                local s_pos, is_on_screen = get_screen_data(root.Position)
+                local distance = (cam.CFrame.Position - root.Position).Magnitude
+                local color = Color3.fromHSV(math.clamp(distance / state.max_dist, 0, 0.33), 1, 1)
 
-                v.Line.From = center; v.Line.To = screenPos; v.Line.Color = col; v.Line.Visible = Config.Tracers
-                if Config.ESP and onScreen then
-                    local s = math.clamp(2500 / dist, 5, 300)
-                    v.Box.Size = Vector2.new(s, s * 1.5); v.Box.Position = Vector2.new(screenPos.X - s / 2, screenPos.Y - s * 0.75)
-                    v.Box.Color = col; v.Box.Visible = true
-                else v.Box.Visible = false end
-            elseif DrawingStore[p] then
-                DrawingStore[p].Line.Visible = false; DrawingStore[p].Box.Visible = false
+                data.line.From = mid; data.line.To = s_pos; data.line.Color = color; data.line.Visible = state.tracers
+                if state.esp and is_on_screen then
+                    local size = math.clamp(2500 / distance, 5, 300)
+                    data.box.Size = Vector2.new(size, size * 1.5)
+                    data.box.Position = Vector2.new(s_pos.X - size / 2, s_pos.Y - size * 0.75)
+                    data.box.Color = color
+                    data.box.Visible = true
+                else data.box.Visible = false end
+            elseif cache[p] then
+                cache[p].line.Visible = false; cache[p].box.Visible = false
             end
         end
     end
 end)
 
-Players.PlayerRemoving:Connect(function(p)
-    if DrawingStore[p] then
-        DrawingStore[p].Line:Remove()
-        DrawingStore[p].Box:Remove()
-        DrawingStore[p] = nil
+plrs.PlayerRemoving:Connect(function(p)
+    if cache[p] then
+        cache[p].line:Remove()
+        cache[p].box:Remove()
+        cache[p] = nil
     end
 end)
-
