@@ -1,0 +1,165 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local PLACE_URL = "https://www.roblox.com/games/121572449804320/Donation-Board"
+
+local currentLang = "RU"
+
+local TEXTS = {
+    RU = {
+        Title = "Donate Menu",
+        Desc = "Пожалуйста, поддержите меня. Мне будет очень приятно!",
+        Close = "Закрыть",
+        Donate = "Пожертвовать",
+        Copied = "Ссылка на плейс скопирована!"
+    },
+    EN = {
+        Title = "Donate Menu",
+        Desc = "Please, support me. It would mean a lot to me!",
+        Close = "Close",
+        Donate = "Donate",
+        Copied = "Place link copied!"
+    }
+}
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OldRobloxDonateUI"
+ScreenGui.ResetOnSpawn = false
+
+local success, _ = pcall(function()
+    ScreenGui.Parent = CoreGui
+end)
+if not success then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 340, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -170, 0.5, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(210, 210, 210)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BorderSizePixel = 2
+MainFrame.Parent = ScreenGui
+
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 26)
+TopBar.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
+TopBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TopBar.BorderSizePixel = 1
+TopBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -70, 1, 0)
+Title.Position = UDim2.new(0, 8, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 16
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Text = TEXTS.RU.Title
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+local LangButton = Instance.new("TextButton")
+LangButton.Size = UDim2.new(0, 50, 0, 18)
+LangButton.Position = UDim2.new(1, -54, 0, 4)
+LangButton.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+LangButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+LangButton.BorderSizePixel = 1
+LangButton.Font = Enum.Font.SourceSansBold
+LangButton.TextSize = 12
+LangButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+LangButton.Text = "RU / EN"
+LangButton.Parent = TopBar
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, -12, 1, -38)
+ContentFrame.Position = UDim2.new(0, 6, 0, 32)
+ContentFrame.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+ContentFrame.BorderColor3 = Color3.fromRGB(130, 130, 130)
+ContentFrame.BorderSizePixel = 1
+ContentFrame.Parent = MainFrame
+
+local Desc = Instance.new("TextLabel")
+Desc.Size = UDim2.new(1, -20, 0, 55)
+Desc.Position = UDim2.new(0, 10, 0, 10)
+Desc.BackgroundTransparency = 1
+Desc.Font = Enum.Font.SourceSans
+Desc.TextSize = 15
+Desc.TextColor3 = Color3.fromRGB(0, 0, 0)
+Desc.TextWrapped = true
+Desc.Text = TEXTS.RU.Desc
+Desc.Parent = ContentFrame
+
+local ButtonContainer = Instance.new("Frame")
+ButtonContainer.Size = UDim2.new(1, -20, 0, 35)
+ButtonContainer.Position = UDim2.new(0, 10, 1, -45)
+ButtonContainer.BackgroundTransparency = 1
+ButtonContainer.Parent = ContentFrame
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 140, 1, 0)
+CloseButton.Position = UDim2.new(0, 0, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
+CloseButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.BorderSizePixel = 1
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.TextSize = 15
+CloseButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.Text = TEXTS.RU.Close
+CloseButton.Parent = ButtonContainer
+
+local DonateButton = Instance.new("TextButton")
+DonateButton.Size = UDim2.new(0, 140, 1, 0)
+DonateButton.Position = UDim2.new(1, -140, 0, 0)
+DonateButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+DonateButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+DonateButton.BorderSizePixel = 1
+DonateButton.Font = Enum.Font.SourceSansBold
+DonateButton.TextSize = 15
+DonateButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+DonateButton.Text = TEXTS.RU.Donate
+DonateButton.Parent = ButtonContainer
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, -20, 0, 35)
+StatusLabel.Position = UDim2.new(0, 10, 1, -45)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Font = Enum.Font.SourceSansBold
+StatusLabel.TextSize = 15
+StatusLabel.TextColor3 = Color3.fromRGB(0, 120, 0)
+StatusLabel.Text = TEXTS.RU.Copied
+StatusLabel.Visible = false
+StatusLabel.Parent = ContentFrame
+
+local function updateLanguage()
+    local t = TEXTS[currentLang]
+    Title.Text = t.Title
+    Desc.Text = t.Desc
+    CloseButton.Text = t.Close
+    DonateButton.Text = t.Donate
+    StatusLabel.Text = t.Copied
+end
+
+LangButton.MouseButton1Click:Connect(function()
+    currentLang = (currentLang == "RU") and "EN" or "RU"
+    updateLanguage()
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+DonateButton.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(PLACE_URL)
+    end
+    
+    ButtonContainer.Visible = false
+    StatusLabel.Visible = true
+    
+    task.wait(2.5)
+    ScreenGui:Destroy()
+end)
